@@ -8,6 +8,7 @@ class ofApp : public ofBaseApp {
     Player player;
     void drawPlayer();
     bool move_key_is_pressed_[4] = {};
+    int num_of_keys_pressed_ = 0;
 
    public:
     void setup();

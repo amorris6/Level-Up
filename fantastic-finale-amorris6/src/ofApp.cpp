@@ -1,7 +1,9 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup() {}
+void ofApp::setup() { 
+	ofSetWindowTitle("fantastic-finale-amorris6");
+}
 
 //--------------------------------------------------------------
 void ofApp::update() {
@@ -14,7 +16,14 @@ void ofApp::update() {
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() { drawPlayer(); }
+void ofApp::draw() {
+    if (num_of_keys_pressed_ != 0) {
+        ofSetColor(255, 0, 0, 255);
+    } else {
+        ofSetColor(255, 255, 255, 255);
+    }
+    drawPlayer();
+}
 
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {
@@ -24,39 +33,53 @@ void ofApp::drawPlayer() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    ofSetColor(255, 0, 0, 255);
     int upper_key = toupper(key);
     switch (upper_key) {
         case 'W':
-            move_key_is_pressed_[UP] = true;
+            if (!move_key_is_pressed_[UP]) {
+                num_of_keys_pressed_++;
+                move_key_is_pressed_[UP] = true;
+            }
             break;
         case 'S':
-            move_key_is_pressed_[DOWN] = true;
+            if (!move_key_is_pressed_[DOWN]) {
+                num_of_keys_pressed_++;
+                move_key_is_pressed_[DOWN] = true;
+            }
             break;
         case 'A':
-            move_key_is_pressed_[LEFT] = true;
+            if (!move_key_is_pressed_[LEFT]) {
+                num_of_keys_pressed_++;
+                move_key_is_pressed_[LEFT] = true;
+            }
             break;
         case 'D':
-            move_key_is_pressed_[RIGHT] = true;
+            if (!move_key_is_pressed_[RIGHT]) {
+                num_of_keys_pressed_++;
+                move_key_is_pressed_[RIGHT] = true;
+            }
             break;
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    ofSetColor(255, 255, 255, 255);
     int upper_key = toupper(key);
     switch (upper_key) {
         case 'W':
+            num_of_keys_pressed_--;
             move_key_is_pressed_[UP] = false;
             break;
         case 'S':
+            num_of_keys_pressed_--;
             move_key_is_pressed_[DOWN] = false;
             break;
         case 'A':
+            num_of_keys_pressed_--;
             move_key_is_pressed_[LEFT] = false;
             break;
         case 'D':
+            num_of_keys_pressed_--;
             move_key_is_pressed_[RIGHT] = false;
             break;
     }
