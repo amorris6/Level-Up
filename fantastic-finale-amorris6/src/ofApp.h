@@ -1,14 +1,15 @@
 #pragma once
 
+#include "../Player.h"
 #include "ofMain.h"
-#include "Player.h"
 
 class ofApp : public ofBaseApp {
- private:
-    bool key_is_pressed_;
+   private:
     Player player;
+    void drawPlayer();
+    bool move_key_is_pressed_[4] = {};
 
- public:
+   public:
     void setup();
     void update();
     void draw();

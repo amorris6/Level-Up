@@ -1,33 +1,65 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup() { 
-	Player player;
-}
+void ofApp::setup() {}
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    if (key_is_pressed_) {
-		
-	}
-	draw();
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        if (move_key_is_pressed_[dir]) {
+            moveInDirection(player, dir);
+        }
+    }
+    draw();
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() {
-    ofDrawRectangle(0, 0, 25, 25);
+void ofApp::draw() { drawPlayer(); }
+
+//--------------------------------------------------------------
+void ofApp::drawPlayer() {
+    ofDrawRectangle(player.getPos().x, player.getPos().y, Player::kPlayerWidth,
+                    Player::kPlayerHeight);
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    key_is_pressed_ = true;
-	ofSetColor(255, 255, 0, 255);
+    ofSetColor(255, 0, 0, 255);
+    int upper_key = toupper(key);
+    switch (upper_key) {
+        case 'W':
+            move_key_is_pressed_[UP] = true;
+            break;
+        case 'S':
+            move_key_is_pressed_[DOWN] = true;
+            break;
+        case 'A':
+            move_key_is_pressed_[LEFT] = true;
+            break;
+        case 'D':
+            move_key_is_pressed_[RIGHT] = true;
+            break;
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    key_is_pressed_ = false;
-	ofSetColor(255, 255, 255, 255); 
+    ofSetColor(255, 255, 255, 255);
+    int upper_key = toupper(key);
+    switch (upper_key) {
+        case 'W':
+            move_key_is_pressed_[UP] = false;
+            break;
+        case 'S':
+            move_key_is_pressed_[DOWN] = false;
+            break;
+        case 'A':
+            move_key_is_pressed_[LEFT] = false;
+            break;
+        case 'D':
+            move_key_is_pressed_[RIGHT] = false;
+            break;
+    }
 }
 
 //--------------------------------------------------------------
