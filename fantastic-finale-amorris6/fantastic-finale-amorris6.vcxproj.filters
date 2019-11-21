@@ -7,6 +7,15 @@
     <ClCompile Include="src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ofApp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Player.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.cpp">
       <Filter>addons\ofxGui\src</Filter>
     </ClCompile>
@@ -37,7 +46,10 @@
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxToggle.cpp">
       <Filter>addons\ofxGui\src</Filter>
     </ClCompile>
-    <ClCompile Include="Player.cpp">
+    <ClCompile Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.cpp">
+      <Filter>addons\ofxSmartFont-master\src</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,9 +66,27 @@
     <Filter Include="addons\ofxGui\src">
       <UniqueIdentifier>{645E9533-4DCD-6179-1CDF-CB65}</UniqueIdentifier>
     </Filter>
+    <Filter Include="addons\ofxSmartFont-master">
+      <UniqueIdentifier>{A94A6CF6-B091-A501-05C0-A625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxSmartFont-master\src">
+      <UniqueIdentifier>{BF21D5A0-E83D-E8CB-3C0C-C178}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxUnitTests">
+      <UniqueIdentifier>{99AF7102-9423-91D4-8CD7-6602}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="addons\ofxUnitTests\src">
+      <UniqueIdentifier>{6DB6A1EA-29BB-7859-928B-898A}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ofApp.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Player.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.h">
@@ -92,7 +122,13 @@
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxToggle.h">
       <Filter>addons\ofxGui\src</Filter>
     </ClInclude>
-    <ClInclude Include="Player.h">
+    <ClInclude Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.h">
+      <Filter>addons\ofxSmartFont-master\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\addons\ofxUnitTests\src\ofxUnitTests.h">
+      <Filter>addons\ofxUnitTests\src</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

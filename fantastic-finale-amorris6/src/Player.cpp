@@ -1,27 +1,68 @@
 #include "Player.h"
-void MoveInDirection(Player player, PlayerDirection direction) {
-	switch (direction) { 
-		case UP:
-            if (player.position.y > Player::kMoveSpeed) {
-			    player.position.y -= Player::kMoveSpeed;
+
+ofVec2f Player::getPos() { return position; }
+
+void moveInDirection(Player &player, int direction_index) {
+    switch (direction_index) {
+        case UP:
+            if (player.canMoveInDirection(UP)) {
+                player.position.y -= Player::kMoveSpeed;
+            } else {
+                player.position.y = 0;
             }
             break;
         case DOWN:
-            if (player.position.y < 
-			    (int) ofGetWindowHeight - Player::kPlayerHeight) {
-				player.position.y += Player::kMoveSpeed;
+            if (player.canMoveInDirection(DOWN)) {
+                player.position.y += Player::kMoveSpeed;
+            } else {
+                player.position.y =
+                    (int)ofGetWindowHeight() - Player::kPlayerHeight;
             }
             break;
         case LEFT:
-            if (player.position.x > Player::kMoveSpeed) {
+            if (player.canMoveInDirection(LEFT)) {
                 player.position.x -= Player::kMoveSpeed;
+            } else {
+                player.position.x = 0;
             }
             break;
         case RIGHT:
-            if (player.position.x <
-                (int) ofGetWindowWidth - Player::kPlayerWidth) {
+            if (player.canMoveInDirection(RIGHT)) {
                 player.position.x += Player::kMoveSpeed;
+            } else {
+                player.position.x =
+                    (int)ofGetWindowWidth() - Player::kPlayerWidth;
             }
             break;
-	}
+    }
+}
+
+bool Player::canMoveInDirection(PlayerDirection direction) {
+    switch (direction) {
+        case UP:
+            if (position.y >= Player::kMoveSpeed) {
+                return true;
+            }
+            return false;
+        case DOWN:
+            if (position.y <=
+                (int)ofGetWindowHeight() -
+                    (Player::kPlayerHeight + Player::kMoveSpeed)) {
+                return true;
+            }
+            return false;
+        case LEFT:
+            if (position.x >= Player::kMoveSpeed) {
+                return true;
+            }
+            return false;
+        case RIGHT:
+            if (position.x <= (int) ofGetWindowWidth() -
+                                  (Player::kPlayerWidth + Player::kMoveSpeed)) {
+                return true;
+            }
+            return false;
+        default:
+            return false;
+    }
 }

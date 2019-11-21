@@ -1,8 +1,13 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup() { 
-	ofSetWindowTitle("fantastic-finale-amorris6");
+void ofApp::setup() {
+    ofSetWindowTitle("fantastic-finale-amorris6");
+    ofBackground(255, 0, 255);
+    background_music_enabled_ = true;
+    background_music_player_.load("C:\\CS 126\\Vivaldi-Spring.mp3");
+    ofxSmartFont::add("C:\\CS 126\\Fonts\\Roboto-Black.ttf", kFontSize, "Roboto-Black");
+    myFont = ofxSmartFont::get("Roboto-Black");
 }
 
 //--------------------------------------------------------------
@@ -11,6 +16,13 @@ void ofApp::update() {
         if (move_key_is_pressed_[dir]) {
             moveInDirection(player, dir);
         }
+    }
+    // TODO: Create arrays of string file paths and ofSoundPlayers, creating a
+    // looping soundtrack increment a variable to check times songs switched, or
+    // just start playing at track1, instead of track0
+    if (background_music_enabled_ && !background_music_player_.isPlaying()) {
+        background_music_player_.play();
+        // background_music_player_.load("C:\\CS 126\\Vivaldi-Fall.mp3");
     }
     draw();
 }
@@ -22,6 +34,7 @@ void ofApp::draw() {
     } else {
         ofSetColor(255, 255, 255, 255);
     }
+    myFont->draw("PLEASE GOD, WORK!", ofGetWindowWidth() / 2, ofGetWindowHeight()/2);
     drawPlayer();
 }
 

@@ -1,17 +1,25 @@
 #pragma once
 
-#include "../Player.h"
+#include "Player.h"
 #include "ofMain.h"
+#include "ofxSmartFont.h"
 
 class ofApp : public ofBaseApp {
    private:
     Player player;
+    ofSoundPlayer background_music_player_;
+    bool background_music_enabled_;
     void drawPlayer();
     bool move_key_is_pressed_[4] = {};
     int num_of_keys_pressed_ = 0;
+    const static int kFontSize = 28;
+    shared_ptr<ofxSmartFont> myFont;
+    int lvl_num_ = 0;
+    const static int kNumOfLvls = 10;
+    list<std::function<void()>> lvls;
 
-   public:
-    void setup();
+    public: 
+	void setup();
     void update();
     void draw();
 
