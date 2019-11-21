@@ -6,17 +6,19 @@
 
 class ofApp : public ofBaseApp {
    private:
-    Player player;
-    ofSoundPlayer background_music_player_;
-    bool background_music_enabled_;
-    void drawPlayer();
+    const static int kNumOfLvls = 10;
+    const static int kFontSize = 28;
     bool move_key_is_pressed_[4] = {};
     int num_of_keys_pressed_ = 0;
-    const static int kFontSize = 28;
-    shared_ptr<ofxSmartFont> myFont;
     int lvl_num_ = 0;
-    const static int kNumOfLvls = 10;
     list<std::function<void()>> lvls;
+    bool background_music_enabled_;
+    ofSoundPlayer background_music_player_;
+    shared_ptr<ofxSmartFont> myFont;
+    Player player;
+    void drawPlayer();
+    void drawStartingScreen();
+    void drawLvlOne();
 
     public: 
 	void setup();

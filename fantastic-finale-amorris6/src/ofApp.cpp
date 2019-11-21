@@ -3,10 +3,10 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
     ofSetWindowTitle("fantastic-finale-amorris6");
-    ofBackground(255, 0, 255);
     background_music_enabled_ = true;
     background_music_player_.load("C:\\CS 126\\Vivaldi-Spring.mp3");
-    ofxSmartFont::add("C:\\CS 126\\Fonts\\Roboto-Black.ttf", kFontSize, "Roboto-Black");
+    ofxSmartFont::add("C:\\CS 126\\Fonts\\Roboto-Black.ttf", kFontSize,
+                      "Roboto-Black");
     myFont = ofxSmartFont::get("Roboto-Black");
 }
 
@@ -29,16 +29,43 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+    ofSetColor(255, 0, 0, 255);
+    if (lvl_num_ == 0) {
+        drawStartingScreen();
+    } else {
+        drawLvlOne();
+    }
+}
+
+//--------------------------------------------------------------
+
+void ofApp::drawStartingScreen() {
+    ofBackground(255, 255, 255);
+    std::string label = "PLAY";
+    ofSetColor(0, 0, 0);
+    ofNoFill();
+    ofDrawRectangle(3 * ofGetWindowWidth() / 7, 3 * ofGetWindowHeight() / 7,
+                    2 * ofGetWindowWidth() / 9, 75);
+    ofSetColor(0, 0, 0, 255);
+    myFont->draw(label, ofGetWindowWidth() / 2, ofGetWindowHeight() / 2);
+    ofFill();
+}
+
+//--------------------------------------------------------------
+
+void ofApp::drawLvlOne() {
     if (num_of_keys_pressed_ != 0) {
         ofSetColor(255, 0, 0, 255);
     } else {
-        ofSetColor(255, 255, 255, 255);
+        ofSetColor(255, 0, 255, 255);
     }
-    myFont->draw("PLEASE GOD, WORK!", ofGetWindowWidth() / 2, ofGetWindowHeight()/2);
+    myFont->draw("PLEASE GOD, WORK!", ofGetWindowWidth() / 2,
+                 ofGetWindowHeight() / 2);
     drawPlayer();
 }
 
 //--------------------------------------------------------------
+
 void ofApp::drawPlayer() {
     ofDrawRectangle(player.getPos().x, player.getPos().y, Player::kPlayerWidth,
                     Player::kPlayerHeight);
@@ -46,6 +73,9 @@ void ofApp::drawPlayer() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+    if (lvl_num_ == 0) {
+        return;
+    }
     int upper_key = toupper(key);
     switch (upper_key) {
         case 'W':
@@ -105,7 +135,14 @@ void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button) {}
+void ofApp::mousePressed(int x, int y, int button) {
+    if (x >= 3 * ofGetWindowWidth() / 7 &&
+        x <= 3 * ofGetWindowWidth() / 7 + 2 * ofGetWindowWidth() / 9 &&
+        y >= 3 * ofGetWindowHeight() / 7 &&
+        y <= 3 * ofGetWindowHeight() / 7 + 75) {
+        lvl_num_++;
+    }
+}
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {}
