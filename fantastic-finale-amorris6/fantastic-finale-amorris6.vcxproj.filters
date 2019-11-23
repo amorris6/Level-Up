@@ -49,9 +49,6 @@
     <ClCompile Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.cpp">
       <Filter>addons\ofxSmartFont-master\src</Filter>
     </ClCompile>
-    <ClCompile Include="Button.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -127,9 +124,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\addons\ofxUnitTests\src\ofxUnitTests.h">
       <Filter>addons\ofxUnitTests\src</Filter>
-    </ClInclude>
-    <ClInclude Include="Button.h">
-      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
