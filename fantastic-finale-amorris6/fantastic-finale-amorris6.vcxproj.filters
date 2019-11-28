@@ -13,9 +13,6 @@
     <ClCompile Include="src\ofApp.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Player.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.cpp">
       <Filter>addons\ofxGui\src</Filter>
     </ClCompile>
@@ -49,6 +46,9 @@
     <ClCompile Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.cpp">
       <Filter>addons\ofxSmartFont-master\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Character.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -81,9 +81,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\ofApp.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Player.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.h">
@@ -124,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\addons\ofxUnitTests\src\ofxUnitTests.h">
       <Filter>addons\ofxUnitTests\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Character.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Player.h"
+#include "Character.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
@@ -8,6 +8,7 @@ class ofApp : public ofBaseApp {
    private:
     const static int kNumOfLvls = 10;
     const static int kFontSize = 28;
+    constexpr static int kMaxEnemyNum = 5;
     const static float kPlayXAdj;
     const static float kPlayYAdj;
     const static float kPlayWidthAdj;
@@ -21,39 +22,44 @@ class ofApp : public ofBaseApp {
     const static ofColor kBlue;
     const static ofColor kGreen;
     const static ofColor kPurple;
+    const static string kMusicFilePath;
+    const static string kFontFilePath;
 
-    bool move_key_is_pressed_[4] = {};
+    bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
     int lvl_num_;
-    list<std::function<void()>> lvls;
+    static list<int> test_list;
     bool background_music_enabled_;
-    ofSoundPlayer background_music_player_;
-    shared_ptr<ofxSmartFont> myFont = nullptr;
-    Player player;
+    ofSoundPlayer* background_music_player;
+    shared_ptr<ofxSmartFont> my_font;
+    Character player;
+    static list<Character> enemies;
     void drawPlayer();
     void drawStartingScreen();
     void drawLvlOne();
+    void setupEnemies();
+    void drawEnemies();
     class Button {
-       public:
+       private:
         float x;
         float y;
         float width;
         float height;
         std::string label;
-        shared_ptr<ofxSmartFont> label_font;
-        bool MouseIsInside(int mouse_x, int mouse_y);
-        void draw();
+        ofxSmartFont label_font;
+
+       public:
         Button(float x, float y, float width, float height, std::string label,
-               shared_ptr<ofxSmartFont> label_font)
+               ofxSmartFont label_font)
             : x(x),
               y(y),
               width(width),
               height(height),
               label(label),
               label_font(label_font) {}
+        bool MouseIsInside(int mouse_x, int mouse_y);
+        void draw();
     };
-
-   ofxSmartFont play_button_font = *myFont;  // idk why but stops heap corruption
 
    public:
     Button* play_button;

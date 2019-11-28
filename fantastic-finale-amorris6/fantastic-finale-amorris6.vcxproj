@@ -182,7 +182,7 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
-    <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\Character.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxButton.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxColorPicker.cpp" />
@@ -197,7 +197,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ofApp.h" />
-    <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\Character.h" />
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxBaseGui.h" />
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxButton.h" />
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxColorPicker.h" />
