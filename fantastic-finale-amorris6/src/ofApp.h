@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp {
     const static string kMusicFilePath;
     const static string kFontFilePath;
 
+	int battles_left_;
     bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
     int lvl_num_;

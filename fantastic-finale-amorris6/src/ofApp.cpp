@@ -43,6 +43,7 @@ void ofApp::setup() {
     ofSetWindowTitle("fantastic-finale-amorris6");
     num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
+    battles_left_ = 25;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     background_music_player->load(kMusicFilePath);
@@ -52,7 +53,7 @@ void ofApp::setup() {
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
         kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *my_font);
-    player = Character();
+    player = Character(0, 0, 50);
     setupEnemies();
 }
 
@@ -61,11 +62,13 @@ void ofApp::setupEnemies() {
     // randomly places the enemies, but makes sure they don't intersect player
     // at start
     for (int i = 0; i < kMaxEnemyNum; ++i) {
-        int x = (rand() % (int) (ofGetWindowWidth() - Character::kPlayerWidth)) +
+        int x = (rand() % (ofGetWindowWidth() - 2 * Character::kPlayerWidth)) +
                 Character::kPlayerWidth;
-        int y = (rand() % (int) (ofGetWindowHeight() - Character::kPlayerHeight)) +
-                Character::kPlayerHeight;
-        enemies.push_back(Character(x, y));
+        int y =
+            (rand() % (ofGetWindowHeight() - 2 * Character::kPlayerHeight)) +
+            Character::kPlayerHeight;
+        int gold = rand() % 100 + 1;
+        enemies.push_back(Character(x, y, gold));
     }
 }
 
@@ -76,17 +79,21 @@ void ofApp::update() {
             moveInDirection(player, dir);
         }
     }
+    if (enemies.empty()) {
+        setupEnemies();
+    }
     for (auto& enemy : enemies) {
         if (player.getRect().intersects(enemy.getRect())) {
-            enemies.remove(enemy);
-            ofSetBackgroundColor(0, 0, 0);
-            lvl_num_ = 0;
+            battles_left_--;
+            lvl_num_ = 2;
+            player.gold += enemy.getGold();
             num_of_keys_pressed_ = 0;
             for (int dir = UP; dir <= RIGHT; dir++) {
                 move_key_is_pressed[dir] = false;
             }
+            enemies.remove(enemy);
+            break;
         }
-        break;
     }
     // TODO: Create arrays of string file paths and ofSoundPlayers, creating
     // a looping soundtrack increment a variable to check times songs
@@ -112,6 +119,13 @@ void ofApp::drawStartingScreen() { play_button->draw(); }
 
 //--------------------------------------------------------------
 void ofApp::drawLvlOne() {
+    ofSetColor(0, 0, 0);
+    string gold_gathered = to_string(player.getGold());
+    string gold_message = "Gold Gathered: " + gold_gathered;
+    string battles_left = to_string(battles_left_);
+    string battle_message = "Battles Left: " + battles_left;
+    my_font->draw(battle_message, ofGetWindowWidth() - 300, kFontSize);
+    my_font->draw(gold_message, 0, kFontSize);
     if (num_of_keys_pressed_ != 0) {
         ofSetColor(kRed);
     } else {
@@ -126,6 +140,7 @@ void ofApp::drawPlayer() { ofDrawRectangle(player.getRect()); }
 
 //--------------------------------------------------------------
 void ofApp::drawEnemies() {
+    ofSetColor(kBlack);
     for (auto& enemy : enemies) {
         ofDrawRectangle(enemy.getRect());
     }

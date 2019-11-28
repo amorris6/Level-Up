@@ -1,22 +1,22 @@
 #include "Character.h"
 
-ofVec2f Character::getPos() { 
-	return position; 
+int Character::getGold() { return gold; }
+
+ofVec2f Character::getPos() { return position; }
+
+ofRectangle Character::getRect() {
+    return ofRectangle(position.x, position.y, kPlayerWidth, kPlayerHeight);
 }
 
-ofRectangle Character::getRect() { 
-	return ofRectangle(position.x, position.y, kPlayerWidth, kPlayerHeight); 
+bool Character::operator==(Character const& other) const {
+    return this->position == other.position;
 }
 
-bool Character::operator==(Character const& other) const { 
-	return this->position == other.position; 
+bool Character::operator!=(Character const& other) const {
+    return !(*this == other);
 }
 
-bool Character::operator!=(Character const& other) const { 
-	return !(*this == other);
-}
-
-void moveInDirection(Character &player, int direction_index) {
+void moveInDirection(Character& player, int direction_index) {
     switch (direction_index) {
         case UP:
             if (player.canMoveInDirection(UP)) {
@@ -71,7 +71,8 @@ bool Character::canMoveInDirection(PlayerDirection direction) {
             }
             return false;
         case RIGHT:
-            if (position.x <= (int)ofGetWindowWidth() -
+            if (position.x <=
+                (int)ofGetWindowWidth() -
                     (Character::kPlayerWidth + Character::kMoveSpeed)) {
                 return true;
             }
