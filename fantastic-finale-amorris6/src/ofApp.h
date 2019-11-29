@@ -6,8 +6,9 @@
 
 class ofApp : public ofBaseApp {
    private:
-    const static int kNumOfLvls = 10;
-    const static int kFontSize = 28;
+    const static int kInitialBattles = 5;
+    const static int kButtonFontSize = 28;
+    const static int kInfoFontSize = 16;
     constexpr static int kMaxEnemyNum = 5;
     const static float kPlayXAdj;
     const static float kPlayYAdj;
@@ -32,14 +33,18 @@ class ofApp : public ofBaseApp {
     static list<int> test_list;
     bool background_music_enabled_;
     ofSoundPlayer* background_music_player;
-    shared_ptr<ofxSmartFont> my_font;
+    shared_ptr<ofxSmartFont> button_font;
+    shared_ptr<ofxSmartFont> info_font;
     Character player;
     static list<Character> enemies;
     void drawPlayer();
     void drawStartingScreen();
+    void drawGameOver();
     void drawLvlOne();
+    void drawInfo();
     void setupEnemies();
     void drawEnemies();
+    void fightEnemies();
     class Button {
        private:
         float x;
@@ -58,7 +63,7 @@ class ofApp : public ofBaseApp {
               height(height),
               label(label),
               label_font(label_font) {}
-        bool MouseIsInside(int mouse_x, int mouse_y);
+        bool mouseIsInside(int mouse_x, int mouse_y);
         void draw();
     };
 

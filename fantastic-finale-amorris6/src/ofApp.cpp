@@ -17,7 +17,7 @@ const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 list<Character> ofApp::enemies = {};
 
-bool ofApp::Button::MouseIsInside(int mouse_x, int mouse_y) {
+bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
     if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
         mouse_y <= y + height) {
         return true;
@@ -43,16 +43,18 @@ void ofApp::setup() {
     ofSetWindowTitle("fantastic-finale-amorris6");
     num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
-    battles_left_ = 25;
+    battles_left_ = kInitialBattles;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     background_music_player->load(kMusicFilePath);
-    ofxSmartFont::add(kFontFilePath, kFontSize, "Roboto-Black");
-    my_font = ofxSmartFont::get("Roboto-Black");
+    ofxSmartFont::add(kFontFilePath, kButtonFontSize, "Roboto-Black");
+    ofxSmartFont::add(kFontFilePath, kInfoFontSize, "Roboto-Black-Small");
+    button_font = ofxSmartFont::get("Roboto-Black");
+    info_font = ofxSmartFont::get("Roboto-Black-Small");
     play_button = new Button(
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
-        kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *my_font);
+        kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
     player = Character(0, 0, 50);
     setupEnemies();
 }
@@ -82,6 +84,18 @@ void ofApp::update() {
     if (enemies.empty()) {
         setupEnemies();
     }
+    fightEnemies();
+    // TODO: Create arrays of string file paths and ofSoundPlayers, creating
+    // a looping soundtrack increment a variable to check times songs
+    // switched, or just start playing at track1, instead of track0
+    if (background_music_enabled_ && !background_music_player->isPlaying() &&
+        battles_left_ > 0) {
+        background_music_player->play();
+    }
+    draw();
+}
+//--------------------------------------------------------------
+void ofApp::fightEnemies() {
     for (auto& enemy : enemies) {
         if (player.getRect().intersects(enemy.getRect())) {
             battles_left_--;
@@ -95,19 +109,13 @@ void ofApp::update() {
             break;
         }
     }
-    // TODO: Create arrays of string file paths and ofSoundPlayers, creating
-    // a looping soundtrack increment a variable to check times songs
-    // switched, or just start playing at track1, instead of track0
-    if (background_music_enabled_ && !background_music_player->isPlaying()) {
-        background_music_player->play();
-    }
-    draw();
 }
-
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofSetColor(kRed);
-    if (lvl_num_ == 0) {
+    if (battles_left_ <= 0) {
+        drawGameOver();
+    } else if (lvl_num_ == 0) {
         drawStartingScreen();
     } else {
         drawLvlOne();
@@ -115,17 +123,21 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
+void ofApp::drawGameOver() {
+    ofBackground(kBlack);
+    ofSetColor(kWhite);
+    string game_over_msg = "GAME OVER!";
+    ofSetWindowTitle(game_over_msg);
+        button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
+                          kPlayYAdj * ofGetWindowHeight());
+}
+
+//--------------------------------------------------------------
 void ofApp::drawStartingScreen() { play_button->draw(); }
 
 //--------------------------------------------------------------
 void ofApp::drawLvlOne() {
-    ofSetColor(0, 0, 0);
-    string gold_gathered = to_string(player.getGold());
-    string gold_message = "Gold Gathered: " + gold_gathered;
-    string battles_left = to_string(battles_left_);
-    string battle_message = "Battles Left: " + battles_left;
-    my_font->draw(battle_message, ofGetWindowWidth() - 300, kFontSize);
-    my_font->draw(gold_message, 0, kFontSize);
+    drawInfo();
     if (num_of_keys_pressed_ != 0) {
         ofSetColor(kRed);
     } else {
@@ -136,6 +148,17 @@ void ofApp::drawLvlOne() {
 }
 
 //--------------------------------------------------------------
+void ofApp::drawInfo() {
+    ofSetColor(0, 0, 0);
+    string gold_gathered = to_string(player.getGold());
+    string gold_message = "Gold Gathered: " + gold_gathered;
+    string battles_left = to_string(battles_left_);
+    string battle_message = "Battles Left: " + battles_left;
+    info_font->draw(battle_message, ofGetWindowWidth() - 10 * kInfoFontSize,
+                    kInfoFontSize);
+    info_font->draw(gold_message, 0, kInfoFontSize);
+}
+//--------------------------------------------------------------
 void ofApp::drawPlayer() { ofDrawRectangle(player.getRect()); }
 
 //--------------------------------------------------------------
@@ -145,6 +168,7 @@ void ofApp::drawEnemies() {
         ofDrawRectangle(enemy.getRect());
     }
 }
+
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
     if (lvl_num_ == 0) {
@@ -213,7 +237,7 @@ void ofApp::mouseDragged(int x, int y, int button) {}
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-    if (lvl_num_ == 0 && play_button->MouseIsInside(x, y)) {
+    if (lvl_num_ == 0 && play_button->mouseIsInside(x, y)) {
         lvl_num_++;
     }
 }
