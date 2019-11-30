@@ -15,7 +15,7 @@ const ofColor ofApp::kBlue = ofColor(0, 0, 255);
 const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
-list<Character> ofApp::enemies = {};
+list<Enemy> ofApp::enemies = {};
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
     if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
@@ -55,7 +55,7 @@ void ofApp::setup() {
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
         kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
-    player = Character(0, 0, 50);
+    player = Player(0, 0, 50);
     setupEnemies();
 }
 
@@ -64,13 +64,13 @@ void ofApp::setupEnemies() {
     // randomly places the enemies, but makes sure they don't intersect player
     // at start
     for (int i = 0; i < kMaxEnemyNum; ++i) {
-        int x = (rand() % (ofGetWindowWidth() - 2 * Character::kPlayerWidth)) +
-                Character::kPlayerWidth;
+        int x = (rand() % (ofGetWindowWidth() - 2 * Character::kCharWidth)) +
+                Character::kCharWidth;
         int y =
-            (rand() % (ofGetWindowHeight() - 2 * Character::kPlayerHeight)) +
-            Character::kPlayerHeight;
+            (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
+            Character::kCharHeight;
         int gold = rand() % 100 + 1;
-        enemies.push_back(Character(x, y, gold));
+        enemies.push_back(Enemy(x, y, gold));
     }
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Character.h"
+#include "Player.h"
+#include "Enemy.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
@@ -35,8 +36,8 @@ class ofApp : public ofBaseApp {
     ofSoundPlayer* background_music_player;
     shared_ptr<ofxSmartFont> button_font;
     shared_ptr<ofxSmartFont> info_font;
-    Character player;
-    static list<Character> enemies;
+    Player player;
+    static list<Enemy> enemies;
     void drawPlayer();
     void drawStartingScreen();
     void drawGameOver();
