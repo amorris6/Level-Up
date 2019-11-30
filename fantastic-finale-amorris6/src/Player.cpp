@@ -1,7 +1,5 @@
 #include "Player.h"
 
-int Player::getGold() { return gold; }
-
 bool Player::canMoveInDirection(PlayerDirection direction) {
     switch (direction) {
         case UP:

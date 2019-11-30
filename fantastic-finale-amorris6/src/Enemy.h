@@ -4,7 +4,8 @@
 class Enemy : public Character {
    private:
    public:
-    Enemy(float x, float y, int gold) : Character(x, y, gold) {}
-    Enemy(float x, float y) : Character(x, y) {}
+    Enemy(float x, float y, int gold, int exp, int atk, int def, int health,
+           float crit_chance)
+        : Character(x, y, gold, exp, atk, def, health, crit_chance) {}
     Enemy() : Character() {}
 };

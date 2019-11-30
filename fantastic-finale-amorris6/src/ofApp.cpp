@@ -55,7 +55,7 @@ void ofApp::setup() {
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
         kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
-    player = Player(0, 0, 50);
+    player = Player(0, 0, 50, 0, 0, 0, 0, 0);
     setupEnemies();
 }
 
@@ -70,7 +70,7 @@ void ofApp::setupEnemies() {
             (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
             Character::kCharHeight;
         int gold = rand() % 100 + 1;
-        enemies.push_back(Enemy(x, y, gold));
+        enemies.push_back(Enemy(x, y, gold, 0, 0, 0, 0, 0));
     }
 }
 

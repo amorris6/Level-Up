@@ -11,17 +11,10 @@ class Player : public Character {
     bool canMoveInDirection(PlayerDirection direction);
 
    public:
-    int gold;
     friend void moveInDirection(Player& player, int direction_index);
-    Player(float x, float y, int gold) : Character(x, y, gold) {
-        this->gold = gold;
-    }
-    Player(float x, float y) : Character(x, y) { 
-		Player(x, y, 0); 
-	}
-    Player() : Character() { 
-		Player(0, 0, 0);
-	}
-
-    int getGold();
+    Player(float x, float y, int gold, int exp, int atk, int def, int health,
+           float crit_chance)
+        : Character(x, y, gold, exp, atk, def,
+                    health, crit_chance) {}
+    Player() : Character() {}
 };
