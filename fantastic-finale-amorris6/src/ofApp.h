@@ -1,13 +1,21 @@
 #pragma once
 
-#include "Player.h"
 #include "Enemy.h"
+#include "Player.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
 class ofApp : public ofBaseApp {
    private:
-    const static int kInitialBattles = 5;
+    const static int kInitialBattles = 15;
+    const static int kStartX = 0;
+    const static int kStartY = 0;
+    const static int kStartGold = 50;
+    const static int kStartExp = 0;
+    const static int kStartAtk = 20;
+    const static int kStartDef = 10;
+    const static int kStartHealth = 100;
+    const static float kStartCrit;
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
     constexpr static int kMaxEnemyNum = 5;
@@ -24,10 +32,12 @@ class ofApp : public ofBaseApp {
     const static ofColor kBlue;
     const static ofColor kGreen;
     const static ofColor kPurple;
+    const static ofColor kSkin;
     const static string kMusicFilePath;
     const static string kFontFilePath;
+    const static string kPlayerSpritePath;
 
-	int battles_left_;
+    int battles_left_;
     bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
     int lvl_num_;

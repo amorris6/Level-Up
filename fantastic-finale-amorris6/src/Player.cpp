@@ -1,5 +1,11 @@
 #include "Player.h"
 
+ofRectangle Player::getRect() {
+	//width/2 fits the player sprite
+    return ofRectangle(position, Character::kCharWidth / 2,
+                       Character::kCharHeight);
+}
+
 bool Player::canMoveInDirection(PlayerDirection direction) {
     switch (direction) {
         case UP:

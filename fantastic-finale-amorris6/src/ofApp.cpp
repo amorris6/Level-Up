@@ -1,5 +1,6 @@
 #include "ofApp.h"
 
+const float ofApp::kStartCrit = 0.1;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
 const float ofApp::kPlayYAdj = 3.0 / 7.0;
 const float ofApp::kPlayWidthAdj = 1.0 / 8.0;
@@ -13,8 +14,11 @@ const ofColor ofApp::kRed = ofColor(255, 0, 0);
 const ofColor ofApp::kGreen = ofColor(0, 255, 0);
 const ofColor ofApp::kBlue = ofColor(0, 0, 255);
 const ofColor ofApp::kPurple = ofColor(255, 0, 255);
+const ofColor ofApp::kSkin = ofColor(255, 220, 178);
 const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
+const string ofApp::kPlayerSpritePath =
+    "C:\\CS 126\\Sprites\\player-sprite.png";
 list<Enemy> ofApp::enemies = {};
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
@@ -28,7 +32,7 @@ bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
 //--------------------------------------------------------------
 void ofApp::Button::draw() {
     ofBackground(kWhite);
-    ofSetColor(0, 0, 0);
+    ofSetColor(kBlack);
     ofNoFill();
     ofDrawRectangle(x, y, width, height);
     ofSetColor(kBlack);
@@ -55,7 +59,9 @@ void ofApp::setup() {
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
         kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
-    player = Player(0, 0, 50, 0, 0, 0, 0, 0);
+    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
+                    kStartDef, kStartHealth, kStartCrit);
+    player.player_sprite->load(kPlayerSpritePath);
     setupEnemies();
 }
 
@@ -66,9 +72,8 @@ void ofApp::setupEnemies() {
     for (int i = 0; i < kMaxEnemyNum; ++i) {
         int x = (rand() % (ofGetWindowWidth() - 2 * Character::kCharWidth)) +
                 Character::kCharWidth;
-        int y =
-            (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
-            Character::kCharHeight;
+        int y = (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
+                Character::kCharHeight;
         int gold = rand() % 100 + 1;
         int exp = rand() % 100 + 1;
         enemies.push_back(Enemy(x, y, gold, exp, 0, 0, 0, 0));
@@ -130,8 +135,8 @@ void ofApp::drawGameOver() {
     ofSetColor(kWhite);
     string game_over_msg = "GAME OVER!";
     ofSetWindowTitle(game_over_msg);
-        button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
-                          kPlayYAdj * ofGetWindowHeight());
+    button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
+                      kPlayYAdj * ofGetWindowHeight());
 }
 
 //--------------------------------------------------------------
@@ -161,11 +166,17 @@ void ofApp::drawInfo() {
     info_font->draw(battle_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
     info_font->draw(gold_message, 0, kInfoFontSize);
-    info_font->draw(exp_message, kPlayXAdj * ofGetWindowWidth(),
-                    kInfoFontSize);
+    info_font->draw(exp_message, kPlayXAdj * ofGetWindowWidth(), kInfoFontSize);
 }
 //--------------------------------------------------------------
-void ofApp::drawPlayer() { ofDrawRectangle(player.getRect()); }
+void ofApp::drawPlayer() {
+    ofSetColor(kSkin);
+    // makes the boundaries of the sprite line up with the hitbox
+	// discovered through trial and error
+    player.player_sprite->draw(player.getPos().x - 15, player.getPos().y - 15,
+                               Character::kCharWidth + 20,
+                               Character::kCharHeight + 20);
+}
 
 //--------------------------------------------------------------
 void ofApp::drawEnemies() {
