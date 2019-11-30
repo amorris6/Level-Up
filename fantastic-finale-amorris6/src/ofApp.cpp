@@ -70,7 +70,8 @@ void ofApp::setupEnemies() {
             (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
             Character::kCharHeight;
         int gold = rand() % 100 + 1;
-        enemies.push_back(Enemy(x, y, gold, 0, 0, 0, 0, 0));
+        int exp = rand() % 100 + 1;
+        enemies.push_back(Enemy(x, y, gold, exp, 0, 0, 0, 0));
     }
 }
 
@@ -101,6 +102,7 @@ void ofApp::fightEnemies() {
             battles_left_--;
             lvl_num_ = 2;
             player.gold += enemy.getGold();
+            player.exp += enemy.getExp();
             num_of_keys_pressed_ = 0;
             for (int dir = UP; dir <= RIGHT; dir++) {
                 move_key_is_pressed[dir] = false;
@@ -154,9 +156,13 @@ void ofApp::drawInfo() {
     string gold_message = "Gold Gathered: " + gold_gathered;
     string battles_left = to_string(battles_left_);
     string battle_message = "Battles Left: " + battles_left;
+    string exp_gathered = to_string(player.getExp());
+    string exp_message = "EXP: " + exp_gathered;
     info_font->draw(battle_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
     info_font->draw(gold_message, 0, kInfoFontSize);
+    info_font->draw(exp_message, kPlayXAdj * ofGetWindowWidth(),
+                    kInfoFontSize);
 }
 //--------------------------------------------------------------
 void ofApp::drawPlayer() { ofDrawRectangle(player.getRect()); }

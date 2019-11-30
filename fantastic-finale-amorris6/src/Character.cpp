@@ -1,8 +1,12 @@
 #include "Character.h"
 
-int Character::getGold() { return gold; }
-
 ofVec2f Character::getPos() { return position; }
+int Character::getGold() { return gold; }
+int Character::getExp() { return exp; }
+int Character::getAtk() { return atk; }
+int Character::getDef() { return def; }
+int Character::getHealth() { return health; }
+float Character::getCrit() { return crit_chance; }
 
 ofRectangle Character::getRect() {
     return ofRectangle(position.x, position.y, kCharWidth, kCharHeight);
