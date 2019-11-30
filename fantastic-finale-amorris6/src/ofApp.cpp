@@ -14,6 +14,7 @@ const ofColor ofApp::kRed = ofColor(255, 0, 0);
 const ofColor ofApp::kGreen = ofColor(0, 255, 0);
 const ofColor ofApp::kBlue = ofColor(0, 0, 255);
 const ofColor ofApp::kPurple = ofColor(255, 0, 255);
+const ofColor ofApp::kYellow = ofColor(255, 255, 0);
 const ofColor ofApp::kSkin = ofColor(255, 220, 178);
 const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
@@ -69,14 +70,24 @@ void ofApp::setup() {
 void ofApp::setupEnemies() {
     // randomly places the enemies, but makes sure they don't intersect player
     // at start
+    enemies.clear();
     for (int i = 0; i < kMaxEnemyNum; ++i) {
         int x = (rand() % (ofGetWindowWidth() - 2 * Character::kCharWidth)) +
                 Character::kCharWidth;
         int y = (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
                 Character::kCharHeight;
-        int gold = rand() % 100 + 1;
-        int exp = rand() % 100 + 1;
+        int gold = rand() % kEnemyMaxGold + 1;
+        int exp = kEnemyMaxExp - gold;
         enemies.push_back(Enemy(x, y, gold, exp, 0, 0, 0, 0));
+    }
+    // makes sure enemies aren't intersecting each other
+    for (auto& enemy1 : enemies) {
+        for (auto& enemy2 : enemies) {
+            if (enemy1.getRect().intersects(enemy2.getRect()) &&
+                enemy1 != enemy2) {
+                setupEnemies();
+            }
+        }
     }
 }
 
@@ -172,7 +183,7 @@ void ofApp::drawInfo() {
 void ofApp::drawPlayer() {
     ofSetColor(kSkin);
     // makes the boundaries of the sprite line up with the hitbox
-	// discovered through trial and error
+    // discovered through trial and error
     player.player_sprite->draw(player.getPos().x - 15, player.getPos().y - 15,
                                Character::kCharWidth + 20,
                                Character::kCharHeight + 20);
@@ -180,9 +191,20 @@ void ofApp::drawPlayer() {
 
 //--------------------------------------------------------------
 void ofApp::drawEnemies() {
-    ofSetColor(kBlack);
     for (auto& enemy : enemies) {
+        ofSetColor(kBlack);
+        if (enemy.getGold() >= kGoldShinyLim) {
+            ofSetColor(kYellow);
+        } else if (enemy.getExp() >= kExpShinyLim) {
+            if (ofGetBackgroundColor() == kWhite) {
+                ofSetColor(kBlack);
+                ofNoFill();
+            } else {
+                ofSetColor(kWhite);
+			}
+        }
         ofDrawRectangle(enemy.getRect());
+        ofFill();
     }
 }
 

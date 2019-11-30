@@ -13,7 +13,13 @@ ofRectangle Character::getRect() {
 }
 
 bool Character::operator==(Character const& other) const {
-    return this->position == other.position;
+    return this->position == other.position 
+		&& this->gold == other.gold 
+		&& this->exp == other.exp 
+		&& this->atk == other.atk 
+		&& this->def == other.def 
+		&& this->health == other.health 
+		&& this->crit_chance == other.crit_chance;
 }
 
 bool Character::operator!=(Character const& other) const {

@@ -11,7 +11,11 @@ class ofApp : public ofBaseApp {
     const static int kStartX = 0;
     const static int kStartY = 0;
     const static int kStartGold = 50;
+    const static int kEnemyMaxGold = 100;
+    const static int kGoldShinyLim = 75;
+    const static int kExpShinyLim = 75;
     const static int kStartExp = 0;
+    const static int kEnemyMaxExp = 100;
     const static int kStartAtk = 20;
     const static int kStartDef = 10;
     const static int kStartHealth = 100;
@@ -32,6 +36,7 @@ class ofApp : public ofBaseApp {
     const static ofColor kBlue;
     const static ofColor kGreen;
     const static ofColor kPurple;
+    const static ofColor kYellow;
     const static ofColor kSkin;
     const static string kMusicFilePath;
     const static string kFontFilePath;
