@@ -38,35 +38,35 @@ bool Player::canMoveInDirection(PlayerDirection direction) {
     return true;
 }
 
-void moveInDirection(Player& player, int direction_index) {
+void Player::moveInDirection(int direction_index) {
     switch (direction_index) {
         case UP:
-            if (player.canMoveInDirection(UP)) {
-                player.position.y -= Character::kMoveSpeed;
+            if (canMoveInDirection(UP)) {
+                position.y -= Character::kMoveSpeed;
             } else {
-                player.position.y = 0;
+                position.y = 0;
             }
             break;
         case DOWN:
-            if (player.canMoveInDirection(DOWN)) {
-                player.position.y += Character::kMoveSpeed;
+            if (canMoveInDirection(DOWN)) {
+                position.y += Character::kMoveSpeed;
             } else {
-                player.position.y =
+                position.y =
                     (int)ofGetWindowHeight() - Character::kCharHeight;
             }
             break;
         case LEFT:
-            if (player.canMoveInDirection(LEFT)) {
-                player.position.x -= Character::kMoveSpeed;
+            if (canMoveInDirection(LEFT)) {
+                position.x -= Character::kMoveSpeed;
             } else {
-                player.position.x = 0;
+                position.x = 0;
             }
             break;
         case RIGHT:
-            if (player.canMoveInDirection(RIGHT)) {
-                player.position.x += Character::kMoveSpeed;
+            if (canMoveInDirection(RIGHT)) {
+                position.x += Character::kMoveSpeed;
             } else {
-                player.position.x =
+                position.x =
                     (int)ofGetWindowWidth() - Character::kCharWidth;
             }
             break;

@@ -70,9 +70,12 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::setupEnemies() {
+    enemies.clear();
+	// creates 1-kMaxEnemies enemies
+    int num_enemies = rand() % (kMaxEnemyNum + 1);
     // randomly places the enemies, but makes sure they don't intersect player
     // at start
-    for (int i = 0; i < kMaxEnemyNum; ++i) {
+    for (int i = 0; i < num_enemies; ++i) {
         int x = (rand() % (ofGetWindowWidth() - 3 * Character::kCharWidth)) +
                 Character::kCharWidth;
         int y = (rand() % (ofGetWindowHeight() - 3 * Character::kCharHeight)) +
@@ -87,7 +90,6 @@ void ofApp::setupEnemies() {
         for (auto& enemy2 : enemies) {
             if (enemy1.getRect().intersects(enemy2.getRect()) &&
                 enemy1 != enemy2) {
-                enemies.clear();
                 setupEnemies();
                 is_reordered = true;
                 break;
@@ -103,7 +105,7 @@ void ofApp::setupEnemies() {
 void ofApp::update() {
     for (int dir = UP; dir <= RIGHT; dir++) {
         if (move_key_is_pressed[dir]) {
-            moveInDirection(player, dir);
+            player.moveInDirection(dir);
         }
     }
     if (enemies.empty()) {
@@ -178,14 +180,15 @@ void ofApp::drawInfo() {
     ofSetColor(0, 0, 0);
     string gold_gathered = to_string(player.getGold());
     string gold_message = "Gold: " + gold_gathered;
-    string battles_left = to_string(battles_left_);
-    string battle_message = "Battles Left: " + battles_left;
     string exp_gathered = to_string(player.getExp());
     string exp_message = "EXP: " + exp_gathered;
-    info_font->draw(battle_message, ofGetWindowWidth() - 10 * kInfoFontSize,
-                    kInfoFontSize);
+    string battles_left = to_string(battles_left_);
+    string battle_message = "Battles Left: " + battles_left;
     info_font->draw(gold_message, 0, kInfoFontSize);
     info_font->draw(exp_message, 0, 2 * kInfoFontSize);
+    // puts battle_message in top right corner
+    info_font->draw(battle_message, ofGetWindowWidth() - 11 * kInfoFontSize,
+                    kInfoFontSize);
 }
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {

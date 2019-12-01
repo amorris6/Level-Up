@@ -22,7 +22,7 @@ class ofApp : public ofBaseApp {
     const static float kStartCrit;
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
-    constexpr static int kMaxEnemyNum = 50;
+    const static int kMaxEnemyNum = 67;  //get weird malloc error if larger
     const static float kPlayXAdj;
     const static float kPlayYAdj;
     const static float kPlayWidthAdj;
@@ -84,9 +84,9 @@ class ofApp : public ofBaseApp {
         bool mouseIsInside(int mouse_x, int mouse_y);
         void draw();
     };
+    Button* play_button;
 
    public:
-    Button* play_button;
     void setup();
     void update();
     void draw();

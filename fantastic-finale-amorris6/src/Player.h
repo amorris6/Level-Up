@@ -13,7 +13,7 @@ class Player : public Character {
    public:
     ofRectangle getRect();
     ofImage* player_sprite;
-    friend void moveInDirection(Player& player, int direction_index);
+    void moveInDirection(int direction_index);
     Player(float x, float y, int gold, int exp, int atk, int def, int health,
            float crit_chance)
         : Character(x, y, gold, exp, atk, def, health, crit_chance) {
