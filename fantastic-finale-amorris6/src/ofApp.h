@@ -41,6 +41,8 @@ class ofApp : public ofBaseApp {
     const static string kMusicFilePath;
     const static string kFontFilePath;
     const static string kPlayerSpritePath;
+    const static string kSmallFontName;
+    const static string kFontName;
 
     int battles_left_;
     bool move_key_is_pressed[4];

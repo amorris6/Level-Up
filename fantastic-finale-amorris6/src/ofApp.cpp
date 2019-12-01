@@ -20,6 +20,8 @@ const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 const string ofApp::kPlayerSpritePath =
     "C:\\CS 126\\Sprites\\player-sprite.png";
+const string ofApp::kSmallFontName = "Roboto-Black-Small";
+const string ofApp::kFontName = "Roboto-Black";
 list<Enemy> ofApp::enemies = {};
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
@@ -52,10 +54,10 @@ void ofApp::setup() {
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     background_music_player->load(kMusicFilePath);
-    ofxSmartFont::add(kFontFilePath, kButtonFontSize, "Roboto-Black");
-    ofxSmartFont::add(kFontFilePath, kInfoFontSize, "Roboto-Black-Small");
-    button_font = ofxSmartFont::get("Roboto-Black");
-    info_font = ofxSmartFont::get("Roboto-Black-Small");
+    ofxSmartFont::add(kFontFilePath, kButtonFontSize, kFontName);
+    ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
+    button_font = ofxSmartFont::get(kFontName);
+    info_font = ofxSmartFont::get(kSmallFontName);
     play_button = new Button(
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(),
