@@ -72,11 +72,10 @@ void ofApp::setup() {
 void ofApp::setupEnemies() {
     // randomly places the enemies, but makes sure they don't intersect player
     // at start
-    enemies.clear();
     for (int i = 0; i < kMaxEnemyNum; ++i) {
-        int x = (rand() % (ofGetWindowWidth() - 2 * Character::kCharWidth)) +
+        int x = (rand() % (ofGetWindowWidth() - 3 * Character::kCharWidth)) +
                 Character::kCharWidth;
-        int y = (rand() % (ofGetWindowHeight() - 2 * Character::kCharHeight)) +
+        int y = (rand() % (ofGetWindowHeight() - 3 * Character::kCharHeight)) +
                 Character::kCharHeight;
         int gold = rand() % kEnemyMaxGold + 1;
         int exp = kEnemyMaxExp - gold;
@@ -84,11 +83,18 @@ void ofApp::setupEnemies() {
     }
     // makes sure enemies aren't intersecting each other
     for (auto& enemy1 : enemies) {
+        bool is_reordered = false;
         for (auto& enemy2 : enemies) {
             if (enemy1.getRect().intersects(enemy2.getRect()) &&
                 enemy1 != enemy2) {
+                enemies.clear();
                 setupEnemies();
+                is_reordered = true;
+                break;
             }
+        }
+        if (is_reordered) {
+            break;
         }
     }
 }
@@ -171,7 +177,7 @@ void ofApp::drawLvlOne() {
 void ofApp::drawInfo() {
     ofSetColor(0, 0, 0);
     string gold_gathered = to_string(player.getGold());
-    string gold_message = "Gold Gathered: " + gold_gathered;
+    string gold_message = "Gold: " + gold_gathered;
     string battles_left = to_string(battles_left_);
     string battle_message = "Battles Left: " + battles_left;
     string exp_gathered = to_string(player.getExp());
@@ -179,7 +185,7 @@ void ofApp::drawInfo() {
     info_font->draw(battle_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
     info_font->draw(gold_message, 0, kInfoFontSize);
-    info_font->draw(exp_message, kPlayXAdj * ofGetWindowWidth(), kInfoFontSize);
+    info_font->draw(exp_message, 0, 2 * kInfoFontSize);
 }
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {
@@ -203,7 +209,7 @@ void ofApp::drawEnemies() {
                 ofNoFill();
             } else {
                 ofSetColor(kWhite);
-			}
+            }
         }
         ofDrawRectangle(enemy.getRect());
         ofFill();

@@ -7,7 +7,7 @@
 
 class ofApp : public ofBaseApp {
    private:
-    const static int kInitialBattles = 15;
+    const static int kInitialBattles = 150;
     const static int kStartX = 0;
     const static int kStartY = 0;
     const static int kStartGold = 50;
@@ -22,7 +22,7 @@ class ofApp : public ofBaseApp {
     const static float kStartCrit;
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
-    constexpr static int kMaxEnemyNum = 5;
+    constexpr static int kMaxEnemyNum = 50;
     const static float kPlayXAdj;
     const static float kPlayYAdj;
     const static float kPlayWidthAdj;
