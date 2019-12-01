@@ -76,7 +76,10 @@ a friend, but fight() needs to access private things in ofApp and ofApp isn't a 
 Work-around right now is making ofApp (the class?!?) a friend, but I'm not a fan.
 Hopefully can find something better soon. Added stock rpg stats in like atk, def, crit_chance, health.
 Also created player sprite. First off, it's an abomination. Secondly, had to add a ton of magic numbers
-in so that it fits the whole player.rect. Need to add explanatory comments. Also added total exp and
+in so that it fits the whole player.rect. Third, memory problem is gone. Made the sprite an ofImage*.
+Don't delete it despite making a new ofImage. I'm not saying that two wrongs make a right, I'm
+just saying that the evidence is pointing towards that conclusion.
+Need to add explanatory comments. Also added total exp and
 increased exp during "battles"
 
 **11/30/2019**
