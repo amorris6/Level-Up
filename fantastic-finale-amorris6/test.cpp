@@ -66,22 +66,27 @@ int main() {
         cout << "TEST 6 FAILED" << endl;
     }
 
-    // Player Can't Exit Window Right (TEST 7)
+    // Player Can leave Scene Right (TEST 7)
     for (int i = 0; i < 250; ++i) {
         player.moveInDirection(RIGHT);
+        if (player.getPos().x > 
+			ofGetWindowWidth() - (Character::kCharWidth + Character::kMoveSpeed)) {
+            player.moveInDirection(RIGHT);
+			break;
+		}
 	}
-    if (player.getPos().x == ofGetWindowWidth() - Character::kCharWidth 
-		&& player.getPos().y == 0) {
+    if (player.getPos().x == 0 && player.getPos().y == 0) {
         cout << "TEST 7 PASSED" << endl;
     } else {
         cout << "TEST 7 FAILED" << endl;
+        cout << player.getPos().x << endl;
     }
 
     // Player Can't Exit Window Down (TEST 8)
     for (int i = 0; i < 250; ++i) {
         player.moveInDirection(DOWN);
     }
-    if (player.getPos().x == ofGetWindowWidth() - Character::kCharWidth
+    if (player.getPos().x == 0
 		&& player.getPos().y == ofGetWindowHeight() - Character::kCharHeight) {
         cout << "TEST 8 PASSED" << endl;
     } else {

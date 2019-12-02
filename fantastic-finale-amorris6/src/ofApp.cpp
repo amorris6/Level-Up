@@ -22,7 +22,7 @@ const string ofApp::kPlayerSpritePath =
     "C:\\CS 126\\Sprites\\player-sprite.png";
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
-list<Enemy> ofApp::enemies = {};
+list<Resource> ofApp::resources = {};
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
     if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
@@ -50,7 +50,10 @@ void ofApp::setup() {
     ofSetWindowTitle("fantastic-finale-amorris6");
     num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
-    battles_left_ = kInitialBattles;
+    battle_start_ = kStartBattle;
+    battle_chance_ = kFightInit;
+    battle_multiplier_ = 1;
+    energy_left_ = kInitialEnergy;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     background_music_player->load(kMusicFilePath);
@@ -65,32 +68,32 @@ void ofApp::setup() {
     player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
                     kStartDef, kStartHealth, kStartCrit);
     player.player_sprite->load(kPlayerSpritePath);
-    setupEnemies();
+    setupResources();
 }
 
 //--------------------------------------------------------------
-void ofApp::setupEnemies() {
-    enemies.clear();
-	// creates 1-kMaxEnemies enemies
-    int num_enemies = rand() % (kMaxEnemyNum + 1);
-    // randomly places the enemies, but makes sure they don't intersect player
+void ofApp::setupResources() {
+    resources.clear();
+    // creates 1 to kMaxresources resources
+    int num_resources = (rand() % kMaxResourceNum) + 1;
+    // randomly places the resources, but makes sure they don't intersect player
     // at start
-    for (int i = 0; i < num_enemies; ++i) {
+    for (int i = 0; i < num_resources; ++i) {
         int x = (rand() % (ofGetWindowWidth() - 3 * Character::kCharWidth)) +
                 Character::kCharWidth;
         int y = (rand() % (ofGetWindowHeight() - 3 * Character::kCharHeight)) +
                 Character::kCharHeight;
-        int gold = rand() % kEnemyMaxGold + 1;
-        int exp = kEnemyMaxExp - gold;
-        enemies.push_back(Enemy(x, y, gold, exp, 0, 0, 0, 0));
+        int gold = rand() % kResourceMaxGold + 1;
+        int exp = kResourceMaxExp - gold;
+        resources.push_back(Resource(x, y, gold, exp));
     }
-    // makes sure enemies aren't intersecting each other
-    for (auto& enemy1 : enemies) {
+    // makes sure resources aren't intersecting each other
+    for (auto& resource1 : resources) {
         bool is_reordered = false;
-        for (auto& enemy2 : enemies) {
-            if (enemy1.getRect().intersects(enemy2.getRect()) &&
-                enemy1 != enemy2) {
-                setupEnemies();
+        for (auto& resource2 : resources) {
+            if (resource1.getRect().intersects(resource2.getRect()) &&
+                resource1 != resource2) {
+                setupResources();
                 is_reordered = true;
                 break;
             }
@@ -103,37 +106,48 @@ void ofApp::setupEnemies() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    for (int dir = UP; dir <= RIGHT; dir++) {
-        if (move_key_is_pressed[dir]) {
-            player.moveInDirection(dir);
-        }
+    if (battle_start_ < battle_chance_ * battle_multiplier_) {
+        battle_chance_ = kFightInit;
+        battle_start_ = (rand() % 100);
     }
-    if (enemies.empty()) {
-        setupEnemies();
+    if (resources.empty()) {
+        setupResources();
     }
-    fightEnemies();
+    updatePlayerPos();
+    mineResources();
     // TODO: Create arrays of string file paths and ofSoundPlayers, creating
     // a looping soundtrack increment a variable to check times songs
     // switched, or just start playing at track1, instead of track0
     if (background_music_enabled_ && !background_music_player->isPlaying() &&
-        battles_left_ > 0) {
+        energy_left_ > 0) {
         background_music_player->play();
     }
     draw();
 }
+
 //--------------------------------------------------------------
-void ofApp::fightEnemies() {
-    for (auto& enemy : enemies) {
-        if (player.getRect().intersects(enemy.getRect())) {
-            battles_left_--;
-            lvl_num_ = 2;
-            player.gold += enemy.getGold();
-            player.exp += enemy.getExp();
-            num_of_keys_pressed_ = 0;
-            for (int dir = UP; dir <= RIGHT; dir++) {
-                move_key_is_pressed[dir] = false;
-            }
-            enemies.remove(enemy);
+void ofApp::updatePlayerPos() {
+    bool player_is_moving = false;
+    bool battle_chance_inc = false;
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        if (move_key_is_pressed[dir]) {
+            player_is_moving = true;
+            player.moveInDirection(dir);
+        }
+        if (player_is_moving && !battle_chance_inc) {
+            battle_chance_inc = true;
+            battle_chance_++;
+        }
+    }
+}
+//--------------------------------------------------------------
+void ofApp::mineResources() {
+    for (auto& resource : resources) {
+        if (player.getRect().intersects(resource.getRect())) {
+            energy_left_--;
+            player.gold += resource.getGold();
+            player.exp += resource.getExp();
+            resources.remove(resource);
             break;
         }
     }
@@ -141,7 +155,7 @@ void ofApp::fightEnemies() {
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofSetColor(kRed);
-    if (battles_left_ <= 0) {
+    if (energy_left_ <= 0) {
         drawGameOver();
     } else if (lvl_num_ == 0) {
         drawStartingScreen();
@@ -172,7 +186,7 @@ void ofApp::drawLvlOne() {
         ofSetColor(kPurple);
     }
     drawPlayer();
-    drawEnemies();
+    drawResources();
 }
 
 //--------------------------------------------------------------
@@ -182,12 +196,18 @@ void ofApp::drawInfo() {
     string gold_message = "Gold: " + gold_gathered;
     string exp_gathered = to_string(player.getExp());
     string exp_message = "EXP: " + exp_gathered;
-    string battles_left = to_string(battles_left_);
-    string battle_message = "Battles Left: " + battles_left;
+    string energy_left = to_string(energy_left_);
+    string energy_message = "Energy Left: " + energy_left;
+    string battle_chance = to_string(battle_chance_);
+    if (battle_chance_ < 0) {
+        battle_chance = to_string(0);
+	}
+    string battle_message = "Battle Chance: " + battle_chance + "%";
     info_font->draw(gold_message, 0, kInfoFontSize);
     info_font->draw(exp_message, 0, 2 * kInfoFontSize);
-    // puts battle_message in top right corner
-    info_font->draw(battle_message, ofGetWindowWidth() - 11 * kInfoFontSize,
+    info_font->draw(battle_message, 3.0 * ofGetWindowWidth()/ 7.0, kInfoFontSize);
+    // puts energy_message in top right corner
+    info_font->draw(energy_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
 }
 //--------------------------------------------------------------
@@ -201,12 +221,12 @@ void ofApp::drawPlayer() {
 }
 
 //--------------------------------------------------------------
-void ofApp::drawEnemies() {
-    for (auto& enemy : enemies) {
+void ofApp::drawResources() {
+    for (auto& resource : resources) {
         ofSetColor(kBlack);
-        if (enemy.getGold() >= kGoldShinyLim) {
+        if (resource.getGold() >= kGoldShinyLim) {
             ofSetColor(kYellow);
-        } else if (enemy.getExp() >= kExpShinyLim) {
+        } else if (resource.getExp() >= kExpShinyLim) {
             if (ofGetBackgroundColor() == kWhite) {
                 ofSetColor(kBlack);
                 ofNoFill();
@@ -214,7 +234,7 @@ void ofApp::drawEnemies() {
                 ofSetColor(kWhite);
             }
         }
-        ofDrawRectangle(enemy.getRect());
+        ofDrawRectangle(resource.getRect());
         ofFill();
     }
 }

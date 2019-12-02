@@ -2,27 +2,33 @@
 
 #include "Enemy.h"
 #include "Player.h"
+#include "Resource.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
 class ofApp : public ofBaseApp {
    private:
-    const static int kInitialBattles = 150;
+    friend class Player;
+    const static int kInitialEnergy = 25;
+    const static int kStartBattle = 68;
+    const static int kFightInit = -50;
     const static int kStartX = 0;
     const static int kStartY = 0;
     const static int kStartGold = 50;
     const static int kEnemyMaxGold = 100;
-    const static int kGoldShinyLim = 75;
-    const static int kExpShinyLim = 75;
+    const static int kResourceMaxGold = 100;
+    const static int kGoldShinyLim = 85;
+    const static int kExpShinyLim = 85;
     const static int kStartExp = 0;
     const static int kEnemyMaxExp = 100;
+    const static int kResourceMaxExp = 100;
     const static int kStartAtk = 20;
     const static int kStartDef = 10;
     const static int kStartHealth = 100;
     const static float kStartCrit;
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
-    const static int kMaxEnemyNum = 67;  //get weird malloc error if larger
+    const static int kMaxResourceNum = 67;  //get weird malloc error if larger
     const static float kPlayXAdj;
     const static float kPlayYAdj;
     const static float kPlayWidthAdj;
@@ -44,25 +50,28 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
-    int battles_left_;
+	int battle_chance_;
+    int battle_start_;
+    int battle_multiplier_;
+    int energy_left_;
     bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
     int lvl_num_;
-    static list<int> test_list;
     bool background_music_enabled_;
     ofSoundPlayer* background_music_player;
     shared_ptr<ofxSmartFont> button_font;
     shared_ptr<ofxSmartFont> info_font;
     Player player;
-    static list<Enemy> enemies;
+    static list<Resource> resources;
     void drawPlayer();
     void drawStartingScreen();
     void drawGameOver();
     void drawLvlOne();
     void drawInfo();
-    void setupEnemies();
-    void drawEnemies();
-    void fightEnemies();
+    static void setupResources();
+    void drawResources();
+    void mineResources();
+    void updatePlayerPos();
     class Button {
        private:
         float x;

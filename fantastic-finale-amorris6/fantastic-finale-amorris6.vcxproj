@@ -199,6 +199,7 @@
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxSliderGroup.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxToggle.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.cpp" />
+    <ClCompile Include="src\Resource.cpp" />
     <ClCompile Include="test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
@@ -225,6 +226,7 @@
     <ClInclude Include="..\..\..\..\addons\ofxGui\src\ofxToggle.h" />
     <ClInclude Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.h" />
     <ClInclude Include="..\..\..\..\addons\ofxUnitTests\src\ofxUnitTests.h" />
+    <ClInclude Include="src\Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

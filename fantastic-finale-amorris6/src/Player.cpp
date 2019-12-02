@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "ofApp.h"
 
 ofRectangle Player::getRect() {
 	//width/2 fits the player sprite
@@ -66,8 +67,8 @@ void Player::moveInDirection(int direction_index) {
             if (canMoveInDirection(RIGHT)) {
                 position.x += Character::kMoveSpeed;
             } else {
-                position.x =
-                    (int)ofGetWindowWidth() - Character::kCharWidth;
+                position.x = 0;
+                ofApp::setupResources();
             }
             break;
     }
