@@ -23,6 +23,7 @@ const string ofApp::kPlayerSpritePath =
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
+int ofApp::lvl_num_ = 0;
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
     if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
@@ -51,8 +52,9 @@ void ofApp::setup() {
     num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
     battle_start_ = kStartBattle;
-    battle_chance_ = kFightInit;
-    battle_multiplier_ = 1;
+    battle_multiplier_ = 1.0 / 4.0;
+    battle_chance_ = kFightInit * 1 / (battle_multiplier_);
+    player_fighting_ = false;
     energy_left_ = kInitialEnergy;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
@@ -107,11 +109,10 @@ void ofApp::setupResources() {
 //--------------------------------------------------------------
 void ofApp::update() {
     if (battle_start_ < battle_chance_ * battle_multiplier_) {
-        battle_chance_ = kFightInit;
+        battle_chance_ = kFightInit * 1 / (battle_multiplier_);
         battle_start_ = (rand() % 100);
-    }
-    if (resources.empty()) {
-        setupResources();
+        player_fighting_ = true;
+        fightEnemy();
     }
     updatePlayerPos();
     mineResources();
@@ -140,6 +141,26 @@ void ofApp::updatePlayerPos() {
         }
     }
 }
+
+//--------------------------------------------------------------
+void ofApp::fightEnemy() {
+    energy_left_ -= kEnergyBattle;
+    // TODO: Create fight mechanics
+    if (rand() % 100 < kLoseChance) {
+        energy_left_ -= kEnergyBattleLost;
+    }
+    // TODO: while fight is ongoing call draw function
+    draw();
+	// end of while loop, fight is over
+    player_fighting_ = false;
+}
+
+//--------------------------------------------------------------
+void ofApp::drawFight() {
+    ofBackground(kBlack);
+    ofDrawRectangle(100, 100, 100, 100);
+}
+
 //--------------------------------------------------------------
 void ofApp::mineResources() {
     for (auto& resource : resources) {
@@ -159,8 +180,10 @@ void ofApp::draw() {
         drawGameOver();
     } else if (lvl_num_ == 0) {
         drawStartingScreen();
+    } else if (player_fighting_) {
+        drawFight();
     } else {
-        drawLvlOne();
+        drawWorld();
     }
 }
 
@@ -178,7 +201,8 @@ void ofApp::drawGameOver() {
 void ofApp::drawStartingScreen() { play_button->draw(); }
 
 //--------------------------------------------------------------
-void ofApp::drawLvlOne() {
+void ofApp::drawWorld() {
+    ofBackground(kWhite);
     drawInfo();
     if (num_of_keys_pressed_ != 0) {
         ofSetColor(kRed);
@@ -198,14 +222,20 @@ void ofApp::drawInfo() {
     string exp_message = "EXP: " + exp_gathered;
     string energy_left = to_string(energy_left_);
     string energy_message = "Energy Left: " + energy_left;
-    string battle_chance = to_string(battle_chance_);
+    string lvl_num = to_string(lvl_num_);
+    string lvl_message = "LEVEL: " + lvl_num;
+    string battle_chance =
+        to_string((int)(battle_chance_ * battle_multiplier_));
     if (battle_chance_ < 0) {
         battle_chance = to_string(0);
-	}
+    }
     string battle_message = "Battle Chance: " + battle_chance + "%";
     info_font->draw(gold_message, 0, kInfoFontSize);
     info_font->draw(exp_message, 0, 2 * kInfoFontSize);
-    info_font->draw(battle_message, 3.0 * ofGetWindowWidth()/ 7.0, kInfoFontSize);
+    info_font->draw(lvl_message, 3.0 * ofGetWindowWidth() / 7.0,
+                    3.0 * ofGetWindowHeight() / 7.0);
+    info_font->draw(battle_message, 3.0 * ofGetWindowWidth() / 7.0,
+                    kInfoFontSize);
     // puts energy_message in top right corner
     info_font->draw(energy_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
@@ -241,7 +271,7 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    if (lvl_num_ == 0) {
+    if (lvl_num_ == 0 || player_fighting_) {
         return;
     }
     int upper_key = toupper(key);
@@ -275,7 +305,7 @@ void ofApp::keyPressed(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    if (lvl_num_ == 0) {
+    if (lvl_num_ == 0 || player_fighting_) {
         return;
     }
     int upper_key = toupper(key);

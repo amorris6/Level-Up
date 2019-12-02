@@ -10,8 +10,11 @@ class ofApp : public ofBaseApp {
    private:
     friend class Player;
     const static int kInitialEnergy = 25;
+    const static int kEnergyBattle = 2;
+    const static int kEnergyBattleLost = 3;
+    const static int kLoseChance = 40;
     const static int kStartBattle = 68;
-    const static int kFightInit = -50;
+    const static int kFightInit = -20;
     const static int kStartX = 0;
     const static int kStartY = 0;
     const static int kStartGold = 50;
@@ -52,11 +55,12 @@ class ofApp : public ofBaseApp {
 
 	int battle_chance_;
     int battle_start_;
-    int battle_multiplier_;
+    bool player_fighting_;
+    float battle_multiplier_;
     int energy_left_;
     bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
-    int lvl_num_;
+    static int lvl_num_;
     bool background_music_enabled_;
     ofSoundPlayer* background_music_player;
     shared_ptr<ofxSmartFont> button_font;
@@ -66,12 +70,14 @@ class ofApp : public ofBaseApp {
     void drawPlayer();
     void drawStartingScreen();
     void drawGameOver();
-    void drawLvlOne();
+    void drawWorld();
     void drawInfo();
     static void setupResources();
     void drawResources();
     void mineResources();
     void updatePlayerPos();
+    void fightEnemy();
+    void drawFight();
     class Button {
        private:
         float x;
