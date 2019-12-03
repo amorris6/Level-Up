@@ -10,7 +10,7 @@
 class ofApp : public ofBaseApp {
    private:
     friend class Player;
-    const static int kInitialEnergy = 25;
+    const static int kInitialEnergy = 10;
     const static int kEnergyBattle = 2;
     const static int kEnergyBattleLost = 3;
     const static int kLoseChance = 40;
@@ -38,8 +38,8 @@ class ofApp : public ofBaseApp {
     const static int kEnemyMinAtk = 40;
     const static int kEnemyMaxDef = 50;
     const static int kEnemyMinDef = 30;
-    const static int kEnemyMaxHp = 250;
-    const static int kEnemyMinHp = 175;
+    const static int kEnemyMaxHp = 200;
+    const static int kEnemyMinHp = 130;
     const static int kResourceMaxExp = 50;
     const static int kResourceMaxGold = 50;
     const static int kGoldShinyLim = 40;
@@ -57,8 +57,11 @@ class ofApp : public ofBaseApp {
     const static float kPlayWidthAdj;
     const static float kPlayHeightAdj;
     const static string kPlayLabel;
-    const static float ofApp::kPlayLabelXAdj;
-    const static float ofApp::kPlayLabelYAdj;
+    const static string kRestartLabel;
+    const static string kStoreLabel;
+    const static string kBackLabel;
+    const static string kInventoryLabel;
+    const static float ofApp::kLabelYAdj;
     const static ofColor kWhite;
     const static ofColor kBlack;
     const static ofColor kGrayClear;
@@ -68,6 +71,7 @@ class ofApp : public ofBaseApp {
     const static ofColor kPurple;
     const static ofColor kYellow;
     const static ofColor kSkin;
+    const static ofColor kTan;
     const static string kMusicFilePath;
     const static string kFontFilePath;
     const static string kPlayerSpritePath;
@@ -87,6 +91,8 @@ class ofApp : public ofBaseApp {
     int enemy_fight_x_;
     int energy_left_;
     int max_health_;
+    bool store_is_open_;
+    bool inventory_is_open_;
     bool move_key_is_pressed[4];
     static int lvl_num_;
     bool background_music_enabled_;
@@ -96,9 +102,14 @@ class ofApp : public ofBaseApp {
     Player player;
     Enemy enemy;
     static list<Resource> resources;
+    void setupButtons();
     void drawPlayer();
     void drawStartingScreen();
     void drawGameOver();
+    void openStore();
+    void drawStore();
+    void openInventory();
+    void drawInventory();
     void drawWorld();
     void drawInfo();
     static void setupResources();
@@ -135,6 +146,10 @@ class ofApp : public ofBaseApp {
         void draw();
     };
     Button* play_button;
+    Button* restart_button;
+    Button* store_button;
+    Button* inventory_button;
+    Button* back_button;
 
    public:
     void setup();

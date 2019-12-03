@@ -4,11 +4,14 @@ const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kInitBattleMult = 0.25;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
 const float ofApp::kPlayYAdj = 3.0 / 7.0;
-const float ofApp::kPlayWidthAdj = 0.125;
+const float ofApp::kPlayWidthAdj = 0.1;
 const float ofApp::kPlayHeightAdj = 0.125;
 const string ofApp::kPlayLabel = "PLAY";
-const float ofApp::kPlayLabelXAdj = 0.01;
-const float ofApp::kPlayLabelYAdj = 0.5;
+const string ofApp::kRestartLabel = "RESTART";
+const string ofApp::kStoreLabel = "STORE";
+const string ofApp::kInventoryLabel = "INVENTORY";
+const string ofApp::kBackLabel = "BACK";
+const float ofApp::kLabelYAdj = 0.5;
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
 const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
@@ -18,6 +21,7 @@ const ofColor ofApp::kBlue = ofColor(0, 0, 255);
 const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const ofColor ofApp::kYellow = ofColor(255, 255, 0);
 const ofColor ofApp::kSkin = ofColor(255, 220, 8);
+const ofColor ofApp::kTan = ofColor(210, 180, 140);
 const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 const string ofApp::kPlayerSpritePath =
@@ -37,13 +41,9 @@ bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
 
 //--------------------------------------------------------------
 void ofApp::Button::draw() {
-    ofBackground(kWhite);
-    ofSetColor(kBlack);
     ofNoFill();
     ofDrawRectangle(x, y, width, height);
-    ofSetColor(kBlack);
-    label_font.draw(label, x + kPlayLabelXAdj * ofGetWindowWidth(),
-                    y + height * kPlayLabelYAdj);
+    label_font.draw(label, x, y + (height + kButtonFontSize) * kLabelYAdj);
     ofFill();
 }
 
@@ -63,6 +63,8 @@ void ofApp::setup() {
     enemy_fight_x_ = 0;
     atk_damage_ = 0;
     energy_left_ = kInitialEnergy;
+    store_is_open_ = false;
+    inventory_is_open_ = false;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     background_music_player->load(kMusicFilePath);
@@ -70,17 +72,34 @@ void ofApp::setup() {
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
-    play_button = new Button(
-        kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
-        kPlayWidthAdj * ofGetWindowWidth(),
-        kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
-    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
-                    kStartDef, kStartHealth, kStartCrit);
+    setupButtons();
     max_health_ = kStartHealth;
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
 }
 
+//--------------------------------------------------------------
+void ofApp::setupButtons() {
+    play_button = new Button(kPlayXAdj * ofGetWindowWidth(),
+                             kPlayYAdj * ofGetWindowHeight(),
+                             kPlayWidthAdj * ofGetWindowWidth(),
+                             kButtonFontSize, kPlayLabel, *button_font);
+    restart_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                                kPlayYAdj * ofGetWindowHeight() + 50,
+                                kPlayWidthAdj * ofGetWindowWidth() + 60,
+                                kButtonFontSize, kRestartLabel, *button_font);
+    store_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                              kPlayYAdj * ofGetWindowHeight() + 100,
+                              kPlayWidthAdj * ofGetWindowWidth() + 60,
+                              kButtonFontSize, kStoreLabel, *button_font);
+    inventory_button = new Button(0, ofGetWindowHeight() - (kButtonFontSize),
+                                  kButtonFontSize + 100, kButtonFontSize,
+                                  kInventoryLabel, *info_font);
+    back_button = new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
+                             kInfoFontSize + 15, kBackLabel, *info_font);
+    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
+                    kStartDef, kStartHealth, kStartCrit);
+}
 //--------------------------------------------------------------
 void ofApp::setupResources() {
     resources.clear();
@@ -121,6 +140,9 @@ void ofApp::update() {
         battle_start_ = (rand() % 100);
         player_is_fighting_ = true;
     }
+    if (energy_left_ <= 0) {
+        player_is_fighting_ = false;
+    }
     if (player_is_fighting_) {
         battleEnemy();
     }
@@ -129,8 +151,8 @@ void ofApp::update() {
     // TODO: Create arrays of string file paths and ofSoundPlayers, creating
     // a looping soundtrack increment a variable to check times songs
     // switched, or just start playing at track1, instead of track0
-    if (background_music_enabled_ && !background_music_player->isPlaying() &&
-        energy_left_ > 0) {
+    if (energy_left_ > 0 && background_music_enabled_ &&
+        !background_music_player->isPlaying()) {
         background_music_player->play();
     }
 }
@@ -160,8 +182,8 @@ void ofApp::battleEnemy() {
     } else {
         turns_fought_++;
         is_crit_hit_ = false;
-        checkBattleEnded(); //called before takeBattleTurn, 
-		                    //so battle can be drawn when hp = 0
+        checkBattleEnded();  // called before takeBattleTurn,
+                             // so battle can be drawn when hp = 0
         takeBattleTurn();
     }
 }
@@ -169,7 +191,6 @@ void ofApp::battleEnemy() {
 //-------------------------------------------------------------
 void ofApp::checkBattleEnded() {
     if (enemy.getHealth() <= 0) {
-        energy_left_ -= kEnergyBattle;
         player_is_fighting_ = false;
         fight_is_init_ = false;
         player.health = max_health_;
@@ -179,7 +200,6 @@ void ofApp::checkBattleEnded() {
         turns_fought_ = 0;
     }
     if (player.getHealth() <= 0) {
-        energy_left_ -= kEnergyBattle;
         energy_left_ -= kEnergyBattleLost;
         is_player_atk_turn_ = true;
         player_is_fighting_ = false;
@@ -187,25 +207,25 @@ void ofApp::checkBattleEnded() {
         player.health = max_health_;
         turns_fought_ = 0;
     }
-}  
+}
 //-------------------------------------------------------------
 void ofApp::takeBattleTurn() {
     if (is_player_atk_turn_) {
         int player_atk = player.getAtk();
         if (rand() % 100 <= player.getCrit()) {
-            player_atk *= kInitCritMult * crit_mult_;
+            player_atk *= (kInitCritMult * crit_mult_);
             is_crit_hit_ = true;
         }
-        atk_damage_ = player_atk - enemy.getDef();
-        enemy.health -= player.getAtk();
+        atk_damage_ = max(player_atk - enemy.getDef(), lvl_num_);
+        enemy.health -= atk_damage_;
     } else {
         int enemy_atk = enemy.getAtk();
         if (rand() % 100 <= enemy.getCrit()) {
             enemy_atk *= kInitCritMult;
             is_crit_hit_ = true;
         }
-        atk_damage_ = enemy_atk - enemy.getDef();
-        player.health -= enemy.getAtk();
+        atk_damage_ = max(enemy_atk - player.getDef(), lvl_num_);
+        player.health -= atk_damage_;
     }
 }
 
@@ -214,16 +234,18 @@ void ofApp::setupBattle() {
     for (int dir = UP; dir <= RIGHT; dir++) {
         move_key_is_pressed[dir] = false;
     }
-	//keeping lvl_num_ inside allows for larger range of rand() % numbers,
-	//otherwise numbers would just be divisible by lvl_num_
+    // keeping lvl_num_ inside allows for larger range of rand() % numbers,
+    // otherwise numbers would just be divisible by lvl_num_
     int gold = max(rand() % kEnemyMaxGold * lvl_num_, kEnemyMinGold * lvl_num_);
-    int exp = max((kEnemyMaxExp * lvl_num_ - gold * lvl_num_), kEnemyMinExp * lvl_num_);
+    int exp = max((kEnemyMaxExp * lvl_num_ - gold * lvl_num_),
+                  kEnemyMinExp * lvl_num_);
     int atk = max(rand() % kEnemyMaxAtk * lvl_num_, kEnemyMinAtk * lvl_num_);
     int def = max(rand() % kEnemyMaxDef * lvl_num_, kEnemyMinDef * lvl_num_);
     int hp = max(rand() % kEnemyMaxHp * lvl_num_, kEnemyMinHp * lvl_num_);
     int crit = 2 * kStartCrit;
     enemy = Enemy(0, 0, gold, exp, atk, def, hp, crit);
     fight_is_init_ = true;
+    energy_left_ -= kEnergyBattle;
 }
 //--------------------------------------------------------------
 void ofApp::mineResources() {
@@ -242,6 +264,10 @@ void ofApp::draw() {
     ofSetColor(kRed);
     if (player_is_fighting_) {
         drawBattle();
+    } else if (store_is_open_) {
+        drawStore();
+    } else if (inventory_is_open_) {
+        drawInventory();
     } else if (energy_left_ <= 0) {
         drawGameOver();
     } else if (lvl_num_ == 0) {
@@ -253,19 +279,29 @@ void ofApp::draw() {
 
 //--------------------------------------------------------------
 void ofApp::drawGameOver() {
+    if (background_music_player->isPlaying()) {
+        background_music_player->stop();
+    }
     ofBackground(kBlack);
     ofSetColor(kWhite);
     string game_over_msg = "GAME OVER!";
     ofSetWindowTitle(game_over_msg);
     button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
                       kPlayYAdj * ofGetWindowHeight());
+    restart_button->draw();
+    store_button->draw();
 }
 
 //--------------------------------------------------------------
-void ofApp::drawStartingScreen() { play_button->draw(); }
+void ofApp::drawStartingScreen() {
+    ofBackground(kWhite);
+    ofSetColor(kBlack);
+    play_button->draw();
+}
 
 //--------------------------------------------------------------
 void ofApp::drawWorld() {
+    ofSetWindowTitle("fantanstic-finale-amorris6");
     ofBackground(kWhite);
     drawInfo();
     drawPlayer();
@@ -359,6 +395,7 @@ void ofApp::drawInfo() {
     // puts energy_message in top right corner
     info_font->draw(energy_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
+    inventory_button->draw();
 }
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {
@@ -391,7 +428,7 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    if (lvl_num_ == 0 || player_is_fighting_) {
+    if (lvl_num_ == 0 || player_is_fighting_ || store_is_open_) {
         return;
     }
     int upper_key = toupper(key);
@@ -421,7 +458,7 @@ void ofApp::keyPressed(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    if (lvl_num_ == 0 || player_is_fighting_) {
+    if (lvl_num_ == 0 || player_is_fighting_ || store_is_open_) {
         return;
     }
     int upper_key = toupper(key);
@@ -443,7 +480,53 @@ void ofApp::keyReleased(int key) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-    if (lvl_num_ == 0 && play_button->mouseIsInside(x, y)) {
+    if (lvl_num_ == 0 && play_button != nullptr &&
+        play_button->mouseIsInside(x, y)) {
         lvl_num_++;
+        delete (play_button);
+    } else if (energy_left_ <= 0 && restart_button->mouseIsInside(x, y)) {
+        setup();
+    } else if (energy_left_ <= 0 && store_button->mouseIsInside(x, y) &&
+               !store_is_open_) {
+        openStore();
+    } else if (back_button->mouseIsInside(x, y) && store_is_open_) {
+        store_is_open_ = false;
+    } else if (!inventory_is_open_ && inventory_button->mouseIsInside(x, y)) {
+        openInventory();
+    } else if (back_button->mouseIsInside(x, y) && inventory_is_open_) {
+        inventory_is_open_ = false;
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::openInventory() {
+    ofSetWindowTitle("INVENTORY");
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        move_key_is_pressed[dir] = false;
+    }
+    inventory_is_open_ = true;
+    drawInventory();
+}
+
+//-------------------------------------------------------------
+void ofApp::drawInventory() {
+    ofBackground(kTan);
+    ofSetColor(kBlack);
+    back_button->draw();
+}
+//--------------------------------------------------------------
+void ofApp::openStore() {
+    ofSetWindowTitle("STORE");
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        move_key_is_pressed[dir] = false;
+    }
+    store_is_open_ = true;
+    drawStore();
+}
+
+//-------------------------------------------------------------
+void ofApp::drawStore() {
+    ofBackground(kTan);
+    ofSetColor(kBlack);
+    back_button->draw();
 }
