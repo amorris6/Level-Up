@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdlib.h>
 #include "Enemy.h"
 #include "Player.h"
 #include "Resource.h"
@@ -15,6 +16,17 @@ class ofApp : public ofBaseApp {
     const static int kLoseChance = 40;
     const static int kStartBattle = 68;
     const static int kFightInit = -20;
+    const static int kPlayerFightX = 50;
+    const static int kPlayerFightY = 50;
+    const static int kPlayerFightWidth = Character::kCharWidth + 100;
+    const static int kPlayerFightHeight = Character::kCharHeight + 100;
+    const static int kEnemyFightY = 100;
+    const static int kEnemyFightWidth = 100;
+    const static int kEnemyFightHeight = 100;
+    const static int kEnemyAdjX = 300;
+    const static float kInitBattleMult;
+    const static float kInitCritMult;
+    const static int kStageLvlChange = 10;
     const static int kStartX = 0;
     const static int kStartY = 0;
     const static int kStartGold = 50;
@@ -25,13 +37,13 @@ class ofApp : public ofBaseApp {
     const static int kStartExp = 0;
     const static int kEnemyMaxExp = 100;
     const static int kResourceMaxExp = 100;
-    const static int kStartAtk = 20;
+    const static int kStartAtk = 80;
     const static int kStartDef = 10;
-    const static int kStartHealth = 100;
+    const static int kStartHealth = 400;
     const static float kStartCrit;
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
-    const static int kMaxResourceNum = 67;  //get weird malloc error if larger
+    const static int kMaxResourceNum = 67;  // get weird malloc error if larger
     const static float kPlayXAdj;
     const static float kPlayYAdj;
     const static float kPlayWidthAdj;
@@ -41,6 +53,7 @@ class ofApp : public ofBaseApp {
     const static float ofApp::kPlayLabelYAdj;
     const static ofColor kWhite;
     const static ofColor kBlack;
+    const static ofColor kGrayClear;
     const static ofColor kRed;
     const static ofColor kBlue;
     const static ofColor kGreen;
@@ -53,11 +66,16 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
-	int battle_chance_;
+    int battle_chance_;
+    bool fight_is_init_;
     int battle_start_;
-    bool player_fighting_;
+    bool player_is_fighting_;
+    bool is_player_atk_turn_;
+    bool is_crit_hit_;
     float battle_multiplier_;
+    int enemy_fight_x_;
     int energy_left_;
+    int max_health_;
     bool move_key_is_pressed[4];
     int num_of_keys_pressed_;
     static int lvl_num_;
@@ -66,6 +84,7 @@ class ofApp : public ofBaseApp {
     shared_ptr<ofxSmartFont> button_font;
     shared_ptr<ofxSmartFont> info_font;
     Player player;
+    Enemy enemy;
     static list<Resource> resources;
     void drawPlayer();
     void drawStartingScreen();
@@ -77,7 +96,10 @@ class ofApp : public ofBaseApp {
     void mineResources();
     void updatePlayerPos();
     void fightEnemy();
+    void setupFight();
     void drawFight();
+    void drawFightInfo();
+    void drawWinBattleInfo();
     class Button {
        private:
         float x;
@@ -108,13 +130,5 @@ class ofApp : public ofBaseApp {
 
     void keyPressed(int key);
     void keyReleased(int key);
-    void mouseMoved(int x, int y);
-    void mouseDragged(int x, int y, int button);
     void mousePressed(int x, int y, int button);
-    void mouseReleased(int x, int y, int button);
-    void mouseEntered(int x, int y);
-    void mouseExited(int x, int y);
-    void windowResized(int w, int h);
-    void dragEvent(ofDragInfo dragInfo);
-    void gotMessage(ofMessage msg);
 };

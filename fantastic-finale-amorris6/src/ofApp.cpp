@@ -1,21 +1,24 @@
 #include "ofApp.h"
 
 const float ofApp::kStartCrit = 0.1;
+const float ofApp::kInitCritMult = 1.75;
+const float ofApp::kInitBattleMult = 0.25;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
 const float ofApp::kPlayYAdj = 3.0 / 7.0;
-const float ofApp::kPlayWidthAdj = 1.0 / 8.0;
-const float ofApp::kPlayHeightAdj = 1.0 / 8.0;
+const float ofApp::kPlayWidthAdj = 0.125;
+const float ofApp::kPlayHeightAdj = 0.125;
 const string ofApp::kPlayLabel = "PLAY";
-const float ofApp::kPlayLabelXAdj = 1 / 100.0;
-const float ofApp::kPlayLabelYAdj = 1 / 2.0;
+const float ofApp::kPlayLabelXAdj = 0.01;
+const float ofApp::kPlayLabelYAdj = 0.5;
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
+const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
 const ofColor ofApp::kRed = ofColor(255, 0, 0);
 const ofColor ofApp::kGreen = ofColor(0, 255, 0);
 const ofColor ofApp::kBlue = ofColor(0, 0, 255);
 const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const ofColor ofApp::kYellow = ofColor(255, 255, 0);
-const ofColor ofApp::kSkin = ofColor(255, 220, 178);
+const ofColor ofApp::kSkin = ofColor(255, 220, 8);
 const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 const string ofApp::kPlayerSpritePath =
@@ -52,9 +55,11 @@ void ofApp::setup() {
     num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
     battle_start_ = kStartBattle;
-    battle_multiplier_ = 1.0 / 4.0;
+    fight_is_init_ = false;
+    is_player_atk_turn_ = true;
+    battle_multiplier_ = kInitBattleMult;
     battle_chance_ = kFightInit * 1 / (battle_multiplier_);
-    player_fighting_ = false;
+    player_is_fighting_ = false;
     energy_left_ = kInitialEnergy;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
@@ -69,6 +74,7 @@ void ofApp::setup() {
         kPlayHeightAdj * ofGetWindowHeight(), kPlayLabel, *button_font);
     player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
                     kStartDef, kStartHealth, kStartCrit);
+    max_health_ = kStartHealth;
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
 }
@@ -111,7 +117,9 @@ void ofApp::update() {
     if (battle_start_ < battle_chance_ * battle_multiplier_) {
         battle_chance_ = kFightInit * 1 / (battle_multiplier_);
         battle_start_ = (rand() % 100);
-        player_fighting_ = true;
+        player_is_fighting_ = true;
+    }
+    if (player_is_fighting_) {
         fightEnemy();
     }
     updatePlayerPos();
@@ -123,7 +131,6 @@ void ofApp::update() {
         energy_left_ > 0) {
         background_music_player->play();
     }
-    draw();
 }
 
 //--------------------------------------------------------------
@@ -144,23 +151,40 @@ void ofApp::updatePlayerPos() {
 
 //--------------------------------------------------------------
 void ofApp::fightEnemy() {
-    energy_left_ -= kEnergyBattle;
-    // TODO: Create fight mechanics
-    if (rand() % 100 < kLoseChance) {
-        energy_left_ -= kEnergyBattleLost;
+    if (!fight_is_init_) {
+        setupFight();
+        // TODO: Create fight mechanics
+    } else {
+        Sleep(5000);
     }
-    // TODO: while fight is ongoing call draw function
-    draw();
-	// end of while loop, fight is over
-    player_fighting_ = false;
+    if (enemy.getHealth() <= 0) {
+        player_is_fighting_ = false;
+        fight_is_init_ = false;
+        player.health = max_health_;
+        player.exp += enemy.getExp();
+        player.gold += enemy.getGold();
+        is_player_atk_turn_ = true;
+    }
+    if (player.getHealth() <= 0) {
+        energy_left_ -= kEnergyBattleLost;
+        is_player_atk_turn_ = true;
+    }
+    if (is_player_atk_turn_) {
+        enemy.health -= player.getAtk();
+    } else {
+        player.health -= enemy.getAtk();
+    }
 }
 
-//--------------------------------------------------------------
-void ofApp::drawFight() {
-    ofBackground(kBlack);
-    ofDrawRectangle(100, 100, 100, 100);
+//-------------------------------------------------------------
+void ofApp::setupFight() {
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        move_key_is_pressed[dir] = false;
+    }
+    enemy = Enemy(0, 0, 20, 30, 70, 40, 400, 2 * kStartCrit);
+    fight_is_init_ = true;
+    energy_left_ -= kEnergyBattle;
 }
-
 //--------------------------------------------------------------
 void ofApp::mineResources() {
     for (auto& resource : resources) {
@@ -180,7 +204,7 @@ void ofApp::draw() {
         drawGameOver();
     } else if (lvl_num_ == 0) {
         drawStartingScreen();
-    } else if (player_fighting_) {
+    } else if (player_is_fighting_) {
         drawFight();
     } else {
         drawWorld();
@@ -212,6 +236,61 @@ void ofApp::drawWorld() {
     drawPlayer();
     drawResources();
 }
+
+//--------------------------------------------------------------
+void ofApp::drawFight() {
+    ofBackground(kGrayClear);
+    ofSetColor(kSkin);
+    player.player_sprite->draw(kPlayerFightX, kPlayerFightY,
+                               kPlayerFightX + kPlayerFightWidth,
+                               kPlayerFightY + kPlayerFightHeight);
+    int enemy_fight_x = ofGetWindowWidth() - kEnemyAdjX;
+    ofDrawRectangle(enemy_fight_x, kEnemyFightY, kEnemyFightWidth,
+                    kEnemyFightHeight);
+    ofSetColor(kWhite);
+    if (is_player_atk_turn_) {
+        ofDrawLine(enemy_fight_x, kEnemyFightY,
+                   enemy_fight_x + kEnemyFightWidth,
+                   kEnemyFightY + kEnemyFightHeight);
+    } else {
+        ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
+                   kPlayerFightX + kPlayerFightWidth + 20,
+                   kPlayerFightY + kPlayerFightHeight + 30);
+    }
+    drawFightInfo();
+    is_player_atk_turn_ = !is_player_atk_turn_;
+}
+
+//--------------------------------------------------------------
+void ofApp::drawFightInfo() {
+    string player_hp = to_string(player.getHealth());
+    if (player.getHealth() < 0) {
+        player_hp = to_string(0);
+    }
+    string enemy_hp = to_string(enemy.getHealth());
+    if (enemy.getHealth() <= 0) {
+        enemy_hp = to_string(0);
+        drawWinBattleInfo();
+        Sleep(1000);
+    }
+    string player_hp_message = "HP: " + player_hp;
+    string enemy_hp_message = "HP: " + enemy_hp;
+    info_font->draw(player_hp_message, kPlayerFightX + 40, kPlayerFightY + 40);
+    int enemy_fight_x = ofGetWindowWidth() - kEnemyAdjX;
+    info_font->draw(enemy_hp_message, enemy_fight_x + 10, kEnemyFightY - 20);
+}
+
+//--------------------------------------------------------------
+void ofApp::drawWinBattleInfo() {
+    string enemy_gold = to_string(enemy.getGold());
+    string enemy_exp = to_string(enemy.getExp());
+    string gold_message = "YOU GOT " + enemy_gold + " GOLD!";
+    string exp_message = "YOU GOT " + enemy_exp + " EXP!";
+    info_font->draw(gold_message, 3.0 * ofGetWindowWidth() / 7.0,
+                    ofGetWindowHeight() - 2 * kInfoFontSize);
+    info_font->draw(exp_message, 3.0 * ofGetWindowWidth() / 7.0,
+                    ofGetWindowHeight() - kInfoFontSize);
+}  
 
 //--------------------------------------------------------------
 void ofApp::drawInfo() {
@@ -271,7 +350,7 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    if (lvl_num_ == 0 || player_fighting_) {
+    if (lvl_num_ == 0 || player_is_fighting_) {
         return;
     }
     int upper_key = toupper(key);
@@ -305,7 +384,7 @@ void ofApp::keyPressed(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    if (lvl_num_ == 0 || player_fighting_) {
+    if (lvl_num_ == 0 || player_is_fighting_) {
         return;
     }
     int upper_key = toupper(key);
@@ -330,32 +409,8 @@ void ofApp::keyReleased(int key) {
 }
 
 //--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y) {}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button) {}
-
-//--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
     if (lvl_num_ == 0 && play_button->mouseIsInside(x, y)) {
         lvl_num_++;
     }
 }
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button) {}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y) {}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y) {}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h) {}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg) {}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo) {}

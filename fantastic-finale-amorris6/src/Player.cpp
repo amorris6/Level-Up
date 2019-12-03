@@ -69,7 +69,7 @@ void Player::moveInDirection(int direction_index) {
             } else {
                 position.x = 0;
                 ofApp::setupResources();
-                ofApp::lvl_num_++;
+                ofApp::lvl_num_ += ofApp::kStageLvlChange;
             }
             break;
     }
