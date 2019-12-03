@@ -1,6 +1,5 @@
 #include "ofApp.h"
 
-const float ofApp::kStartCrit = 0.1;
 const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kInitBattleMult = 0.25;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
@@ -52,14 +51,17 @@ void ofApp::Button::draw() {
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle("fantastic-finale-amorris6");
-    num_of_keys_pressed_ = 0;
     lvl_num_ = 0;
     battle_start_ = kStartBattle;
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
+    turns_fought_ = 0;
     battle_multiplier_ = kInitBattleMult;
+    crit_mult_ = 1.0;
     battle_chance_ = kFightInit * 1 / (battle_multiplier_);
     player_is_fighting_ = false;
+    enemy_fight_x_ = 0;
+    atk_damage_ = 0;
     energy_left_ = kInitialEnergy;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
@@ -120,7 +122,7 @@ void ofApp::update() {
         player_is_fighting_ = true;
     }
     if (player_is_fighting_) {
-        fightEnemy();
+        battleEnemy();
     }
     updatePlayerPos();
     mineResources();
@@ -150,40 +152,78 @@ void ofApp::updatePlayerPos() {
 }
 
 //--------------------------------------------------------------
-void ofApp::fightEnemy() {
+void ofApp::battleEnemy() {
+    Sleep(1000);
     if (!fight_is_init_) {
-        setupFight();
-        // TODO: Create fight mechanics
+        setupBattle();
+        fight_is_init_ = true;
     } else {
-        Sleep(5000);
+        turns_fought_++;
+        is_crit_hit_ = false;
+        checkBattleEnded(); //called before takeBattleTurn, 
+		                    //so battle can be drawn when hp = 0
+        takeBattleTurn();
     }
+}
+
+//-------------------------------------------------------------
+void ofApp::checkBattleEnded() {
     if (enemy.getHealth() <= 0) {
+        energy_left_ -= kEnergyBattle;
         player_is_fighting_ = false;
         fight_is_init_ = false;
         player.health = max_health_;
         player.exp += enemy.getExp();
         player.gold += enemy.getGold();
         is_player_atk_turn_ = true;
+        turns_fought_ = 0;
     }
     if (player.getHealth() <= 0) {
+        energy_left_ -= kEnergyBattle;
         energy_left_ -= kEnergyBattleLost;
         is_player_atk_turn_ = true;
+        player_is_fighting_ = false;
+        fight_is_init_ = false;
+        player.health = max_health_;
+        turns_fought_ = 0;
     }
+}  
+//-------------------------------------------------------------
+void ofApp::takeBattleTurn() {
     if (is_player_atk_turn_) {
+        int player_atk = player.getAtk();
+        if (rand() % 100 <= player.getCrit()) {
+            player_atk *= kInitCritMult * crit_mult_;
+            is_crit_hit_ = true;
+        }
+        atk_damage_ = player_atk - enemy.getDef();
         enemy.health -= player.getAtk();
     } else {
+        int enemy_atk = enemy.getAtk();
+        if (rand() % 100 <= enemy.getCrit()) {
+            enemy_atk *= kInitCritMult;
+            is_crit_hit_ = true;
+        }
+        atk_damage_ = enemy_atk - enemy.getDef();
         player.health -= enemy.getAtk();
     }
 }
 
 //-------------------------------------------------------------
-void ofApp::setupFight() {
+void ofApp::setupBattle() {
     for (int dir = UP; dir <= RIGHT; dir++) {
         move_key_is_pressed[dir] = false;
     }
-    enemy = Enemy(0, 0, 20, 30, 70, 40, 400, 2 * kStartCrit);
+	//keeping lvl_num_ inside allows for larger range of rand() % numbers,
+	//otherwise numbers would just be divisible by lvl_num_
+    int gold = max(rand() % kEnemyMaxGold * lvl_num_, kEnemyMinGold * lvl_num_);
+    int exp = max((kEnemyMaxExp * lvl_num_ - gold * lvl_num_), kEnemyMinExp * lvl_num_);
+    int atk = max(rand() % kEnemyMaxAtk * lvl_num_, kEnemyMinAtk * lvl_num_);
+    int def = max(rand() % kEnemyMaxDef * lvl_num_, kEnemyMinDef * lvl_num_);
+    int hp = max(rand() % kEnemyMaxHp * lvl_num_, kEnemyMinHp * lvl_num_);
+    int crit = 2 * kStartCrit;
+    enemy = Enemy(0, 0, gold, exp, atk, def, hp, crit);
     fight_is_init_ = true;
-    energy_left_ -= kEnergyBattle;
 }
 //--------------------------------------------------------------
 void ofApp::mineResources() {
@@ -200,12 +240,12 @@ void ofApp::mineResources() {
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofSetColor(kRed);
-    if (energy_left_ <= 0) {
+    if (player_is_fighting_) {
+        drawBattle();
+    } else if (energy_left_ <= 0) {
         drawGameOver();
     } else if (lvl_num_ == 0) {
         drawStartingScreen();
-    } else if (player_is_fighting_) {
-        drawFight();
     } else {
         drawWorld();
     }
@@ -228,56 +268,60 @@ void ofApp::drawStartingScreen() { play_button->draw(); }
 void ofApp::drawWorld() {
     ofBackground(kWhite);
     drawInfo();
-    if (num_of_keys_pressed_ != 0) {
-        ofSetColor(kRed);
-    } else {
-        ofSetColor(kPurple);
-    }
     drawPlayer();
     drawResources();
 }
 
 //--------------------------------------------------------------
-void ofApp::drawFight() {
+void ofApp::drawBattle() {
     ofBackground(kGrayClear);
     ofSetColor(kSkin);
     player.player_sprite->draw(kPlayerFightX, kPlayerFightY,
                                kPlayerFightX + kPlayerFightWidth,
                                kPlayerFightY + kPlayerFightHeight);
-    int enemy_fight_x = ofGetWindowWidth() - kEnemyAdjX;
-    ofDrawRectangle(enemy_fight_x, kEnemyFightY, kEnemyFightWidth,
+    enemy_fight_x_ = ofGetWindowWidth() - kEnemyAdjX;
+    ofDrawRectangle(enemy_fight_x_, kEnemyFightY, kEnemyFightWidth,
                     kEnemyFightHeight);
     ofSetColor(kWhite);
-    if (is_player_atk_turn_) {
-        ofDrawLine(enemy_fight_x, kEnemyFightY,
-                   enemy_fight_x + kEnemyFightWidth,
-                   kEnemyFightY + kEnemyFightHeight);
-    } else {
-        ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
-                   kPlayerFightX + kPlayerFightWidth + 20,
-                   kPlayerFightY + kPlayerFightHeight + 30);
-    }
-    drawFightInfo();
-    is_player_atk_turn_ = !is_player_atk_turn_;
+    drawAtk();
+    drawBattleInfo();
 }
 
 //--------------------------------------------------------------
-void ofApp::drawFightInfo() {
-    string player_hp = to_string(player.getHealth());
-    if (player.getHealth() < 0) {
-        player_hp = to_string(0);
+void ofApp::drawAtk() {
+    string crit_message = "";
+    if (is_crit_hit_) {
+        ofSetColor(kRed);
+        crit_message = "CRIT!";
     }
-    string enemy_hp = to_string(enemy.getHealth());
-    if (enemy.getHealth() <= 0) {
-        enemy_hp = to_string(0);
-        drawWinBattleInfo();
-        Sleep(1000);
+    if (is_player_atk_turn_ && turns_fought_ > 0) {
+        ofDrawLine(enemy_fight_x_, kEnemyFightY,
+                   enemy_fight_x_ + kEnemyFightWidth,
+                   kEnemyFightY + kEnemyFightHeight);
+        info_font->draw(crit_message, enemy_fight_x_ + kEnemyFightWidth + 10,
+                        kEnemyFightY + kEnemyFightHeight / 2);
+        is_player_atk_turn_ = !is_player_atk_turn_;
+    } else if (!is_player_atk_turn_ && turns_fought_ > 0) {
+        ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
+                   kPlayerFightX + kPlayerFightWidth + 20,
+                   kPlayerFightY + kPlayerFightHeight + 30);
+        info_font->draw(crit_message, kPlayerFightX + kPlayerFightWidth + 10,
+                        kEnemyFightY + kEnemyFightHeight / 2);
+        is_player_atk_turn_ = !is_player_atk_turn_;
     }
+}
+//--------------------------------------------------------------
+void ofApp::drawBattleInfo() {
+    ofSetColor(kWhite);
+    string player_hp = to_string(max(player.getHealth(), 0));
+    string enemy_hp = to_string(max(enemy.getHealth(), 0));
     string player_hp_message = "HP: " + player_hp;
     string enemy_hp_message = "HP: " + enemy_hp;
     info_font->draw(player_hp_message, kPlayerFightX + 40, kPlayerFightY + 40);
-    int enemy_fight_x = ofGetWindowWidth() - kEnemyAdjX;
-    info_font->draw(enemy_hp_message, enemy_fight_x + 10, kEnemyFightY - 20);
+    info_font->draw(enemy_hp_message, enemy_fight_x_ + 10, kEnemyFightY - 20);
+    if (enemy.getHealth() <= 0) {
+        drawWinBattleInfo();
+    }
 }
 
 //--------------------------------------------------------------
@@ -290,7 +334,7 @@ void ofApp::drawWinBattleInfo() {
                     ofGetWindowHeight() - 2 * kInfoFontSize);
     info_font->draw(exp_message, 3.0 * ofGetWindowWidth() / 7.0,
                     ofGetWindowHeight() - kInfoFontSize);
-}  
+}
 
 //--------------------------------------------------------------
 void ofApp::drawInfo() {
@@ -304,10 +348,7 @@ void ofApp::drawInfo() {
     string lvl_num = to_string(lvl_num_);
     string lvl_message = "LEVEL: " + lvl_num;
     string battle_chance =
-        to_string((int)(battle_chance_ * battle_multiplier_));
-    if (battle_chance_ < 0) {
-        battle_chance = to_string(0);
-    }
+        to_string(max((int)(battle_chance_ * battle_multiplier_), 0));
     string battle_message = "Battle Chance: " + battle_chance + "%";
     info_font->draw(gold_message, 0, kInfoFontSize);
     info_font->draw(exp_message, 0, 2 * kInfoFontSize);
@@ -357,25 +398,21 @@ void ofApp::keyPressed(int key) {
     switch (upper_key) {
         case 'W':
             if (!move_key_is_pressed[UP]) {
-                num_of_keys_pressed_++;
                 move_key_is_pressed[UP] = true;
             }
             break;
         case 'S':
             if (!move_key_is_pressed[DOWN]) {
-                num_of_keys_pressed_++;
                 move_key_is_pressed[DOWN] = true;
             }
             break;
         case 'A':
             if (!move_key_is_pressed[LEFT]) {
-                num_of_keys_pressed_++;
                 move_key_is_pressed[LEFT] = true;
             }
             break;
         case 'D':
             if (!move_key_is_pressed[RIGHT]) {
-                num_of_keys_pressed_++;
                 move_key_is_pressed[RIGHT] = true;
             }
             break;
@@ -390,19 +427,15 @@ void ofApp::keyReleased(int key) {
     int upper_key = toupper(key);
     switch (upper_key) {
         case 'W':
-            num_of_keys_pressed_--;
             move_key_is_pressed[UP] = false;
             break;
         case 'S':
-            num_of_keys_pressed_--;
             move_key_is_pressed[DOWN] = false;
             break;
         case 'A':
-            num_of_keys_pressed_--;
             move_key_is_pressed[LEFT] = false;
             break;
         case 'D':
-            num_of_keys_pressed_--;
             move_key_is_pressed[RIGHT] = false;
             break;
     }

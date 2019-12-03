@@ -26,7 +26,7 @@ class Character {
     ofRectangle getRect();
 
     Character(float x, float y, int gold, int exp, int atk, int def, int health,
-              float crit_chance)
+              int crit_chance)
         : position(x, y),
           gold(gold),
           exp(exp),
