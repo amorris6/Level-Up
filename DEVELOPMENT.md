@@ -96,3 +96,15 @@ sure my way is definitely not the cleanest, I'm quite happy with it, and it gets
 Will (maybe) change if I have the time. The testing is not my largest priority. Still
 have to implement, basically, the core mechanics of the game. Have to actually do my job
 tomorrow, so hopefully can really work on this on Monday.
+
+**12/1/2019**
+Changed enemies into resources. Increment the chance of a battle occuring everytime the player moves.
+When a rand() is smaller than this chance, a battle starts. Got rid of enemies list, so only have
+to keep track of the one enemy I am fighting. Implemented fight function "husks". 
+They get called but nothing happens inside them. Will implement fight mechanics tomorrow.
+
+**12/2/2019**
+Implemented fight mechanics. Used a sleep function, so each attack could be seen. Split my larger
+functions into several helper functions. Need to implement a levelling up system and a store
+to do something with the gold. Also need to implement a save function. Will most likely just
+save after each run, so not to much data to hold. Also need to implement a reset button in the game over screen.
