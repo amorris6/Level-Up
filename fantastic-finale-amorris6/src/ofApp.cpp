@@ -1,5 +1,6 @@
 #include "ofApp.h"
 
+const float ofApp::kLvlUpGain = 120;
 const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kInitBattleMult = 0.25;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
@@ -22,14 +23,16 @@ const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const ofColor ofApp::kYellow = ofColor(255, 255, 0);
 const ofColor ofApp::kSkin = ofColor(255, 220, 8);
 const ofColor ofApp::kTan = ofColor(210, 180, 140);
-const string ofApp::kMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
+const string ofApp::kBkgrndMusicFilePath = "C:\\CS 126\\Vivaldi-Fall.mp3";
+const string ofApp::kAtkSoundFilePath = "C:\\CS 126\\Wilhelm-Scream.mp3";
+const string ofApp::kBattleMusicFilePath = "C:\\CS 126\\BattleMusic.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 const string ofApp::kPlayerSpritePath =
     "C:\\CS 126\\Sprites\\player-sprite.png";
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
-int ofApp::lvl_num_ = 0;
+int ofApp::stage_num_ = 0;
 
 bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
     if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
@@ -51,7 +54,7 @@ void ofApp::Button::draw() {
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle("fantastic-finale-amorris6");
-    lvl_num_ = 0;
+    stage_num_ = 0;
     battle_start_ = kStartBattle;
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
@@ -65,15 +68,22 @@ void ofApp::setup() {
     energy_left_ = kInitialEnergy;
     store_is_open_ = false;
     inventory_is_open_ = false;
+    lvls_inc_ = 0;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
-    background_music_player->load(kMusicFilePath);
+    atk_sound_player = new ofSoundPlayer();
+    battle_music_player = new ofSoundPlayer();
+    background_music_player->load(kBkgrndMusicFilePath);
+    atk_sound_player->load(kAtkSoundFilePath);
+    battle_music_player->load(kBattleMusicFilePath);
     ofxSmartFont::add(kFontFilePath, kButtonFontSize, kFontName);
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
     setupButtons();
     max_health_ = kStartHealth;
+    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
+                    kStartDef, kStartHealth, kStartCrit);
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
 }
@@ -97,8 +107,6 @@ void ofApp::setupButtons() {
                                   kInventoryLabel, *info_font);
     back_button = new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
                              kInfoFontSize + 15, kBackLabel, *info_font);
-    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
-                    kStartDef, kStartHealth, kStartCrit);
 }
 //--------------------------------------------------------------
 void ofApp::setupResources() {
@@ -140,6 +148,15 @@ void ofApp::update() {
         battle_start_ = (rand() % 100);
         player_is_fighting_ = true;
     }
+    if (player.getExp() < kExpLimit) {
+        if (lvls_inc_ > 0) {
+            draw();
+            Sleep(400);
+		}
+        lvls_inc_ = 0;
+    } else {
+        lvlUp();
+    }
     if (energy_left_ <= 0) {
         player_is_fighting_ = false;
     }
@@ -155,6 +172,17 @@ void ofApp::update() {
         !background_music_player->isPlaying()) {
         background_music_player->play();
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlUp() {
+    player.lvl++;
+    lvls_inc_++;
+    player.atk += kLvlUpGain;
+    player.def += kLvlUpGain;
+    max_health_ += kLvlUpGain;
+    player.health = max_health_;
+    player.exp -= kExpLimit;
 }
 
 //--------------------------------------------------------------
@@ -175,17 +203,42 @@ void ofApp::updatePlayerPos() {
 
 //--------------------------------------------------------------
 void ofApp::battleEnemy() {
-    Sleep(1000);
     if (!fight_is_init_) {
         setupBattle();
         fight_is_init_ = true;
+        background_music_player->setPaused(true);
+        Sleep(1000);
+        battle_music_player->play();
     } else {
+        Sleep(1000);
         turns_fought_++;
         is_crit_hit_ = false;
         checkBattleEnded();  // called before takeBattleTurn,
                              // so battle can be drawn when hp = 0
         takeBattleTurn();
     }
+}
+
+//-------------------------------------------------------------
+void ofApp::setupBattle() {
+    for (int dir = UP; dir <= RIGHT; dir++) {
+        move_key_is_pressed[dir] = false;
+    }
+    // keeping stage_num_ inside allows for larger range of rand() % numbers,
+    // otherwise numbers would just be divisible by stage_num_
+    int gold =
+        max(rand() % kEnemyMaxGold * stage_num_, kEnemyMinGold * stage_num_);
+    int exp = max((kEnemyMaxExp * stage_num_ - gold * stage_num_),
+                  kEnemyMinExp * stage_num_);
+    int atk =
+        max(rand() % kEnemyMaxAtk * stage_num_, kEnemyMinAtk * stage_num_);
+    int def =
+        max(rand() % kEnemyMaxDef * stage_num_, kEnemyMinDef * stage_num_);
+    int hp = max(rand() % kEnemyMaxHp * stage_num_, kEnemyMinHp * stage_num_);
+    int crit = 2 * kStartCrit;
+    enemy = Enemy(0, 0, gold, exp, atk, def, hp, crit);
+    fight_is_init_ = true;
+    energy_left_ -= kEnergyBattle;
 }
 
 //-------------------------------------------------------------
@@ -198,6 +251,8 @@ void ofApp::checkBattleEnded() {
         player.gold += enemy.getGold();
         is_player_atk_turn_ = true;
         turns_fought_ = 0;
+        battle_music_player->stop();
+        background_music_player->setPaused(false);
     }
     if (player.getHealth() <= 0) {
         energy_left_ -= kEnergyBattleLost;
@@ -206,6 +261,8 @@ void ofApp::checkBattleEnded() {
         fight_is_init_ = false;
         player.health = max_health_;
         turns_fought_ = 0;
+        battle_music_player->stop();
+        background_music_player->setPaused(false);
     }
 }
 //-------------------------------------------------------------
@@ -216,7 +273,7 @@ void ofApp::takeBattleTurn() {
             player_atk *= (kInitCritMult * crit_mult_);
             is_crit_hit_ = true;
         }
-        atk_damage_ = max(player_atk - enemy.getDef(), lvl_num_);
+        atk_damage_ = max(player_atk - enemy.getDef(), stage_num_);
         enemy.health -= atk_damage_;
     } else {
         int enemy_atk = enemy.getAtk();
@@ -224,29 +281,11 @@ void ofApp::takeBattleTurn() {
             enemy_atk *= kInitCritMult;
             is_crit_hit_ = true;
         }
-        atk_damage_ = max(enemy_atk - player.getDef(), lvl_num_);
+        atk_damage_ = max(enemy_atk - player.getDef(), stage_num_);
         player.health -= atk_damage_;
     }
 }
 
-//-------------------------------------------------------------
-void ofApp::setupBattle() {
-    for (int dir = UP; dir <= RIGHT; dir++) {
-        move_key_is_pressed[dir] = false;
-    }
-    // keeping lvl_num_ inside allows for larger range of rand() % numbers,
-    // otherwise numbers would just be divisible by lvl_num_
-    int gold = max(rand() % kEnemyMaxGold * lvl_num_, kEnemyMinGold * lvl_num_);
-    int exp = max((kEnemyMaxExp * lvl_num_ - gold * lvl_num_),
-                  kEnemyMinExp * lvl_num_);
-    int atk = max(rand() % kEnemyMaxAtk * lvl_num_, kEnemyMinAtk * lvl_num_);
-    int def = max(rand() % kEnemyMaxDef * lvl_num_, kEnemyMinDef * lvl_num_);
-    int hp = max(rand() % kEnemyMaxHp * lvl_num_, kEnemyMinHp * lvl_num_);
-    int crit = 2 * kStartCrit;
-    enemy = Enemy(0, 0, gold, exp, atk, def, hp, crit);
-    fight_is_init_ = true;
-    energy_left_ -= kEnergyBattle;
-}
 //--------------------------------------------------------------
 void ofApp::mineResources() {
     for (auto& resource : resources) {
@@ -261,7 +300,6 @@ void ofApp::mineResources() {
 }
 //--------------------------------------------------------------
 void ofApp::draw() {
-    ofSetColor(kRed);
     if (player_is_fighting_) {
         drawBattle();
     } else if (store_is_open_) {
@@ -270,13 +308,19 @@ void ofApp::draw() {
         drawInventory();
     } else if (energy_left_ <= 0) {
         drawGameOver();
-    } else if (lvl_num_ == 0) {
+    } else if (stage_num_ == 0) {
         drawStartingScreen();
     } else {
         drawWorld();
     }
 }
 
+//--------------------------------------------------------------
+void ofApp::drawLvlUp() {
+    ofSetColor(kGreen);
+    button_font->draw("LEVEL UP!", ofGetWindowWidth() * 3.0 / 7.0,
+                      ofGetWindowHeight() * 2.0 / 7.0);
+}
 //--------------------------------------------------------------
 void ofApp::drawGameOver() {
     if (background_music_player->isPlaying()) {
@@ -306,6 +350,9 @@ void ofApp::drawWorld() {
     drawInfo();
     drawPlayer();
     drawResources();
+    if (lvls_inc_ > 0) {
+        drawLvlUp();
+    }
 }
 
 //--------------------------------------------------------------
@@ -331,6 +378,7 @@ void ofApp::drawAtk() {
         crit_message = "CRIT!";
     }
     if (is_player_atk_turn_ && turns_fought_ > 0) {
+        atk_sound_player->play();
         ofDrawLine(enemy_fight_x_, kEnemyFightY,
                    enemy_fight_x_ + kEnemyFightWidth,
                    kEnemyFightY + kEnemyFightHeight);
@@ -338,6 +386,7 @@ void ofApp::drawAtk() {
                         kEnemyFightY + kEnemyFightHeight / 2);
         is_player_atk_turn_ = !is_player_atk_turn_;
     } else if (!is_player_atk_turn_ && turns_fought_ > 0) {
+        atk_sound_player->play();
         ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
                    kPlayerFightX + kPlayerFightWidth + 20,
                    kPlayerFightY + kPlayerFightHeight + 30);
@@ -381,14 +430,17 @@ void ofApp::drawInfo() {
     string exp_message = "EXP: " + exp_gathered;
     string energy_left = to_string(energy_left_);
     string energy_message = "Energy Left: " + energy_left;
-    string lvl_num = to_string(lvl_num_);
-    string lvl_message = "LEVEL: " + lvl_num;
+    string stage_num = to_string(stage_num_);
+    string stage_message = "STAGE: " + stage_num;
+    string level = to_string(player.getLvl());
+    string lvl_message = "LEVEL: " + level;
     string battle_chance =
         to_string(max((int)(battle_chance_ * battle_multiplier_), 0));
     string battle_message = "Battle Chance: " + battle_chance + "%";
     info_font->draw(gold_message, 0, kInfoFontSize);
     info_font->draw(exp_message, 0, 2 * kInfoFontSize);
-    info_font->draw(lvl_message, 3.0 * ofGetWindowWidth() / 7.0,
+    info_font->draw(lvl_message, 0, 3 * kInfoFontSize);
+    info_font->draw(stage_message, 3.0 * ofGetWindowWidth() / 7.0,
                     3.0 * ofGetWindowHeight() / 7.0);
     info_font->draw(battle_message, 3.0 * ofGetWindowWidth() / 7.0,
                     kInfoFontSize);
@@ -428,7 +480,8 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-    if (lvl_num_ == 0 || player_is_fighting_ || store_is_open_) {
+    if (stage_num_ == 0 || player_is_fighting_ || store_is_open_ ||
+        inventory_is_open_) {
         return;
     }
     int upper_key = toupper(key);
@@ -458,7 +511,8 @@ void ofApp::keyPressed(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
-    if (lvl_num_ == 0 || player_is_fighting_ || store_is_open_) {
+    if (stage_num_ == 0 || player_is_fighting_ || store_is_open_ ||
+        inventory_is_open_) {
         return;
     }
     int upper_key = toupper(key);
@@ -480,9 +534,9 @@ void ofApp::keyReleased(int key) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
-    if (lvl_num_ == 0 && play_button != nullptr &&
+    if (stage_num_ == 0 && play_button != nullptr &&
         play_button->mouseIsInside(x, y)) {
-        lvl_num_++;
+        stage_num_++;
         delete (play_button);
     } else if (energy_left_ <= 0 && restart_button->mouseIsInside(x, y)) {
         setup();

@@ -49,9 +49,9 @@ int main() {
         cout << "TEST 4 FAILED" << endl;
     }
 
-    // Player Can't Exit Window Up (TEST 5)
+    // Player Can Exit Window Up (TEST 5)
     player.moveInDirection(UP);
-    if (player.getPos().x == 0 && player.getPos().y == 0) {
+    if (player.getPos().x == 0 && player.getPos().y == ofGetWindowHeight()) {
         cout << "TEST 5 PASSED" << endl;
     } else {
         cout << "TEST 5 FAILED" << endl;
@@ -59,7 +59,7 @@ int main() {
 
     // Player Can't Exit Window Left (TEST 6)
     player.moveInDirection(LEFT);
-    if (player.getPos().x == 0 && player.getPos().y == 0) {
+    if (player.getPos().x == 0 && player.getPos().y == ofGetWindowHeight()) {
         cout << "TEST 6 PASSED" << endl;
     } else {
         cout << "TEST 6 FAILED" << endl;
@@ -74,11 +74,10 @@ int main() {
             break;
         }
     }
-    if (player.getPos().x == 0 && player.getPos().y == 0) {
+    if (player.getPos().x == 0 && player.getPos().y == ofGetWindowHeight()) {
         cout << "TEST 7 PASSED" << endl;
     } else {
         cout << "TEST 7 FAILED" << endl;
-        cout << player.getPos().x << endl;
     }
 
     // Player Can't Exit Window Down (TEST 8)

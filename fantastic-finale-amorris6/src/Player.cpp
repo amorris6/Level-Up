@@ -2,12 +2,14 @@
 #include "ofApp.h"
 
 ofRectangle Player::getRect() {
-	//width/2 fits the player sprite
+    // width/2 fits the player sprite
     return ofRectangle(position, Character::kCharWidth / 2,
                        Character::kCharHeight);
 }
 
-bool Player::canMoveInDirection(PlayerDirection direction) {
+int Player::getLvl() { return lvl; }
+bool Player::canMoveInDirection(
+    PlayerDirection direction) {
     switch (direction) {
         case UP:
             if (position.y >= Character::kMoveSpeed) {
@@ -45,15 +47,16 @@ void Player::moveInDirection(int direction_index) {
             if (canMoveInDirection(UP)) {
                 position.y -= Character::kMoveSpeed;
             } else {
-                position.y = 0;
+                position.y = ofGetWindowHeight();
+                ofApp::setupResources();
+                ofApp::stage_num_ += ofApp::kStageNumChangeUp;
             }
             break;
         case DOWN:
             if (canMoveInDirection(DOWN)) {
                 position.y += Character::kMoveSpeed;
             } else {
-                position.y =
-                    (int)ofGetWindowHeight() - Character::kCharHeight;
+                position.y = (int)ofGetWindowHeight() - Character::kCharHeight;
             }
             break;
         case LEFT:
@@ -69,7 +72,7 @@ void Player::moveInDirection(int direction_index) {
             } else {
                 position.x = 0;
                 ofApp::setupResources();
-                ofApp::lvl_num_ += ofApp::kStageLvlChange;
+                ofApp::stage_num_ += ofApp::kStageNumChangeRight;
             }
             break;
     }
