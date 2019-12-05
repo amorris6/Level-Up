@@ -108,3 +108,11 @@ Implemented fight mechanics. Used a sleep function, so each attack could be seen
 functions into several helper functions. Need to implement a levelling up system and a store
 to do something with the gold. Also need to implement a save function. Will most likely just
 save after each run, so not to much data to hold. Also need to implement a reset button in the game over screen.
+
+**12/3/2019**
+Implemented Restart button, inventory, and store buttons. Inventory and store share a back button. 
+Might have to change that if I end up using function pointers. Implemented battle music and an
+attack sound. Need to actually implement store and inventory. Right now, just empty tan screens.
+
+**12/4/2019**
+Took the day off, had other hw.
