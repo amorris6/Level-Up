@@ -31,12 +31,19 @@ const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
 int ofApp::stage_num_ = 0;
+int ofApp::lvls_inc_ = 0;
+int ofApp::energy_left_ = kInitialEnergy;
+int ofApp::battle_start_ = kStartBattle;
+bool ofApp::store_is_open_ = false;
+bool ofApp::inventory_is_open_ = false;
+bool ofApp::move_key_is_pressed[4] = {};
+Player ofApp::player =
+    Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk, kStartDef,
+           kStartHealth, kStartCrit);
 
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle("fantastic-finale-amorris6");
-    stage_num_ = 0;
-    battle_start_ = kStartBattle;
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
     turns_fought_ = 0;
@@ -46,10 +53,6 @@ void ofApp::setup() {
     player_is_fighting_ = false;
     enemy_fight_x_ = 0;
     atk_damage_ = 0;
-    energy_left_ = kInitialEnergy;
-    store_is_open_ = false;
-    inventory_is_open_ = false;
-    lvls_inc_ = 0;
     background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     atk_sound_player = new ofSoundPlayer();
@@ -64,34 +67,37 @@ void ofApp::setup() {
     info_font = ofxSmartFont::get(kSmallFontName);
     setupButtons();
     max_health_ = kStartHealth;
-    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
-                    kStartDef, kStartHealth, kStartCrit);
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
 }
 
 //--------------------------------------------------------------
 void ofApp::setupButtons() {
-    play_button = new Button(kPlayXAdj * ofGetWindowWidth(),
-                             kPlayYAdj * ofGetWindowHeight(),
-                             kPlayWidthAdj * ofGetWindowWidth(),
-                             Button::kButtonFontSize, kPlayLabel, *button_font);
-    restart_button =
-        new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                   kPlayYAdj * ofGetWindowHeight() + 50,
-                   kPlayWidthAdj * ofGetWindowWidth() + 60,
-                   Button::kButtonFontSize, kRestartLabel, *button_font);
-    store_button =
-        new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                   kPlayYAdj * ofGetWindowHeight() + 100,
-                   kPlayWidthAdj * ofGetWindowWidth() + 60,
-                   Button::kButtonFontSize, kStoreLabel, *button_font);
+    play_button = new Button(
+        kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
+        kPlayWidthAdj * ofGetWindowWidth(), Button::kButtonFontSize, kPlayLabel,
+        *button_font, increaseStage);
+    restart_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                                kPlayYAdj * ofGetWindowHeight() + 50,
+                                kPlayWidthAdj * ofGetWindowWidth() + 60,
+                                Button::kButtonFontSize, kRestartLabel,
+                                *button_font, restartGame);
+    store_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                              kPlayYAdj * ofGetWindowHeight() + 100,
+                              kPlayWidthAdj * ofGetWindowWidth() + 60,
+                              Button::kButtonFontSize, kStoreLabel,
+                              *button_font, openStore);
     inventory_button =
         new Button(0, ofGetWindowHeight() - (Button::kButtonFontSize),
                    Button::kButtonFontSize + 100, Button::kButtonFontSize,
-                   kInventoryLabel, *info_font);
-    back_button = new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
-                             kInfoFontSize + 15, kBackLabel, *info_font);
+                   kInventoryLabel, *info_font,
+			       openInventory);
+    back_store_button = 
+		new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
+                   kInfoFontSize + 15, kBackLabel, *info_font, closeStore);
+    back_inventory_button =
+        new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
+                   kInfoFontSize + 15, kBackLabel, *info_font, closeInventory);
 }
 //--------------------------------------------------------------
 void ofApp::setupResources() {
@@ -170,6 +176,7 @@ void ofApp::lvlUp() {
     player.exp -= kExpLimit;
 }
 
+void ofApp::increaseStage() { stage_num_++; }
 //--------------------------------------------------------------
 void ofApp::updatePlayerPos() {
     bool player_is_moving = false;
@@ -311,10 +318,11 @@ void ofApp::drawGameOver() {
     if (background_music_player->isPlaying()) {
         background_music_player->stop();
     }
-	
-    if (battle_music_player ->isPlaying()) {     // if starting battle makes energy <= 0,
-        battle_music_player->stop();             // checkBattleEnded doesn't get a chance
-    }                                            // to stop battle music
+
+    if (battle_music_player
+            ->isPlaying()) {          // if starting battle makes energy <= 0,
+        battle_music_player->stop();  // checkBattleEnded doesn't get a chance
+    }                                 // to stop battle music
     ofBackground(kBlack);
     ofSetColor(kWhite);
     string game_over_msg = "GAME OVER!";
@@ -525,22 +533,31 @@ void ofApp::keyReleased(int key) {
 void ofApp::mousePressed(int x, int y, int button) {
     if (stage_num_ == 0 && play_button != nullptr &&
         play_button->mouseIsInside(x, y)) {
-        stage_num_++;
-        delete (play_button);
+        play_button->getFuncWhenPressed()();
     } else if (energy_left_ <= 0 && restart_button->mouseIsInside(x, y)) {
-        setup();
+        restart_button->getFuncWhenPressed()();
     } else if (energy_left_ <= 0 && store_button->mouseIsInside(x, y) &&
                !store_is_open_) {
-        openStore();
-    } else if (back_button->mouseIsInside(x, y) && store_is_open_) {
-        store_is_open_ = false;
+        store_button->getFuncWhenPressed()();
+    } else if (back_store_button->mouseIsInside(x, y) && store_is_open_) {
+        back_store_button->getFuncWhenPressed()();
     } else if (!inventory_is_open_ && inventory_button->mouseIsInside(x, y)) {
-        openInventory();
-    } else if (back_button->mouseIsInside(x, y) && inventory_is_open_) {
-        inventory_is_open_ = false;
+        inventory_button->getFuncWhenPressed()();
+    } else if (back_inventory_button->mouseIsInside(x, y) && inventory_is_open_) {
+        back_inventory_button->getFuncWhenPressed()();
     }
 }
 
+//--------------------------------------------------------------
+void ofApp::restartGame() {
+    ofSetWindowTitle("fantastic-finale-amorris6");
+    stage_num_ = 0;
+    energy_left_ = kInitialEnergy;
+    battle_start_ = kStartBattle;
+    player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
+                    kStartDef, kStartHealth, kStartCrit);
+    player.player_sprite->load(kPlayerSpritePath);
+}
 //--------------------------------------------------------------
 void ofApp::openInventory() {
     ofSetWindowTitle("INVENTORY");
@@ -548,14 +565,15 @@ void ofApp::openInventory() {
         move_key_is_pressed[dir] = false;
     }
     inventory_is_open_ = true;
-    drawInventory();
 }
 
+//-------------------------------------------------------------
+void ofApp::closeInventory() { inventory_is_open_ = false; }  
 //-------------------------------------------------------------
 void ofApp::drawInventory() {
     ofBackground(kTan);
     ofSetColor(kBlack);
-    back_button->draw();
+    back_inventory_button->draw();
 }
 //--------------------------------------------------------------
 void ofApp::openStore() {
@@ -564,12 +582,13 @@ void ofApp::openStore() {
         move_key_is_pressed[dir] = false;
     }
     store_is_open_ = true;
-    drawStore();
 }
 
+//-------------------------------------------------------------
+void ofApp::closeStore() { store_is_open_ = false; }
 //-------------------------------------------------------------
 void ofApp::drawStore() {
     ofBackground(kTan);
     ofSetColor(kBlack);
-    back_button->draw();
+    back_store_button->draw();
 }

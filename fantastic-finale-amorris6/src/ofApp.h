@@ -84,7 +84,7 @@ class ofApp : public ofBaseApp {
 
     int battle_chance_;
     bool fight_is_init_;
-    int battle_start_;
+    static int battle_start_;
     bool player_is_fighting_;
     bool is_player_atk_turn_;
     int turns_fought_;
@@ -93,12 +93,12 @@ class ofApp : public ofBaseApp {
     float crit_mult_;
     float battle_multiplier_;
     int enemy_fight_x_;
-    int energy_left_;
+    static int energy_left_;
     int max_health_;
-    bool store_is_open_;
-    bool inventory_is_open_;
-    int lvls_inc_; 
-    bool move_key_is_pressed[4];
+    static bool store_is_open_;
+    static bool inventory_is_open_;
+    static int lvls_inc_; 
+    static bool move_key_is_pressed[4];
     static int stage_num_;
     bool background_music_enabled_;
     ofSoundPlayer* background_music_player;
@@ -106,22 +106,24 @@ class ofApp : public ofBaseApp {
     ofSoundPlayer* battle_music_player;
     shared_ptr<ofxSmartFont> button_font;
     shared_ptr<ofxSmartFont> info_font;
-    Player player;
+    static Player player;
     Enemy enemy;
     static list<Resource> resources;
     void setupButtons();
-    void drawPlayer();
+    static void drawPlayer();
     void drawStartingScreen();
     void drawGameOver();
-    void openStore();
+    static void openStore();
+    static void closeStore();
     void drawStore();
-    void openInventory();
+    static void openInventory();
+    static void closeInventory();
     void drawInventory();
     void drawWorld();
     void drawLvlUp();
     void drawInfo();
     static void setupResources();
-    void drawResources();
+    static void drawResources();
     void mineResources();
     void updatePlayerPos();
     void battleEnemy();
@@ -133,11 +135,14 @@ class ofApp : public ofBaseApp {
     void drawBattleInfo();
     void drawWinBattleInfo();
     void lvlUp();
+    static void increaseStage();
+    static void restartGame();
     Button* play_button;
     Button* restart_button;
     Button* store_button;
     Button* inventory_button;
-    Button* back_button;
+    Button* back_store_button;
+    Button* back_inventory_button;
 
    public:
     void setup();
