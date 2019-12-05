@@ -1,6 +1,5 @@
 #include "ofApp.h"
 
-const float ofApp::kLvlUpGain = 120;
 const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kInitBattleMult = 0.25;
 const float ofApp::kPlayXAdj = 3.0 / 7.0;
@@ -23,7 +22,7 @@ const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const ofColor ofApp::kYellow = ofColor(255, 255, 0);
 const ofColor ofApp::kSkin = ofColor(255, 220, 8);
 const ofColor ofApp::kTan = ofColor(210, 180, 140);
-const string ofApp::kBkgrndMusicFilePath = "C:\\CS 126\\Vivaldi-Fall.mp3";
+const string ofApp::kBkgrndMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kAtkSoundFilePath = "C:\\CS 126\\Wilhelm-Scream.mp3";
 const string ofApp::kBattleMusicFilePath = "C:\\CS 126\\BattleMusic.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
@@ -75,6 +74,7 @@ void ofApp::setup() {
     battle_music_player = new ofSoundPlayer();
     background_music_player->load(kBkgrndMusicFilePath);
     atk_sound_player->load(kAtkSoundFilePath);
+    atk_sound_player->setVolume(0.2);
     battle_music_player->load(kBattleMusicFilePath);
     ofxSmartFont::add(kFontFilePath, kButtonFontSize, kFontName);
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
@@ -152,7 +152,7 @@ void ofApp::update() {
         if (lvls_inc_ > 0) {
             draw();
             Sleep(400);
-		}
+        }
         lvls_inc_ = 0;
     } else {
         lvlUp();
@@ -228,8 +228,8 @@ void ofApp::setupBattle() {
     // otherwise numbers would just be divisible by stage_num_
     int gold =
         max(rand() % kEnemyMaxGold * stage_num_, kEnemyMinGold * stage_num_);
-    int exp = max((kEnemyMaxExp * stage_num_ - gold * stage_num_),
-                  kEnemyMinExp * stage_num_);
+    int exp =
+        max(rand() % kEnemyMaxExp * stage_num_, kEnemyMinExp * stage_num_);
     int atk =
         max(rand() % kEnemyMaxAtk * stage_num_, kEnemyMinAtk * stage_num_);
     int def =

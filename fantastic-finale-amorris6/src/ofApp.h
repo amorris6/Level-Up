@@ -53,7 +53,7 @@ class ofApp : public ofBaseApp {
     const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
     const static int kMaxResourceNum = 67;  // get weird malloc error if larger
-    const static float kLvlUpGain;
+    const static int kLvlUpGain = 100;
     const static int kExpLimit = 100;
     const static float kPlayXAdj;
     const static float kPlayYAdj;
