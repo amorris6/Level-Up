@@ -180,6 +180,7 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Armor.cpp" />
     <ClCompile Include="src\Button.cpp" />
     <ClCompile Include="src\Item.cpp" />
     <ClCompile Include="src\main.cpp">
@@ -201,12 +202,14 @@
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxSliderGroup.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxGui\src\ofxToggle.cpp" />
     <ClCompile Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.cpp" />
+    <ClCompile Include="src\Weapon.cpp" />
     <ClCompile Include="test.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Armor.h" />
     <ClInclude Include="src\Button.h" />
     <ClInclude Include="src\Item.h" />
     <ClInclude Include="src\ofApp.h">
@@ -230,6 +233,7 @@
     <ClInclude Include="..\..\..\..\addons\ofxSmartFont-master\src\ofxSmartFont.h" />
     <ClInclude Include="..\..\..\..\addons\ofxUnitTests\src\ofxUnitTests.h" />
     <ClInclude Include="src\Resource.h" />
+    <ClInclude Include="src\Weapon.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

@@ -64,6 +64,12 @@
     <ClCompile Include="src\Item.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Weapon.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Armor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -153,6 +159,12 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Item.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Weapon.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Armor.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
