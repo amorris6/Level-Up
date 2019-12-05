@@ -58,7 +58,7 @@
     <ClCompile Include="test.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Resource.cpp">
+    <ClCompile Include="src\Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,6 +144,9 @@
       <Filter>addons\ofxUnitTests\src</Filter>
     </ClInclude>
     <ClInclude Include="src\Resource.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Button.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

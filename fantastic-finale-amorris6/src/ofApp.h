@@ -4,13 +4,14 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "Resource.h"
+#include "Button.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
 class ofApp : public ofBaseApp {
    private:
     friend void Player::moveInDirection(int direction_index);
-    const static int kInitialEnergy = 110;
+    const static int kInitialEnergy = 15;
     const static int kEnergyBattle = 2;
     const static int kEnergyBattleLost = 3;
     const static int kLoseChance = 40;
@@ -50,7 +51,6 @@ class ofApp : public ofBaseApp {
     const static int kStartDef = 50;
     const static int kStartHealth = 400;
     const static int kStartCrit = 10;
-    const static int kButtonFontSize = 28;
     const static int kInfoFontSize = 16;
     const static int kMaxResourceNum = 67;  // get weird malloc error if larger
     const static int kLvlUpGain = 100;
@@ -64,7 +64,6 @@ class ofApp : public ofBaseApp {
     const static string kStoreLabel;
     const static string kBackLabel;
     const static string kInventoryLabel;
-    const static float ofApp::kLabelYAdj;
     const static ofColor kWhite;
     const static ofColor kBlack;
     const static ofColor kGrayClear;
@@ -134,27 +133,6 @@ class ofApp : public ofBaseApp {
     void drawBattleInfo();
     void drawWinBattleInfo();
     void lvlUp();
-    class Button {
-       private:
-        float x;
-        float y;
-        float width;
-        float height;
-        std::string label;
-        ofxSmartFont label_font;
-
-       public:
-        Button(float x, float y, float width, float height, std::string label,
-               ofxSmartFont label_font)
-            : x(x),
-              y(y),
-              width(width),
-              height(height),
-              label(label),
-              label_font(label_font) {}
-        bool mouseIsInside(int mouse_x, int mouse_y);
-        void draw();
-    };
     Button* play_button;
     Button* restart_button;
     Button* store_button;

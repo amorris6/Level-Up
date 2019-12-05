@@ -11,7 +11,6 @@ const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
 const string ofApp::kInventoryLabel = "INVENTORY";
 const string ofApp::kBackLabel = "BACK";
-const float ofApp::kLabelYAdj = 0.5;
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
 const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
@@ -33,23 +32,6 @@ const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
 int ofApp::stage_num_ = 0;
 
-bool ofApp::Button::mouseIsInside(int mouse_x, int mouse_y) {
-    if (x <= mouse_x && mouse_x <= x + width && y <= mouse_y &&
-        mouse_y <= y + height) {
-        return true;
-    }
-    return false;
-}
-
-//--------------------------------------------------------------
-void ofApp::Button::draw() {
-    ofNoFill();
-    ofDrawRectangle(x, y, width, height);
-    label_font.draw(label, x, y + (height + kButtonFontSize) * kLabelYAdj);
-    ofFill();
-}
-
-//--------------------------------------------------------------
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle("fantastic-finale-amorris6");
@@ -76,7 +58,7 @@ void ofApp::setup() {
     atk_sound_player->load(kAtkSoundFilePath);
     atk_sound_player->setVolume(0.2);
     battle_music_player->load(kBattleMusicFilePath);
-    ofxSmartFont::add(kFontFilePath, kButtonFontSize, kFontName);
+    ofxSmartFont::add(kFontFilePath, Button::kButtonFontSize, kFontName);
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
@@ -93,18 +75,21 @@ void ofApp::setupButtons() {
     play_button = new Button(kPlayXAdj * ofGetWindowWidth(),
                              kPlayYAdj * ofGetWindowHeight(),
                              kPlayWidthAdj * ofGetWindowWidth(),
-                             kButtonFontSize, kPlayLabel, *button_font);
-    restart_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                                kPlayYAdj * ofGetWindowHeight() + 50,
-                                kPlayWidthAdj * ofGetWindowWidth() + 60,
-                                kButtonFontSize, kRestartLabel, *button_font);
-    store_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                              kPlayYAdj * ofGetWindowHeight() + 100,
-                              kPlayWidthAdj * ofGetWindowWidth() + 60,
-                              kButtonFontSize, kStoreLabel, *button_font);
-    inventory_button = new Button(0, ofGetWindowHeight() - (kButtonFontSize),
-                                  kButtonFontSize + 100, kButtonFontSize,
-                                  kInventoryLabel, *info_font);
+                             Button::kButtonFontSize, kPlayLabel, *button_font);
+    restart_button =
+        new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                   kPlayYAdj * ofGetWindowHeight() + 50,
+                   kPlayWidthAdj * ofGetWindowWidth() + 60,
+                   Button::kButtonFontSize, kRestartLabel, *button_font);
+    store_button =
+        new Button(kPlayXAdj * ofGetWindowWidth() + 25,
+                   kPlayYAdj * ofGetWindowHeight() + 100,
+                   kPlayWidthAdj * ofGetWindowWidth() + 60,
+                   Button::kButtonFontSize, kStoreLabel, *button_font);
+    inventory_button =
+        new Button(0, ofGetWindowHeight() - (Button::kButtonFontSize),
+                   Button::kButtonFontSize + 100, Button::kButtonFontSize,
+                   kInventoryLabel, *info_font);
     back_button = new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
                              kInfoFontSize + 15, kBackLabel, *info_font);
 }
@@ -326,6 +311,10 @@ void ofApp::drawGameOver() {
     if (background_music_player->isPlaying()) {
         background_music_player->stop();
     }
+	
+    if (battle_music_player ->isPlaying()) {     // if starting battle makes energy <= 0,
+        battle_music_player->stop();             // checkBattleEnded doesn't get a chance
+    }                                            // to stop battle music
     ofBackground(kBlack);
     ofSetColor(kWhite);
     string game_over_msg = "GAME OVER!";

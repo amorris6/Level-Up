@@ -1,18 +1,19 @@
 #include "Enemy.h"
 #include "Player.h"
-#include "ofxUnitTests.h"
+#include "Button.h"
+#include "ofxSmartFont.h"
 
 int main() {
     // setup
     ofSetupOpenGL(1025, 480, OF_WINDOW);
-    int init_gold = 50;
-    int init_exp = 20;
-    int init_atk = 10;
-    int init_def = 30;
-    int init_health = 40;
-    int init_crit_chance = 5;
-    Player player = Player(0, 0, init_gold, init_exp, init_atk, init_def,
-                           init_health, init_crit_chance);
+    const static int kStartGold = 50;
+    const static int kStartExp = 20;
+    const static int kStartAtk = 10;
+    const static int kStartDef = 30;
+    const static int kStartHealth = 40;
+    const static int kStartCritChance = 5;
+    Player player = Player(0, 0, kStartGold, kStartExp, kStartAtk, kStartDef,
+                           kStartHealth, kStartCritChance);
 
     // player movement tests
 
@@ -94,42 +95,42 @@ int main() {
     // Constructor/getter tests
 
     // getGold() gets gold (TEST 9)
-    if (player.getGold() == init_gold) {
+    if (player.getGold() == kStartGold) {
         cout << "TEST 9 PASSED" << endl;
     } else {
         cout << "TEST 9 FAILED" << endl;
     }
 
     // getExp() gets exp (TEST 10)
-    if (player.getExp() == init_exp) {
+    if (player.getExp() == kStartExp) {
         cout << "TEST 10 PASSED" << endl;
     } else {
         cout << "TEST 10 FAILED" << endl;
     }
 
     // getAtk() gets atk (TEST 11)
-    if (player.getAtk() == init_atk) {
+    if (player.getAtk() == kStartAtk) {
         cout << "TEST 11 PASSED" << endl;
     } else {
         cout << "TEST 11 FAILED" << endl;
     }
 
     // getDef() gets def (TEST 12)
-    if (player.getDef() == init_def) {
+    if (player.getDef() == kStartDef) {
         cout << "TEST 12 PASSED" << endl;
     } else {
         cout << "TEST 12 FAILED" << endl;
     }
 
     // getHealth() gets health (TEST 13)
-    if (player.getHealth() == init_health) {
+    if (player.getHealth() == kStartHealth) {
         cout << "TEST 13 PASSED" << endl;
     } else {
         cout << "TEST 13 FAILED" << endl;
     }
 
     // getCrit() gets crit_chance (TEST 14)
-    if (player.getCrit() == init_crit_chance) {
+    if (player.getCrit() == kStartCritChance) {
         cout << "TEST 14 PASSED" << endl;
     } else {
         cout << "TEST 14 FAILED" << endl;
@@ -144,5 +145,25 @@ int main() {
         cout << "TEST 15 PASSED" << endl;
     } else {
         cout << "TEST 15 FAILED" << endl;
+    }
+
+    // Button tests setup
+    const static int kStartX = 0;
+    const static int kStartY = 0;
+    const static int kWidth = 20;
+    const static int kHeight = 20;
+    const static string kLabel = "LABEL";
+    const string kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
+    const string kFontName = "Roboto-Black";
+    ofxSmartFont::add(kFontFilePath, Button::kButtonFontSize, kFontName);
+    shared_ptr<ofxSmartFont> kFont = ofxSmartFont::get(kFontName);
+    Button button = Button(kStartX, kStartY, kWidth, kHeight, kLabel, *kFont);
+
+    // mouseIsInside outputs true if
+    // (x, y) is inside (TEST 16)
+	if (button.mouseIsInside((kStartX + kWidth) / 2, (kStartY + kHeight) / 2)) {
+        cout << "TEST 16 PASSED" << endl;
+    } else {
+        cout << "TEST 16 FAILED" << endl;
     }
 }
