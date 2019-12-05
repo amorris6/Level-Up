@@ -61,6 +61,9 @@
     <ClCompile Include="src\Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Item.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -147,6 +150,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\Button.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Item.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
