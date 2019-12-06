@@ -10,6 +10,7 @@
 
 class ofApp : public ofBaseApp {
    private:
+    friend class Item;
     friend void Player::moveInDirection(int direction_index);
     const static int kInitialEnergy = 15;
     const static int kEnergyBattle = 2;
@@ -106,8 +107,8 @@ class ofApp : public ofBaseApp {
     ofSoundPlayer* background_music_player;
     ofSoundPlayer* atk_sound_player;
     ofSoundPlayer* battle_music_player;
-    shared_ptr<ofxSmartFont> button_font;
-    shared_ptr<ofxSmartFont> info_font;
+    static shared_ptr<ofxSmartFont> button_font;
+    static shared_ptr<ofxSmartFont> info_font;
     static Player player;
     Enemy enemy;
     static list<Resource> resources;

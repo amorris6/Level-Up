@@ -46,6 +46,8 @@ Button* ofApp::store_button = nullptr;
 Button* ofApp::inventory_button = nullptr;
 Button* ofApp::back_store_button = nullptr;
 Button* ofApp::back_inventory_button = nullptr;
+shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
+shared_ptr<ofxSmartFont> ofApp::info_font = nullptr;
 list<Button*> ofApp::buttons = {};
 
 void ofApp::setup() {

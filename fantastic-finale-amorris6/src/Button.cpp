@@ -20,9 +20,11 @@ void Button::draw() {
 }
 
 bool Button::operator==(Button const& other) const {
-    return this->x == other.x && this->y == other.y &&
-           this->width == other.width && this->height == other.height &&
-           this->label == other.label;
+    return this->x == other.x 
+		&& this->y == other.y 
+		&& this->width == other.width 
+		&& this->height == other.height 
+		&& this->label == other.label;
 }
 
 bool Button::operator!=(Button const& other) const {
