@@ -1,10 +1,10 @@
 #pragma once
 
 #include <stdlib.h>
+#include "Button.h"
 #include "Enemy.h"
 #include "Player.h"
 #include "Resource.h"
-#include "Button.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
@@ -17,6 +17,7 @@ class ofApp : public ofBaseApp {
     const static int kLoseChance = 40;
     const static int kStartBattle = 69;
     const static int kFightInit = -20;
+    const static int kAtkDelay = 1000;
     const static int kPlayerFightX = 50;
     const static int kPlayerFightY = 50;
     const static int kPlayerFightWidth = Character::kCharWidth + 100;
@@ -97,7 +98,8 @@ class ofApp : public ofBaseApp {
     int max_health_;
     static bool store_is_open_;
     static bool inventory_is_open_;
-    static int lvls_inc_; 
+    static bool game_over_is_set_up_;
+    static int lvls_inc_;
     static bool move_key_is_pressed[4];
     static int stage_num_;
     bool background_music_enabled_;
@@ -110,8 +112,10 @@ class ofApp : public ofBaseApp {
     Enemy enemy;
     static list<Resource> resources;
     void setupButtons();
+    void deleteButtons();
     static void drawPlayer();
     void drawStartingScreen();
+    void setupGameOver();
     void drawGameOver();
     static void openStore();
     static void closeStore();
@@ -119,6 +123,7 @@ class ofApp : public ofBaseApp {
     static void openInventory();
     static void closeInventory();
     void drawInventory();
+    static void setupWorld();
     void drawWorld();
     void drawLvlUp();
     void drawInfo();
@@ -135,14 +140,14 @@ class ofApp : public ofBaseApp {
     void drawBattleInfo();
     void drawWinBattleInfo();
     void lvlUp();
-    static void increaseStage();
     static void restartGame();
-    Button* play_button;
-    Button* restart_button;
-    Button* store_button;
-    Button* inventory_button;
-    Button* back_store_button;
-    Button* back_inventory_button;
+    static list<Button*> buttons;
+    static Button* play_button;
+    static Button* restart_button;
+    static Button* store_button;
+    static Button* inventory_button;
+    static Button* back_store_button;
+    static Button* back_inventory_button;
 
    public:
     void setup();
