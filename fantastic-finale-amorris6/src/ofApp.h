@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "Button.h"
 #include "Enemy.h"
+#include "Item.h"
 #include "Player.h"
 #include "Resource.h"
 #include "ofMain.h"
@@ -12,6 +13,8 @@ class ofApp : public ofBaseApp {
    private:
     friend class Item;
     friend void Player::moveInDirection(int direction_index);
+    const static int kMaxStorePageNum = 2;
+    const static int kMaxInvPageNum = 3;
     const static int kInitialEnergy = 15;
     const static int kEnergyBattle = 2;
     const static int kEnergyBattleLost = 3;
@@ -66,16 +69,8 @@ class ofApp : public ofBaseApp {
     const static string kStoreLabel;
     const static string kBackLabel;
     const static string kInventoryLabel;
-    const static ofColor kWhite;
-    const static ofColor kBlack;
-    const static ofColor kGrayClear;
-    const static ofColor kRed;
-    const static ofColor kBlue;
-    const static ofColor kGreen;
-    const static ofColor kPurple;
-    const static ofColor kYellow;
-    const static ofColor kSkin;
-    const static ofColor kTan;
+    const static string kNextLabel;
+    const static string kPrevLabel;
     const static string kBkgrndMusicFilePath;
     const static string kAtkSoundFilePath;
     const static string kBattleMusicFilePath;
@@ -84,6 +79,7 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
+    static int page_num_;
     int battle_chance_;
     bool fight_is_init_;
     static int battle_start_;
@@ -112,7 +108,9 @@ class ofApp : public ofBaseApp {
     static Player player;
     Enemy enemy;
     static list<Resource> resources;
+    void setupItems();
     void setupButtons();
+    void drawButtons();
     void deleteButtons();
     static void drawPlayer();
     void drawStartingScreen();
@@ -121,9 +119,13 @@ class ofApp : public ofBaseApp {
     static void openStore();
     static void closeStore();
     void drawStore();
+    static void increaseStorePage();
+    static void decreaseStorePage();
     static void openInventory();
     static void closeInventory();
     void drawInventory();
+    static void increaseInvPage();
+    static void decreaseInvPage();
     static void setupWorld();
     void drawWorld();
     void drawLvlUp();
@@ -143,14 +145,30 @@ class ofApp : public ofBaseApp {
     void lvlUp();
     static void restartGame();
     static list<Button*> buttons;
+    list<Item> items;
     static Button* play_button;
     static Button* restart_button;
     static Button* store_button;
     static Button* inventory_button;
     static Button* back_store_button;
     static Button* back_inventory_button;
+    static Button* next_store_button;
+    static Button* next_inv_button;
+    static Button* prev_store_button;
+    static Button* prev_inv_button;
 
    public:
+    const static ofColor kWhite;
+    const static ofColor kBlack;
+    const static ofColor kGrayClear;
+    const static ofColor kRed;
+    const static ofColor kBlue;
+    const static ofColor kGreen;
+    const static ofColor kPurple;
+    const static ofColor kYellow;
+    const static ofColor kSkin;
+    const static ofColor kTan;
+
     void setup();
     void update();
     void draw();

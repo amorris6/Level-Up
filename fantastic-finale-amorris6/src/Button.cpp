@@ -1,4 +1,5 @@
 #include "Button.h"
+#include "ofApp.h"
 
 const float Button::kLabelYAdj = 0.5;
 
@@ -13,6 +14,10 @@ bool Button::mouseIsInside(int mouse_x, int mouse_y) {
 }
 
 void Button::draw() {
+    ofSetColor(ofApp::kBlack);
+    if (ofGetBackgroundColor() == ofApp::kBlack) {
+        ofSetColor(ofApp::kWhite);
+    }
     ofNoFill();
     ofDrawRectangle(x, y, width, height);
     label_font.draw(label, x, y + (height + kButtonFontSize) * kLabelYAdj);

@@ -11,6 +11,8 @@ const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
 const string ofApp::kInventoryLabel = "INVENTORY";
 const string ofApp::kBackLabel = "BACK";
+const string ofApp::kNextLabel = "NEXT";
+const string ofApp::kPrevLabel = "PREV";
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
 const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
@@ -30,6 +32,7 @@ const string ofApp::kPlayerSpritePath =
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
+int ofApp::page_num_ = 0;
 int ofApp::stage_num_ = 0;
 int ofApp::lvls_inc_ = 0;
 int ofApp::energy_left_ = kInitialEnergy;
@@ -46,6 +49,10 @@ Button* ofApp::store_button = nullptr;
 Button* ofApp::inventory_button = nullptr;
 Button* ofApp::back_store_button = nullptr;
 Button* ofApp::back_inventory_button = nullptr;
+Button* ofApp::next_store_button = nullptr;
+Button* ofApp::next_inv_button = nullptr;
+Button* ofApp::prev_store_button = nullptr;
+Button* ofApp::prev_inv_button = nullptr;
 shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
 shared_ptr<ofxSmartFont> ofApp::info_font = nullptr;
 list<Button*> ofApp::buttons = {};
@@ -75,9 +82,23 @@ void ofApp::setup() {
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
     setupButtons();
+    setupItems();
     max_health_ = kStartHealth;
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
+}
+
+//--------------------------------------------------------------
+void ofApp::setupItems() {
+    Item sword =
+        Item("sword", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
+    Item helmet =
+        Item("helmet", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
+    Item gem =
+        Item("gem", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
+    items.push_back(sword);
+    items.push_back(helmet);
+    items.push_back(gem);
 }
 
 //--------------------------------------------------------------
@@ -107,6 +128,22 @@ void ofApp::setupButtons() {
     back_inventory_button =
         new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
                    kInfoFontSize + 15, kBackLabel, *info_font, closeInventory);
+    next_store_button = new Button(
+        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
+        kInfoFontSize + 15,
+        kPlayWidthAdj * ofGetWindowWidth() / 2 + 11, kInfoFontSize + 15,
+        kNextLabel, *info_font, increaseStorePage);
+    next_inv_button = new Button(
+        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
+        kInfoFontSize + 14,
+        kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
+        kInfoFontSize + 15, kNextLabel, *info_font, increaseInvPage);
+    prev_store_button = new Button(
+        0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
+        kInfoFontSize + 15, kPrevLabel, *info_font, decreaseStorePage);
+    prev_inv_button = new Button(
+        0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
+        kInfoFontSize + 15, kPrevLabel, *info_font, decreaseInvPage);
     buttons.push_back(play_button);
 }
 
@@ -118,6 +155,10 @@ void ofApp::deleteButtons() {
     delete (inventory_button);
     delete (back_store_button);
     delete (back_inventory_button);
+    delete (next_store_button);
+    delete (next_inv_button);
+    delete (prev_store_button);
+    delete (prev_inv_button);
 }
 //--------------------------------------------------------------
 void ofApp::setupResources() {
@@ -242,6 +283,7 @@ void ofApp::setupBattle() {
     for (int dir = UP; dir <= RIGHT; dir++) {
         move_key_is_pressed[dir] = false;
     }
+    buttons.remove(inventory_button);
     // keeping stage_num_ inside allows for larger range of rand() % numbers,
     // otherwise numbers would just be divisible by stage_num_
     int gold =
@@ -271,6 +313,7 @@ void ofApp::checkBattleEnded() {
         turns_fought_ = 0;
         battle_music_player->stop();
         background_music_player->setPaused(false);
+        buttons.push_back(inventory_button);
     }
     if (player.getHealth() <= 0) {
         energy_left_ -= kEnergyBattleLost;
@@ -331,6 +374,14 @@ void ofApp::draw() {
     } else {
         drawWorld();
     }
+    drawButtons();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawButtons() {
+    for (auto& button : buttons) {
+        button->draw();
+	}
 }
 
 //--------------------------------------------------------------
@@ -339,6 +390,7 @@ void ofApp::drawLvlUp() {
     button_font->draw("LEVEL UP!", ofGetWindowWidth() * 3.0 / 7.0,
                       ofGetWindowHeight() * 2.0 / 7.0);
 }
+
 //--------------------------------------------------------------
 void ofApp::drawGameOver() {
     if (!game_over_is_set_up_) {
@@ -353,6 +405,7 @@ void ofApp::drawGameOver() {
     restart_button->draw();
     store_button->draw();
 }
+
 //--------------------------------------------------------------
 void ofApp::setupGameOver() {
     if (background_music_player->isPlaying()) {
@@ -595,12 +648,16 @@ void ofApp::openInventory() {
     inventory_is_open_ = true;
     buttons.remove(inventory_button);
     buttons.push_back(back_inventory_button);
+    buttons.push_back(next_inv_button);
 }
 
 //-------------------------------------------------------------
 void ofApp::closeInventory() {
+    page_num_ = 0;
     inventory_is_open_ = false;
     buttons.remove(back_inventory_button);
+    buttons.remove(next_inv_button);
+    buttons.remove(prev_inv_button);
     buttons.push_back(inventory_button);
 }
 //-------------------------------------------------------------
@@ -609,6 +666,27 @@ void ofApp::drawInventory() {
     ofSetColor(kBlack);
     back_inventory_button->draw();
 }
+
+//--------------------------------------------------------------
+void ofApp::increaseInvPage() { 
+	page_num_ = min(++page_num_, kMaxInvPageNum); 
+	if (page_num_ == 1) {
+		buttons.push_back(prev_inv_button);    
+	} else if (page_num_ == kMaxInvPageNum) {
+		buttons.remove(next_inv_button);    
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::decreaseInvPage() { 
+	page_num_ = max(--page_num_, 0); 
+	if (page_num_ == 0) {
+        buttons.remove(prev_inv_button);
+    } else if (page_num_ == kMaxInvPageNum - 1) {
+        buttons.push_back(next_inv_button);
+    }
+}
+
 //--------------------------------------------------------------
 void ofApp::openStore() {
     ofSetWindowTitle("STORE");
@@ -619,20 +697,50 @@ void ofApp::openStore() {
     buttons.remove(store_button);
     buttons.remove(restart_button);
     buttons.push_back(back_store_button);
+    buttons.push_back(next_store_button);
 }
 
 //-------------------------------------------------------------
 void ofApp::closeStore() {
+    page_num_ = 0;
     store_is_open_ = false;
     buttons.remove(back_store_button);
+    buttons.remove(next_store_button);
+    buttons.remove(prev_inv_button);
     buttons.push_back(restart_button);
     buttons.push_back(store_button);
 }
+
 //-------------------------------------------------------------
 void ofApp::drawStore() {
     ofBackground(kTan);
     ofSetColor(kBlack);
+    for (auto& item : items) {
+        ofDrawRectangle(item.store_pos_, item.kWidth, item.kHeight);
+        item.buy_button->draw();
+        item.store_equip_button->draw();
+    }
     back_store_button->draw();
+}
+
+//--------------------------------------------------------------
+void ofApp::increaseStorePage() {
+    page_num_ = min(++page_num_, kMaxStorePageNum);
+    if (page_num_ == 1) {
+        buttons.push_back(prev_store_button);
+    } else if (page_num_ == kMaxStorePageNum) {
+        buttons.remove(next_store_button);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::decreaseStorePage() { 
+	page_num_ = max(--page_num_, 0); 
+	if (page_num_ == 0) {
+        buttons.remove(prev_store_button);
+    } else if (page_num_ == kMaxStorePageNum - 1) {
+        buttons.push_back(next_store_button);
+    }
 }
 
 //-------------------------------------------------------------
