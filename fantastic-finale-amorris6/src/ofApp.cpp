@@ -32,6 +32,8 @@ const string ofApp::kPlayerSpritePath =
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
+float ofApp::battle_multiplier_ = kInitBattleMult;
+int ofApp::battle_chance_ = 0;
 int ofApp::page_num_ = 0;
 int ofApp::stage_num_ = 0;
 int ofApp::lvls_inc_ = 0;
@@ -63,7 +65,6 @@ void ofApp::setup() {
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
     turns_fought_ = 0;
-    battle_multiplier_ = kInitBattleMult;
     crit_mult_ = 1.0;
     battle_chance_ = kFightInit * 1 / (battle_multiplier_);
     player_is_fighting_ = false;
@@ -324,6 +325,7 @@ void ofApp::checkBattleEnded() {
         turns_fought_ = 0;
         battle_music_player->stop();
         background_music_player->setPaused(false);
+        buttons.push_back(inventory_button);
     }
 }
 //-------------------------------------------------------------
@@ -402,12 +404,11 @@ void ofApp::drawGameOver() {
     ofSetWindowTitle(game_over_msg);
     button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
                       kPlayYAdj * ofGetWindowHeight());
-    restart_button->draw();
-    store_button->draw();
 }
 
 //--------------------------------------------------------------
 void ofApp::setupGameOver() {
+    fight_is_init_ = false;
     if (background_music_player->isPlaying()) {
         background_music_player->stop();
     }
@@ -422,11 +423,7 @@ void ofApp::setupGameOver() {
 }
 
 //--------------------------------------------------------------
-void ofApp::drawStartingScreen() {
-    ofBackground(kWhite);
-    ofSetColor(kBlack);
-    play_button->draw();
-}
+void ofApp::drawStartingScreen() { ofBackground(kWhite); }
 
 //--------------------------------------------------------------
 void ofApp::drawWorld() {
@@ -532,7 +529,6 @@ void ofApp::drawInfo() {
     // puts energy_message in top right corner
     info_font->draw(energy_message, ofGetWindowWidth() - 10 * kInfoFontSize,
                     kInfoFontSize);
-    inventory_button->draw();
 }
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {
@@ -634,9 +630,11 @@ void ofApp::restartGame() {
     stage_num_ = 0;
     energy_left_ = kInitialEnergy;
     battle_start_ = kStartBattle;
+    battle_chance_ = kFightInit * 1 / (battle_multiplier_);
     player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
                     kStartDef, kStartHealth, kStartCrit);
     player.player_sprite->load(kPlayerSpritePath);
+    buttons.clear();
     buttons.push_back(play_button);
 }
 //--------------------------------------------------------------
@@ -663,8 +661,6 @@ void ofApp::closeInventory() {
 //-------------------------------------------------------------
 void ofApp::drawInventory() {
     ofBackground(kTan);
-    ofSetColor(kBlack);
-    back_inventory_button->draw();
 }
 
 //--------------------------------------------------------------
@@ -706,7 +702,7 @@ void ofApp::closeStore() {
     store_is_open_ = false;
     buttons.remove(back_store_button);
     buttons.remove(next_store_button);
-    buttons.remove(prev_inv_button);
+    buttons.remove(prev_store_button);
     buttons.push_back(restart_button);
     buttons.push_back(store_button);
 }
@@ -719,8 +715,7 @@ void ofApp::drawStore() {
         ofDrawRectangle(item.store_pos_, item.kWidth, item.kHeight);
         item.buy_button->draw();
         item.store_equip_button->draw();
-    }
-    back_store_button->draw();
+    };
 }
 
 //--------------------------------------------------------------

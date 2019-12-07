@@ -80,7 +80,7 @@ class ofApp : public ofBaseApp {
     const static string kFontName;
 
     static int page_num_;
-    int battle_chance_;
+    static int battle_chance_;
     bool fight_is_init_;
     static int battle_start_;
     bool player_is_fighting_;
@@ -89,7 +89,7 @@ class ofApp : public ofBaseApp {
     int atk_damage_;
     bool is_crit_hit_;
     float crit_mult_;
-    float battle_multiplier_;
+    static float battle_multiplier_;
     int enemy_fight_x_;
     static int energy_left_;
     int max_health_;
