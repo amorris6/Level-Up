@@ -39,4 +39,5 @@ class Item {
     }
     bool operator==(Item const& other) const;
     bool operator!=(Item const& other) const;
+    string getName();
 };

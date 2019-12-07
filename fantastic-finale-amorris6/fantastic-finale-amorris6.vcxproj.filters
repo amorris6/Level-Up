@@ -171,4 +171,7 @@
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="tests.runsettings" />
+  </ItemGroup>
 </Project>

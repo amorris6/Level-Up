@@ -1,6 +1,6 @@
-#include "Button.h"
 #include "Enemy.h"
 #include "Player.h"
+#include "Button.h"
 #include "ofxSmartFont.h"
 
 int main() {
@@ -161,7 +161,7 @@ int main() {
 
     // mouseIsInside outputs true if
     // (x, y) is inside (TEST 16)
-    if (button.mouseIsInside((kStartX + kWidth) / 2, (kStartY + kHeight) / 2)) {
+	if (button.mouseIsInside((kStartX + kWidth) / 2, (kStartY + kHeight) / 2)) {
         cout << "TEST 16 PASSED" << endl;
     } else {
         cout << "TEST 16 FAILED" << endl;

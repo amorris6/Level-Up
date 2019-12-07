@@ -111,8 +111,8 @@ void ofApp::setupButtons() {
 }
 
 //--------------------------------------------------------------
-void ofApp::deleteButtons() { 
-	delete (play_button);
+void ofApp::deleteButtons() {
+    delete (play_button);
     delete (restart_button);
     delete (store_button);
     delete (inventory_button);
@@ -633,4 +633,13 @@ void ofApp::drawStore() {
     ofBackground(kTan);
     ofSetColor(kBlack);
     back_store_button->draw();
+}
+
+//-------------------------------------------------------------
+void ofApp::exit() {
+    deleteButtons();
+    delete (background_music_player);
+    delete (atk_sound_player);
+    delete (battle_music_player);
+    delete (player.player_sprite);
 }
