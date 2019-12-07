@@ -83,6 +83,7 @@ void ofApp::setup() {
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
     setupButtons();
+    items = {};
     setupItems();
     max_health_ = kStartHealth;
     player.player_sprite->load(kPlayerSpritePath);
@@ -91,12 +92,12 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::setupItems() {
-    Item sword =
-        Item("sword", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
-    Item helmet =
-        Item("helmet", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
-    Item gem =
-        Item("gem", 800, (ofVec2f)(50, 50), (ofVec2f)(50, 50), *info_font);
+    Item sword = Item("sword", 800, 0, 0, 50, 50, 50, 50,
+                      *info_font);
+    Item helmet = Item("helmet", 800, 0, 0, 150, 50,
+                       150, 50, *info_font);
+    Item gem = Item("gem", 800, 0, 0, 250, 250, 250, 250,
+                    *info_font);
     items.push_back(sword);
     items.push_back(helmet);
     items.push_back(gem);
@@ -131,13 +132,11 @@ void ofApp::setupButtons() {
                    kInfoFontSize + 15, kBackLabel, *info_font, closeInventory);
     next_store_button = new Button(
         ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
-        kInfoFontSize + 15,
-        kPlayWidthAdj * ofGetWindowWidth() / 2 + 11, kInfoFontSize + 15,
-        kNextLabel, *info_font, increaseStorePage);
+        kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
+        kInfoFontSize + 15, kNextLabel, *info_font, increaseStorePage);
     next_inv_button = new Button(
         ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
-        kInfoFontSize + 14,
-        kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
+        kInfoFontSize + 14, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
         kInfoFontSize + 15, kNextLabel, *info_font, increaseInvPage);
     prev_store_button = new Button(
         0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
@@ -383,7 +382,7 @@ void ofApp::draw() {
 void ofApp::drawButtons() {
     for (auto& button : buttons) {
         button->draw();
-	}
+    }
 }
 
 //--------------------------------------------------------------
@@ -659,24 +658,22 @@ void ofApp::closeInventory() {
     buttons.push_back(inventory_button);
 }
 //-------------------------------------------------------------
-void ofApp::drawInventory() {
-    ofBackground(kTan);
+void ofApp::drawInventory() { ofBackground(kTan); }
+
+//--------------------------------------------------------------
+void ofApp::increaseInvPage() {
+    page_num_ = min(++page_num_, kMaxInvPageNum);
+    if (page_num_ == 1) {
+        buttons.push_back(prev_inv_button);
+    } else if (page_num_ == kMaxInvPageNum) {
+        buttons.remove(next_inv_button);
+    }
 }
 
 //--------------------------------------------------------------
-void ofApp::increaseInvPage() { 
-	page_num_ = min(++page_num_, kMaxInvPageNum); 
-	if (page_num_ == 1) {
-		buttons.push_back(prev_inv_button);    
-	} else if (page_num_ == kMaxInvPageNum) {
-		buttons.remove(next_inv_button);    
-	}
-}
-
-//--------------------------------------------------------------
-void ofApp::decreaseInvPage() { 
-	page_num_ = max(--page_num_, 0); 
-	if (page_num_ == 0) {
+void ofApp::decreaseInvPage() {
+    page_num_ = max(--page_num_, 0);
+    if (page_num_ == 0) {
         buttons.remove(prev_inv_button);
     } else if (page_num_ == kMaxInvPageNum - 1) {
         buttons.push_back(next_inv_button);
@@ -729,9 +726,9 @@ void ofApp::increaseStorePage() {
 }
 
 //--------------------------------------------------------------
-void ofApp::decreaseStorePage() { 
-	page_num_ = max(--page_num_, 0); 
-	if (page_num_ == 0) {
+void ofApp::decreaseStorePage() {
+    page_num_ = max(--page_num_, 0);
+    if (page_num_ == 0) {
         buttons.remove(prev_store_button);
     } else if (page_num_ == kMaxStorePageNum - 1) {
         buttons.push_back(next_store_button);

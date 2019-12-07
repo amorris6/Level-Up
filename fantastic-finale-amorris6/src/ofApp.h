@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include "Button.h"
 #include "Enemy.h"
-#include "Item.h"
+#include "Weapon.h"
+#include "Armor.h"
 #include "Player.h"
 #include "Resource.h"
 #include "ofMain.h"
@@ -79,6 +80,8 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
+	Weapon equipped_weapon_;
+    Armor equipped_armor_;
     static int page_num_;
     static int battle_chance_;
     bool fight_is_init_;
