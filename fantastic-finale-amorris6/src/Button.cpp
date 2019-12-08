@@ -20,7 +20,7 @@ void Button::draw() {
     }
     ofNoFill();
     ofDrawRectangle(x, y, width, height);
-    label_font.draw(label, x, y + (height + kButtonFontSize) * kLabelYAdj);
+    label_font->draw(label, x, y + (height + kButtonFontSize) * kLabelYAdj);
     ofFill();
 }
 

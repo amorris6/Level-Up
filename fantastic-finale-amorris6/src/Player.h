@@ -1,5 +1,7 @@
 #pragma once
+#include "Armor.h"
 #include "Character.h"
+#include "Weapon.h"
 
 // taken from serious-snakes-amorris6
 typedef enum { UP = 0, DOWN, LEFT, RIGHT } PlayerDirection;
@@ -11,6 +13,10 @@ class Player : public Character {
     // helper function of moveInDirection
     bool canMoveInDirection(PlayerDirection direction);
     int lvl;
+    Weapon* equipped_weapon_;
+    Armor* equipped_armor_;
+    list<Item> inventory;  // using a set makes it easy to see if inventory
+                          // constains an item already
 
    public:
     ofRectangle getRect();
@@ -21,7 +27,9 @@ class Player : public Character {
            int crit_chance)
         : Character(x, y, gold, exp, atk, def, health, crit_chance) {
         lvl = 0;
+        equipped_weapon_ = nullptr;
+        equipped_armor_ = nullptr;
         player_sprite = new ofImage();
     }
-    Player() : Character() { player_sprite = new ofImage(); }
+    Player() : Player(0, 0, 0, 0, 0, 0, 0, 0) {}
 };

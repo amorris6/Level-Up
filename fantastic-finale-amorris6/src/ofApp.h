@@ -23,6 +23,7 @@ class ofApp : public ofBaseApp {
     const static int kStartBattle = 69;
     const static int kFightInit = -20;
     const static int kAtkDelay = 1000;
+    const static int kMessageDelay = 700;
     const static int kPlayerFightX = 50;
     const static int kPlayerFightY = 50;
     const static int kPlayerFightWidth = Character::kCharWidth + 100;
@@ -80,8 +81,7 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
-	Weapon equipped_weapon_;
-    Armor equipped_armor_;
+	bool should_delay_;
     static int page_num_;
     static int battle_chance_;
     bool fight_is_init_;
@@ -97,6 +97,10 @@ class ofApp : public ofBaseApp {
     static int energy_left_;
     int max_health_;
     static bool store_is_open_;
+    bool purchase_made_;
+    bool sale_made_;
+    static bool item_already_owned_;
+    static bool not_enough_gold_;
     static bool inventory_is_open_;
     static bool game_over_is_set_up_;
     static int lvls_inc_;
@@ -120,13 +124,18 @@ class ofApp : public ofBaseApp {
     void setupGameOver();
     void drawGameOver();
     static void openStore();
+    void buyItem(Item item);
+    void sellItem(Item item);
+    void equipItem(Item item);
     static void closeStore();
     void drawStore();
+    void drawStoreNotices();
     static void increaseStorePage();
     static void decreaseStorePage();
     static void openInventory();
     static void closeInventory();
     void drawInventory();
+    void drawInventoryNotices();
     static void increaseInvPage();
     static void decreaseInvPage();
     static void setupWorld();
