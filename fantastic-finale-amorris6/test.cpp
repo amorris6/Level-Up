@@ -2,6 +2,12 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "ofxSmartFont.h"
+class Test {
+   public:
+    static void dummyFunc();
+};
+
+void Test::dummyFunc() {}
 
 int main() {
     // setup
@@ -157,7 +163,8 @@ int main() {
     const string kFontName = "Roboto-Black";
     ofxSmartFont::add(kFontFilePath, Button::kButtonFontSize, kFontName);
     shared_ptr<ofxSmartFont> kFont = ofxSmartFont::get(kFontName);
-    Button button = Button(kStartX, kStartY, kWidth, kHeight, kLabel, *kFont);
+    Button button =
+        Button(kStartX, kStartY, kWidth, kHeight, kLabel, kFont, Test::dummyFunc);
 
     // mouseIsInside outputs true if
     // (x, y) is inside (TEST 16)
@@ -165,5 +172,71 @@ int main() {
         cout << "TEST 16 PASSED" << endl;
     } else {
         cout << "TEST 16 FAILED" << endl;
+    }
+	
+	//item and subclass test setup
+    string kGemName = "gem";
+    int kGemPrice = 300;
+    float kGemInvPosX = 400;
+    float kGemInvPosY = 100;
+    float kGemStorePosX = 400;
+    float kGemStorePosY = 100;
+    string kSwordName = "sword";
+    int kSwordPrice = 300;
+    float kSwordInvPosX = 100;
+    float kSwordInvPosY = 100;
+    float kSwordStorePosX = 100;
+    float kSwordStorePosY = 100;
+    int kSwordAtkBoost = 4000;
+    string kHelmetName = "helmet";
+    int kHelmetPrice = 300;
+    float kHelmetInvPosX = 250;
+    float kHelmetInvPosY = 100;
+    float kHelmetStorePosX = 250;
+    float kHelmetStorePosY = 100;
+    int kHelmetDefBoost = 2000;
+    int kHelmetHpBoost = 3000;
+    Item gem = Item(kGemName, 
+		            kGemPrice, 
+		            0, 0, 
+		            kGemInvPosX, kGemInvPosY, 
+		            kGemStorePosX, kGemStorePosY, 
+		            kFont);
+    Weapon sword = Weapon(kSwordName, kSwordPrice, 0, 0, kSwordInvPosX, kSwordInvPosY,
+               kSwordStorePosX, kSwordStorePosY, kSwordAtkBoost, kFont);
+    Armor helmet = Armor(kHelmetName, kHelmetPrice, 0, 0, kHelmetInvPosX,
+                         kHelmetInvPosY, kHelmetStorePosX, kHelmetStorePosY,
+		                 kHelmetDefBoost, kHelmetHpBoost,
+                         kFont);
+
+	//getters work correctly (TESTS 17-21)
+    if (gem.getName() == kGemName) {
+        cout << "TEST 17 PASSED" << endl;
+    } else {
+        cout << "TEST 17 FAILED" << endl;
+    }
+
+	if (gem.getPrice() == kGemPrice) {
+        cout << "TEST 18 PASSED" << endl;
+    } else {
+        cout << "TEST 18 FAILED" << endl;
+    }
+
+	if (sword.getAtkBoost() == kSwordAtkBoost) {
+        cout << "TEST 19 PASSED" << endl;
+    } else {
+        cout << "TEST 19 FAILED" << endl;
+    }
+
+	if (helmet.getDefBoost() == kHelmetDefBoost) {
+        cout << "TEST 20 PASSED" << endl;
+    } else {
+        cout << "TEST 20 FAILED" << endl;
+    }
+
+	if (helmet.getHpBoost() == kHelmetHpBoost) {
+        cout << "TEST 21 PASSED" << endl;
+    } else {
+        cout << "TEST 21 FAILED" << endl;
     }
 }

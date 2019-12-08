@@ -102,9 +102,9 @@ void ofApp::setup() {
 void ofApp::setupItems() {
     items.clear();
     Weapon* sword =
-        new Weapon("sword", 300, 0, 0, 100, 100, 100, 100, info_font, 4000);
+        new Weapon("sword", 300, 0, 0, 100, 100, 100, 100, 4000, info_font);
     Armor* helmet =
-        new Armor("helmet", 300, 0, 0, 250, 100, 250, 100, info_font, 2000, 3000);
+        new Armor("helmet", 300, 0, 0, 250, 100, 250, 100, 2000, 3000, info_font);
     Item* gem = new Item("gem", 300, 0, 0, 400, 100, 400, 100, info_font);
     items.push_back(sword);
     items.push_back(helmet);
