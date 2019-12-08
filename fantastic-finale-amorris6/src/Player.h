@@ -15,7 +15,7 @@ class Player : public Character {
     int lvl;
     Weapon* equipped_weapon_;
     Armor* equipped_armor_;
-    list<Item> inventory;  // using a set makes it easy to see if inventory
+    list<Item*> inventory;  // using a set makes it easy to see if inventory
                           // constains an item already
 
    public:

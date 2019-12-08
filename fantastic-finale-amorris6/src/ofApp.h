@@ -99,6 +99,9 @@ class ofApp : public ofBaseApp {
     static bool store_is_open_;
     bool purchase_made_;
     bool sale_made_;
+    bool tried_equip_not_own_;
+    bool equip_success_;
+    bool already_equipped_;
     static bool item_already_owned_;
     static bool not_enough_gold_;
     static bool inventory_is_open_;
@@ -116,6 +119,7 @@ class ofApp : public ofBaseApp {
     Enemy enemy;
     static list<Resource> resources;
     void setupItems();
+    void deleteItems();
     void setupButtons();
     void drawButtons();
     void deleteButtons();
@@ -124,12 +128,13 @@ class ofApp : public ofBaseApp {
     void setupGameOver();
     void drawGameOver();
     static void openStore();
-    void buyItem(Item item);
-    void sellItem(Item item);
-    void equipItem(Item item);
+    void buyItem(Item* item);
+    void sellItem(Item* item);
+    void equipItem(Item* item);
     static void closeStore();
     void drawStore();
     void drawStoreNotices();
+    void drawEquipNotices();
     static void increaseStorePage();
     static void decreaseStorePage();
     static void openInventory();
@@ -156,8 +161,9 @@ class ofApp : public ofBaseApp {
     void drawWinBattleInfo();
     void lvlUp();
     static void restartGame();
+    static void resetPlayer();
     static list<Button*> buttons;
-    list<Item> items;
+    list<Item*> items;
     static Button* play_button;
     static Button* restart_button;
     static Button* store_button;
