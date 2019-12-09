@@ -17,15 +17,13 @@ class Item {
     const static int kEquipXAdj = -35;
     const static int kEquipYAdj = 50;
     friend class ofApp;
-    int store_page_;
-    int inv_page_;
+    int page_;
     int price_;
     static bool wants_to_buy_;
     static bool wants_to_sell_;
     static bool wants_to_equip_;
     string name_;
-    ofVec2f store_pos_;
-    ofVec2f inv_pos_;
+    ofVec2f pos_;
     Button* buy_button;
     Button* sell_button;
     Button* equip_button;
@@ -35,21 +33,29 @@ class Item {
     Button store_buttons_[2];
     Button inv_buttons_[2];
     function<void()> func_when_equipped_[1];
+    function<void()> func_when_unequipped_[1];
 
    public:
     Item() {}
-    Item(string name, int price, int store_page, int inv_page,
-         float store_pos_x, float store_pos_y, float inv_pos_x, float inv_pos_y,
+    Item(string name, int price, int page_num,
+         float pos_x, float pos_y,
          shared_ptr<ofxSmartFont> button_font);
-    Item(string name, int price, int store_page, int inv_page,
-         float store_pos_x, float store_pos_y, float inv_pos_x, float inv_pos_y,
-         shared_ptr<ofxSmartFont> button_font, function<void()> func_when_equipped);
-    Item(string name, int price, int store_page, int inv_page,
-         ofVec2f store_pos, ofVec2f inv_pos,
+    Item(string name, int price, int page_num,
+         ofVec2f pos, shared_ptr<ofxSmartFont> button_font);
+    Item(string name, int price, int page_num,
+         float pos_x, float pos_y,
+         function<void()> func_when_equipped,
+         function<void()> func_when_unequipped,
+         shared_ptr<ofxSmartFont> button_font);
+    Item(string name, int price, int page_num,
+         ofVec2f pos, function<void()> func_when_equipped,
+         function<void()> func_when_unequipped,
          shared_ptr<ofxSmartFont> button_font);
     virtual ~Item() {}
     bool operator==(Item const& other) const;
     bool operator!=(Item const& other) const;
     string getName();
     int getPrice();
+    function<void()> getFuncWhenEquipped();
+    function<void()> getFuncWhenUnequipped();
 };

@@ -12,11 +12,15 @@ class Player : public Character {
     // verifies that player can move in direction of keyPressed
     // helper function of moveInDirection
     bool canMoveInDirection(PlayerDirection direction);
+    int kMoveSideSpeed;
+    int kMoveUpSpeed;
     int lvl;
+    int max_health_;
+    // have to use ptrs for dynamic casting
     Weapon* equipped_weapon_;
     Armor* equipped_armor_;
-    list<Item*> inventory;  // using a set makes it easy to see if inventory
-                          // constains an item already
+    Item* equipped_misc_;
+    list<Item*> inventory;
 
    public:
     ofRectangle getRect();
@@ -27,6 +31,7 @@ class Player : public Character {
            int crit_chance)
         : Character(x, y, gold, exp, atk, def, health, crit_chance) {
         lvl = 0;
+        max_health_ = health;
         equipped_weapon_ = nullptr;
         equipped_armor_ = nullptr;
         player_sprite = new ofImage();

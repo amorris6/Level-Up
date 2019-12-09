@@ -1,12 +1,12 @@
 #pragma once
 
 #include <stdlib.h>
+#include "Armor.h"
 #include "Button.h"
 #include "Enemy.h"
-#include "Weapon.h"
-#include "Armor.h"
 #include "Player.h"
 #include "Resource.h"
+#include "Weapon.h"
 #include "ofMain.h"
 #include "ofxSmartFont.h"
 
@@ -14,8 +14,8 @@ class ofApp : public ofBaseApp {
    private:
     friend class Item;
     friend void Player::moveInDirection(int direction_index);
-    const static int kMaxStorePageNum = 2;
-    const static int kMaxInvPageNum = 3;
+    const static int kMaxPageNum = 3;
+    const static int kMaxItemsOnPage = 32;
     const static int kInitialEnergy = 15;
     const static int kEnergyBattle = 2;
     const static int kEnergyBattleLost = 3;
@@ -33,7 +33,10 @@ class ofApp : public ofBaseApp {
     const static int kEnemyFightHeight = 100;
     const static int kEnemyAdjX = 300;
     const static float kInitBattleMult;
+    const static float kBattleMultFactor;
     const static float kInitCritMult;
+    const static float kGoldMultFactor;
+    const static float kExpMultFactor;
     const static int kStageNumChangeRight = 7;
     const static int kStageNumChangeUp = 11;
     const static int kStartX = 0;
@@ -81,7 +84,7 @@ class ofApp : public ofBaseApp {
     const static string kSmallFontName;
     const static string kFontName;
 
-	bool should_delay_;
+    bool should_delay_;
     static int page_num_;
     static int battle_chance_;
     bool fight_is_init_;
@@ -96,6 +99,8 @@ class ofApp : public ofBaseApp {
     int enemy_fight_x_;
     static int energy_left_;
     int max_health_;
+    static float gold_mult_;
+    static float exp_mult_;
     static bool store_is_open_;
     bool purchase_made_;
     bool sale_made_;
@@ -118,6 +123,17 @@ class ofApp : public ofBaseApp {
     static Player player;
     Enemy enemy;
     static list<Resource> resources;
+    static list<Button*> buttons;
+    list<Item*> items;
+    static Button* play_button;
+    static Button* restart_button;
+    static Button* store_button;
+    static Button* inventory_button;
+    static Button* back_store_button;
+    static Button* back_inventory_button;
+    static Button* next_button;
+    static Button* prev_button;
+
     void setupItems();
     void deleteItems();
     void setupButtons();
@@ -135,14 +151,12 @@ class ofApp : public ofBaseApp {
     void drawStore();
     void drawStoreNotices();
     void drawEquipNotices();
-    static void increaseStorePage();
-    static void decreaseStorePage();
     static void openInventory();
     static void closeInventory();
     void drawInventory();
     void drawInventoryNotices();
-    static void increaseInvPage();
-    static void decreaseInvPage();
+    static void increasePage();
+    static void decreasePage();
     static void setupWorld();
     void drawWorld();
     void drawLvlUp();
@@ -151,6 +165,12 @@ class ofApp : public ofBaseApp {
     static void drawResources();
     void mineResources();
     void updatePlayerPos();
+    static void slowBattleChance();
+    static void speedBattleChance();
+    static void increaseExpGain();
+    static void decreaseExpGain();
+    static void increaseGoldGain();
+    static void decreaseGoldGain();
     void battleEnemy();
     void takeBattleTurn();
     void checkBattleEnded();
@@ -162,18 +182,6 @@ class ofApp : public ofBaseApp {
     void lvlUp();
     static void restartGame();
     static void resetPlayer();
-    static list<Button*> buttons;
-    list<Item*> items;
-    static Button* play_button;
-    static Button* restart_button;
-    static Button* store_button;
-    static Button* inventory_button;
-    static Button* back_store_button;
-    static Button* back_inventory_button;
-    static Button* next_store_button;
-    static Button* next_inv_button;
-    static Button* prev_store_button;
-    static Button* prev_inv_button;
 
    public:
     const static ofColor kWhite;

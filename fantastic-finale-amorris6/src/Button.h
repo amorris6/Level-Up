@@ -30,7 +30,7 @@ class Button : public ofBaseApp {
     Button() {}
 
     const static int kButtonFontSize = 28;
-    std::function<void()> getFuncWhenPressed();
+    function<void()> getFuncWhenPressed();
 
     bool mouseIsInside(int mouse_x, int mouse_y);
     void draw();

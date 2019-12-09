@@ -8,30 +8,31 @@ ofRectangle Player::getRect() {
 }
 
 int Player::getLvl() { return lvl; }
-bool Player::canMoveInDirection(
-    PlayerDirection direction) {
+bool Player::canMoveInDirection(PlayerDirection direction) {
+    kMoveSideSpeed = ofGetWindowWidth() / 205;
+    kMoveUpSpeed = ofGetWindowHeight() / 96;
     switch (direction) {
         case UP:
-            if (position.y >= Character::kMoveSpeed) {
+            if (position.y >= kMoveUpSpeed) {
                 return true;
             }
             return false;
         case DOWN:
             if (position.y <=
                 (int)ofGetWindowHeight() -
-                    (Character::kCharHeight + Character::kMoveSpeed)) {
+                    (Character::kCharHeight + kMoveUpSpeed)) {
                 return true;
             }
             return false;
         case LEFT:
-            if (position.x >= Character::kMoveSpeed) {
+            if (position.x >= kMoveSideSpeed) {
                 return true;
             }
             return false;
         case RIGHT:
             if (position.x <=
                 (int)ofGetWindowWidth() -
-                    (Character::kCharWidth + Character::kMoveSpeed)) {
+                    (Character::kCharWidth + kMoveSideSpeed)) {
                 return true;
             }
             return false;
@@ -45,7 +46,7 @@ void Player::moveInDirection(int direction_index) {
     switch (direction_index) {
         case UP:
             if (canMoveInDirection(UP)) {
-                position.y -= Character::kMoveSpeed;
+                position.y -= kMoveUpSpeed;
             } else {
                 position.y = ofGetWindowHeight();
                 ofApp::setupResources();
@@ -54,21 +55,21 @@ void Player::moveInDirection(int direction_index) {
             break;
         case DOWN:
             if (canMoveInDirection(DOWN)) {
-                position.y += Character::kMoveSpeed;
+                position.y += kMoveUpSpeed;
             } else {
                 position.y = (int)ofGetWindowHeight() - Character::kCharHeight;
             }
             break;
         case LEFT:
             if (canMoveInDirection(LEFT)) {
-                position.x -= Character::kMoveSpeed;
+                position.x -= kMoveSideSpeed;
             } else {
                 position.x = 0;
             }
             break;
         case RIGHT:
             if (canMoveInDirection(RIGHT)) {
-                position.x += Character::kMoveSpeed;
+                position.x += kMoveUpSpeed;
             } else {
                 position.x = 0;
                 ofApp::setupResources();

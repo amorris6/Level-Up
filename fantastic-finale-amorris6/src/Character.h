@@ -12,7 +12,6 @@ class Character {
     float crit_chance;
 
    public:
-    const static int kMoveSpeed = 5;
     const static int kCharWidth = 20;
     const static int kCharHeight = 20;
 

@@ -33,6 +33,11 @@ const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
 float ofApp::battle_multiplier_ = kInitBattleMult;
+const float ofApp::kBattleMultFactor = 2;
+float ofApp::exp_mult_ = 1;
+const float ofApp::kExpMultFactor = 1.3;
+float ofApp::gold_mult_ = 1;
+const float ofApp::kGoldMultFactor = 1.3;
 int ofApp::battle_chance_ = 0;
 int ofApp::page_num_ = 0;
 int ofApp::stage_num_ = 0;
@@ -53,10 +58,8 @@ Button* ofApp::store_button = nullptr;
 Button* ofApp::inventory_button = nullptr;
 Button* ofApp::back_store_button = nullptr;
 Button* ofApp::back_inventory_button = nullptr;
-Button* ofApp::next_store_button = nullptr;
-Button* ofApp::next_inv_button = nullptr;
-Button* ofApp::prev_store_button = nullptr;
-Button* ofApp::prev_inv_button = nullptr;
+Button* ofApp::next_button = nullptr;
+Button* ofApp::prev_button = nullptr;
 shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
 shared_ptr<ofxSmartFont> ofApp::info_font = nullptr;
 list<Button*> ofApp::buttons = {};
@@ -86,6 +89,7 @@ void ofApp::setup() {
     atk_sound_player->load(kAtkSoundFilePath);
     atk_sound_player->setVolume(0.2);
     battle_music_player->load(kBattleMusicFilePath);
+    battle_music_player->setLoop(true);
     ofxSmartFont::add(kFontFilePath, Button::kButtonFontSize, kFontName);
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
     button_font = ofxSmartFont::get(kFontName);
@@ -93,22 +97,44 @@ void ofApp::setup() {
     setupButtons();
     items = {nullptr};
     setupItems();
-    max_health_ = kStartHealth;
     player.player_sprite->load(kPlayerSpritePath);
     setupResources();
 }
 
 //--------------------------------------------------------------
+// One page can hold 32 items, if have more than 32, go to second page
 void ofApp::setupItems() {
     items.clear();
-    Weapon* sword =
-        new Weapon("sword", 300, 0, 0, 100, 100, 100, 100, 4000, info_font);
+    ofVec2f pos[kMaxItemsOnPage];
+    int i = 0;
+    for (int y = 100; y < ofGetWindowHeight() - 150; y += 150) {
+        for (int x = 100; x < ofGetWindowWidth() - 150; x += 150) {
+            ofVec2f pos_;
+            pos_.set(x, y);
+            pos[i] = pos_;
+            i++;
+        }
+    }
+    Weapon* sword = new Weapon("sword", 300, 0, pos[0], 4000, info_font);
     Armor* helmet =
-        new Armor("helmet", 300, 0, 0, 250, 100, 250, 100, 2000, 3000, info_font);
-    Item* gem = new Item("gem", 300, 0, 0, 400, 100, 400, 100, info_font);
+        new Armor("helmet", 300, 0, pos[1], 2000, 3000, info_font);
+    Item* fast_battle_gem =
+        new Item("battle++", 300, 0, pos[2], speedBattleChance,
+                 slowBattleChance, info_font);
+    Item* slow_battle_gem =
+        new Item("battle--", 300, 0, pos[3], slowBattleChance,
+                 speedBattleChance, info_font);
+    Item* more_exp_gem = new Item("exp++", 300, 0, pos[4], increaseExpGain,
+                                  decreaseExpGain, info_font);
+    Item* more_gold_gem = new Item("gold++", 300, 0, pos[5], increaseGoldGain,
+                                   decreaseGoldGain, info_font);
+
     items.push_back(sword);
     items.push_back(helmet);
-    items.push_back(gem);
+    items.push_back(fast_battle_gem);
+    items.push_back(slow_battle_gem);
+    items.push_back(more_exp_gem);
+    items.push_back(more_gold_gem);
 }
 
 //--------------------------------------------------------------
@@ -145,20 +171,13 @@ void ofApp::setupButtons() {
     back_inventory_button =
         new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
                    kInfoFontSize + 15, kBackLabel, info_font, closeInventory);
-    next_store_button = new Button(
-        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
-        kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
-        kInfoFontSize + 15, kNextLabel, info_font, increaseStorePage);
-    next_inv_button = new Button(
+    next_button = new Button(
         ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
         kInfoFontSize + 14, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
-        kInfoFontSize + 15, kNextLabel, info_font, increaseInvPage);
-    prev_store_button = new Button(
+        kInfoFontSize + 15, kNextLabel, info_font, increasePage);
+    prev_button = new Button(
         0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
-        kInfoFontSize + 15, kPrevLabel, info_font, decreaseStorePage);
-    prev_inv_button = new Button(
-        0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
-        kInfoFontSize + 15, kPrevLabel, info_font, decreaseInvPage);
+        kInfoFontSize + 15, kPrevLabel, info_font, decreasePage);
     buttons.push_back(play_button);
 }
 
@@ -170,10 +189,8 @@ void ofApp::deleteButtons() {
     delete (inventory_button);
     delete (back_store_button);
     delete (back_inventory_button);
-    delete (next_store_button);
-    delete (next_inv_button);
-    delete (prev_store_button);
-    delete (prev_inv_button);
+    delete (next_button);
+    delete (prev_button);
 }
 //--------------------------------------------------------------
 void ofApp::setupResources() {
@@ -247,8 +264,8 @@ void ofApp::lvlUp() {
     lvls_inc_++;
     player.atk += kLvlUpGain;
     player.def += kLvlUpGain;
-    max_health_ += kLvlUpGain;
-    player.health = max_health_;
+    player.max_health_ += kLvlUpGain;
+    player.health = player.max_health_;
     player.exp -= kExpLimit;
 }
 
@@ -274,6 +291,24 @@ void ofApp::updatePlayerPos() {
         }
     }
 }
+
+//--------------------------------------------------------------
+void ofApp::slowBattleChance() { battle_multiplier_ /= kBattleMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::speedBattleChance() { battle_multiplier_ *= kBattleMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::increaseGoldGain() { gold_mult_ *= kGoldMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::decreaseGoldGain() { gold_mult_ /= kGoldMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::increaseExpGain() { exp_mult_ *= kExpMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::decreaseExpGain() { exp_mult_ /= kExpMultFactor; }
 
 //--------------------------------------------------------------
 void ofApp::battleEnemy() {
@@ -321,9 +356,9 @@ void ofApp::checkBattleEnded() {
     if (enemy.getHealth() <= 0) {
         player_is_fighting_ = false;
         fight_is_init_ = false;
-        player.health = max_health_;
-        player.exp += enemy.getExp();
-        player.gold += enemy.getGold();
+        player.health = player.max_health_;
+        player.exp += (enemy.getExp() * exp_mult_);
+        player.gold += (enemy.getGold() * gold_mult_);
         is_player_atk_turn_ = true;
         turns_fought_ = 0;
         battle_music_player->stop();
@@ -335,7 +370,7 @@ void ofApp::checkBattleEnded() {
         is_player_atk_turn_ = true;
         player_is_fighting_ = false;
         fight_is_init_ = false;
-        player.health = max_health_;
+        player.health = player.max_health_;
         turns_fought_ = 0;
         battle_music_player->stop();
         background_music_player->setPaused(false);
@@ -368,8 +403,8 @@ void ofApp::mineResources() {
     for (auto& resource : resources) {
         if (player.getRect().intersects(resource.getRect())) {
             energy_left_--;
-            player.gold += resource.getGold();
-            player.exp += resource.getExp();
+            player.gold += (resource.getGold() * gold_mult_);
+            player.exp += (resource.getExp() * exp_mult_);
             resources.remove(resource);
             break;
         }
@@ -691,9 +726,27 @@ void ofApp::buyItem(Item* item) {
 
 //--------------------------------------------------------------
 void ofApp::sellItem(Item* item) {
+    Weapon* item_weapon = dynamic_cast<Weapon*>(item);
+    Armor* item_armor = dynamic_cast<Armor*>(item);
+    if (item_weapon) {
+        if (player.equipped_weapon_ == item_weapon) {
+            player.atk -= player.equipped_weapon_->getAtkBoost();
+        }
+    } else if (item_armor) {
+        if (player.equipped_armor_ == item_armor) {
+            player.def -= player.equipped_armor_->getDefBoost();
+            player.max_health_ -= player.equipped_armor_->getHpBoost();
+            player.health = player.max_health_;
+        }
+    } else {
+        if (player.equipped_misc_ == item) {
+            item->getFuncWhenUnequipped()();
+        }
+    }
     sale_made_ = true;
-    player.gold += item->price_;
+    player.gold += (item->price_ * gold_mult_);
     player.inventory.remove(item);
+
 }
 
 //--------------------------------------------------------------
@@ -713,7 +766,8 @@ void ofApp::equipItem(Item* item) {
     if ((player.equipped_weapon_ != nullptr && item_weapon != nullptr &&
          item_weapon == player.equipped_weapon_) ||
         (player.equipped_armor_ != nullptr && item_armor != nullptr &&
-         item_armor == player.equipped_armor_)) {
+         item_armor == player.equipped_armor_) ||
+        item == player.equipped_misc_) {
         already_equipped_ = true;
         return;
     }
@@ -726,11 +780,19 @@ void ofApp::equipItem(Item* item) {
     } else if (item_armor) {
         if (player.equipped_armor_) {
             player.def -= player.equipped_armor_->getDefBoost();
-            player.health -= player.equipped_armor_->getHpBoost();
+            player.max_health_ -= player.equipped_armor_->getHpBoost();
+            player.health = player.max_health_;
         }
         player.equipped_armor_ = item_armor;
         player.def += player.equipped_armor_->getDefBoost();
-        player.health += player.equipped_armor_->getHpBoost();
+        player.max_health_ += player.equipped_armor_->getHpBoost();
+        player.health = player.max_health_;
+    } else {
+        if (player.equipped_misc_) {
+            item->getFuncWhenUnequipped()();
+        }
+        player.equipped_misc_ = item;
+        item->getFuncWhenEquipped()();
     }
     equip_success_ = true;
 }
@@ -752,6 +814,7 @@ void ofApp::restartGame() {
 void ofApp::resetPlayer() {
     auto tmp_player_weapon = player.equipped_weapon_;
     auto tmp_player_armor = player.equipped_armor_;
+    auto tmp_player_misc = player.equipped_misc_;
     auto tmp_inventory = player.inventory;
     player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
                     kStartDef, kStartHealth, kStartCrit);
@@ -759,12 +822,14 @@ void ofApp::resetPlayer() {
     player.inventory = tmp_inventory;
     player.equipped_weapon_ = tmp_player_weapon;
     player.equipped_armor_ = tmp_player_armor;
+    player.equipped_misc_ = tmp_player_misc;
     if (player.equipped_weapon_ != nullptr) {
         player.atk += player.equipped_weapon_->getAtkBoost();
-	}
+    }
     if (player.equipped_armor_ != nullptr) {
         player.def += player.equipped_armor_->getDefBoost();
-        player.health += player.equipped_armor_->getHpBoost();
+        player.max_health_ += player.equipped_armor_->getHpBoost();
+        player.health = player.max_health_;
     }
 }
 
@@ -777,7 +842,7 @@ void ofApp::openInventory() {
     inventory_is_open_ = true;
     buttons.remove(inventory_button);
     buttons.push_back(back_inventory_button);
-    buttons.push_back(next_inv_button);
+    buttons.push_back(next_button);
 }
 
 //-------------------------------------------------------------
@@ -785,8 +850,8 @@ void ofApp::closeInventory() {
     page_num_ = 0;
     inventory_is_open_ = false;
     buttons.remove(back_inventory_button);
-    buttons.remove(next_inv_button);
-    buttons.remove(prev_inv_button);
+    buttons.remove(next_button);
+    buttons.remove(prev_button);
     buttons.push_back(inventory_button);
 }
 
@@ -798,24 +863,25 @@ void ofApp::drawInventory() {
     }
     ofBackground(kTan);
     for (auto& item : player.inventory) {
-        if (page_num_ != item->inv_page_) {
+        if (page_num_ != item->page_) {
             continue;
         }
         ofSetColor(kBlack);
-        info_font->draw(item->getName(), item->store_pos_.x,
-                        item->store_pos_.y - 2 * kInfoFontSize);
+        info_font->draw(item->getName(), item->pos_.x,
+                        item->pos_.y - 2 * kInfoFontSize);
         string equipped_status = "UNEQUIPPED";
         Weapon* item_weapon = dynamic_cast<Weapon*>(item);
         Armor* item_armor = dynamic_cast<Armor*>(item);
         if ((player.equipped_weapon_ != nullptr && item_weapon != nullptr &&
              item_weapon == player.equipped_weapon_) ||
             (player.equipped_armor_ != nullptr && item_armor != nullptr &&
-             item_armor == player.equipped_armor_)) {
+             item_armor == player.equipped_armor_) ||
+            item == player.equipped_misc_) {
             equipped_status = "EQUIPPED";
         }
-        info_font->draw(equipped_status, item->store_pos_.x - 30,
-                        item->store_pos_.y - kInfoFontSize / 2);
-        ofDrawRectangle(item->store_pos_, item->kWidth, item->kHeight);
+        info_font->draw(equipped_status, item->pos_.x - 30,
+                        item->pos_.y - kInfoFontSize / 2);
+        ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->sell_button->draw();
         item->equip_button->draw();
     };
@@ -824,6 +890,7 @@ void ofApp::drawInventory() {
 
 //--------------------------------------------------------------
 void ofApp::drawInventoryNotices() {
+    ofSetColor(kWhite);
     if (sale_made_) {
         info_font->draw("Sale Successful", ofGetWindowWidth() / 2,
                         ofGetWindowHeight() / 2);
@@ -835,22 +902,22 @@ void ofApp::drawInventoryNotices() {
 }
 
 //--------------------------------------------------------------
-void ofApp::increaseInvPage() {
-    page_num_ = min(++page_num_, kMaxInvPageNum);
+void ofApp::increasePage() {
+    page_num_ = min(++page_num_, kMaxPageNum);
     if (page_num_ == 1) {
-        buttons.push_back(prev_inv_button);
-    } else if (page_num_ == kMaxInvPageNum) {
-        buttons.remove(next_inv_button);
+        buttons.push_back(prev_button);
+    } else if (page_num_ == kMaxPageNum) {
+        buttons.remove(next_button);
     }
 }
 
 //--------------------------------------------------------------
-void ofApp::decreaseInvPage() {
+void ofApp::decreasePage() {
     page_num_ = max(--page_num_, 0);
     if (page_num_ == 0) {
-        buttons.remove(prev_inv_button);
-    } else if (page_num_ == kMaxInvPageNum - 1) {
-        buttons.push_back(next_inv_button);
+        buttons.remove(prev_button);
+    } else if (page_num_ == kMaxPageNum - 1) {
+        buttons.push_back(next_button);
     }
 }
 
@@ -864,7 +931,7 @@ void ofApp::openStore() {
     buttons.remove(store_button);
     buttons.remove(restart_button);
     buttons.push_back(back_store_button);
-    buttons.push_back(next_store_button);
+    buttons.push_back(next_button);
 }
 
 //-------------------------------------------------------------
@@ -872,8 +939,8 @@ void ofApp::closeStore() {
     page_num_ = 0;
     store_is_open_ = false;
     buttons.remove(back_store_button);
-    buttons.remove(next_store_button);
-    buttons.remove(prev_store_button);
+    buttons.remove(next_button);
+    buttons.remove(prev_button);
     buttons.push_back(restart_button);
     buttons.push_back(store_button);
 }
@@ -887,15 +954,15 @@ void ofApp::drawStore() {
     ofBackground(kTan);
     ofSetColor(kBlack);
     for (auto& item : items) {
-        if (page_num_ != item->store_page_) {
+        if (page_num_ != item->page_) {
             continue;
         }
-        info_font->draw(item->getName(), item->store_pos_.x,
-                        item->store_pos_.y - 2 * kInfoFontSize);
+        info_font->draw(item->getName(), item->pos_.x,
+                        item->pos_.y - 2 * kInfoFontSize);
         string price = to_string(item->getPrice());
-        info_font->draw("PRICE: " + price, item->store_pos_.x - 30,
-                        item->store_pos_.y - kInfoFontSize / 2);
-        ofDrawRectangle(item->store_pos_, item->kWidth, item->kHeight);
+        info_font->draw("PRICE: " + price, item->pos_.x - 30,
+                        item->pos_.y - kInfoFontSize / 2);
+        ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->buy_button->draw();
         item->equip_button->draw();
     };
@@ -944,26 +1011,6 @@ void ofApp::drawEquipNotices() {
                         ofGetWindowHeight() / 2);
         should_delay_ = true;
         equip_success_ = false;
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::increaseStorePage() {
-    page_num_ = min(++page_num_, kMaxStorePageNum);
-    if (page_num_ == 1) {
-        buttons.push_back(prev_store_button);
-    } else if (page_num_ == kMaxStorePageNum) {
-        buttons.remove(next_store_button);
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::decreaseStorePage() {
-    page_num_ = max(--page_num_, 0);
-    if (page_num_ == 0) {
-        buttons.remove(prev_store_button);
-    } else if (page_num_ == kMaxStorePageNum - 1) {
-        buttons.push_back(next_store_button);
     }
 }
 
