@@ -34,12 +34,16 @@ class Item {
     static void equipItem();
     Button store_buttons_[2];
     Button inv_buttons_[2];
+    function<void()> func_when_equipped_[1];
 
    public:
     Item() {}
     Item(string name, int price, int store_page, int inv_page,
          float store_pos_x, float store_pos_y, float inv_pos_x, float inv_pos_y,
          shared_ptr<ofxSmartFont> button_font);
+    Item(string name, int price, int store_page, int inv_page,
+         float store_pos_x, float store_pos_y, float inv_pos_x, float inv_pos_y,
+         shared_ptr<ofxSmartFont> button_font, function<void()> func_when_equipped);
     Item(string name, int price, int store_page, int inv_page,
          ofVec2f store_pos, ofVec2f inv_pos,
          shared_ptr<ofxSmartFont> button_font);

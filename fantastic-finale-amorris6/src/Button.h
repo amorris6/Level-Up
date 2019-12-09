@@ -7,7 +7,7 @@ class Button : public ofBaseApp {
     friend class ofApp;
     const static float kLabelYAdj;
 
-    std::function<void()> func_when_pressed[1];
+    function<void()> func_when_pressed[1];
     float x;
     float y;
     float width;
@@ -17,7 +17,7 @@ class Button : public ofBaseApp {
 
    public:
     Button(float x, float y, float width, float height, std::string label,
-           shared_ptr<ofxSmartFont> label_font, std::function<void()> function)
+           shared_ptr<ofxSmartFont> label_font, function<void()> function)
         : x(x),
           y(y),
           width(width),
