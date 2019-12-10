@@ -128,3 +128,32 @@ is able to be pressed/ drawn on the screen. The booleans will now tell me when t
 Will have to remember to keep track of this. My Button == and !=can't compare the function ptrs or the
 ofxSmartFont, so the two back buttons have to differ by 1 for something (x, y , width, or height).
 Will hopefully implement item buying, selling, and equipping over the weekend.
+
+**12/6/2019**
+Created a rough outline of an item class. Gave it member variables and constructor.
+
+**12/7/2019**
+Found out openframeworks does have a function that can be called on close, exit. Used this to 
+clean up all the pointers I hadn't deleted before. Added two new buttons, prev and next to store 
+and inventory. They allow me to go through multiple pages. Expands item capacity, not that I need it
+right now. Decided to rely completely on buttons[] to draw my buttons. Also added another item
+constructor to not need ofVec2f because I don't know how to instantiate one without declaring and
+then using .set(). Added ability to buy items. Will implement sell relatively easily, not sure about equip.
+
+**12/8/2019**
+This was annoying. Had to change all my Item stuff into Item* because dynamic casting. This was what
+I was using to decide what to do when equipping an item, since it depends on whether it's an item, armor, or
+weapon. Added an item constructor that takes in a function, since there isn't a clear cut thing for equipping
+an item. Also added to my tests file tests for getters of Item, Armor, and Weapon.
+
+**12/9/2019**
+Added an unequip button since it seems like a nice feature. This means I had to make my items take in 
+two functions, the second being the reverse of the first. This makes it so item effects can't
+just be stacked by equipping and unequipping multiple times. Also had to deal with a bug where
+items weren't unequipped when sold. Added a new settings button. This allows the player to 
+turn all the sounds of the game on or off, like background music, battle music, or attack sounds.
+Included nice visual cue of x on a box :). Spent the last 5 hours removing magic numbers. I regret
+all the choices I made previously, but it's done now. I tried to refactor my code and line up
+things like the parameters inside my longer constructors, but I think openframeworks disapproves.
+It reverts those changes as soon as I leave the page and come back, even when saving. Will have to look
+into that tomorrow. Also need to add trailing underscores to basically goddamn everything, so that's a fun project.
