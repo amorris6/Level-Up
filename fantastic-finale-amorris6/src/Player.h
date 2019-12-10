@@ -9,11 +9,11 @@ typedef enum { UP = 0, DOWN, LEFT, RIGHT } PlayerDirection;
 class Player : public Character {
    private:
     friend class ofApp;
-    // verifies that player can move in direction of keyPressed
-    // helper function of moveInDirection
-    bool canMoveInDirection(PlayerDirection direction);
-    int kMoveSideSpeed;
-    int kMoveUpSpeed;
+    const static int kPlayerWidth = Character::kCharWidth / 2;
+    const static float kMoveSideDistFactor;
+    const static float kMoveVertDistFactor;
+    int move_side_distance;
+    int move_vert_distance;
     int lvl;
     int max_health_;
     // have to use ptrs for dynamic casting
@@ -21,12 +21,11 @@ class Player : public Character {
     Armor* equipped_armor_;
     Item* equipped_misc_;
     list<Item*> inventory;
+    // verifies that player can move in direction of keyPressed
+    // helper function of moveInDirection
+    bool canMoveInDirection(PlayerDirection direction);
 
    public:
-    ofRectangle getRect();
-    int getLvl();
-    ofImage* player_sprite;
-    void moveInDirection(int direction_index);
     Player(float x, float y, int gold, int exp, int atk, int def, int health,
            int crit_chance)
         : Character(x, y, gold, exp, atk, def, health, crit_chance) {
@@ -37,4 +36,8 @@ class Player : public Character {
         player_sprite = new ofImage();
     }
     Player() : Player(0, 0, 0, 0, 0, 0, 0, 0) {}
+    ofImage* player_sprite;
+    ofRectangle getRect();
+    int getLvl();
+    void moveInDirection(int direction_index);
 };

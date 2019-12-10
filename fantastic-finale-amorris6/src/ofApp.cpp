@@ -2,18 +2,57 @@
 
 const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kInitBattleMult = 0.25;
-const float ofApp::kPlayXAdj = 3.0 / 7.0;
-const float ofApp::kPlayYAdj = 3.0 / 7.0;
+const float ofApp::kCenterXFactor = 3.0 / 7.0;
+const float ofApp::kCenterYFactor = 3.0 / 7.0;
 const float ofApp::kPlayWidthAdj = 0.1;
 const float ofApp::kPlayHeightAdj = 0.125;
+const float ofApp::kSettingsWidthAdj = 0.18;
+const float ofApp::kCritMsgYAdjFactor = 0.5;
+const float ofApp::kEquippedYFactor = 0.5;
+const float ofApp::kPriceYFactor = 0.5;
+const float ofApp::kToggleMsgYFactor = 0.5;
+const float ofApp::kStoreGoldXFactor = 1.0 / 7.0;
 const string ofApp::kPlayLabel = "PLAY";
 const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
 const string ofApp::kInventoryLabel = "INVENTORY";
 const string ofApp::kSettingsLabel = "SETTINGS";
+const string ofApp::kToggleLabel = "";
 const string ofApp::kBackLabel = "BACK";
 const string ofApp::kNextLabel = "NEXT";
 const string ofApp::kPrevLabel = "PREV";
+const string ofApp::kLvlUpMessage = "LEVEL UP";
+const string ofApp::kGameOverMessage = "GAME OVER";
+const string ofApp::kCritMessage = "CRIT!";
+const string ofApp::kGoldLabel = "GOLD: ";
+const string ofApp::kPriceLabel = "PRICE: ";
+const string ofApp::kHpLabel = "HP: ";
+const string ofApp::kExpLabel = "EXP: ";
+const string ofApp::kEnergyLabel = "ENERGY LEFT: ";
+const string ofApp::kStageLabel = "STAGE: ";
+const string ofApp::kLvlLabel = "LEVEL: ";
+const string ofApp::kBattleChanceLabel = "BATTLE CHANCE: ";
+const string ofApp::kPercentString = "%";
+const string ofApp::kGetRewardMsg = "YOU GOT: ";
+const string ofApp::kGetExpMsg = " EXP!";
+const string ofApp::kGetGoldMsg = " GOLD!";
+const string ofApp::kSaleMadeMsg = "Sold Successfully!";
+const string ofApp::kPurchaseMadeMsg = "Bought Successfully";
+const string ofApp::kNotEnoughGoldMsg = "Not Enough Gold";
+const string ofApp::kEquipSuccessMsg = "Equipped";
+const string ofApp::kNoOwnMsg = "You don't own this item";
+const string ofApp::kAlreadyEquippedMsg = "Already Equipped";
+const string ofApp::kAlreadyOwnedMsg = "Already Owned";
+const string ofApp::kBkgrdMusicEnabledMsg = "Background Music Enabled";
+const string ofApp::kBattleMusicEnabledMsg = "Battle Music Enabled";
+const string ofApp::kAtkSoundEnabledMsg = "Attack Sound Enabled";
+const string ofApp::kWorldTitle = "fantastic-finale-amorris6";
+const string ofApp::kSwordName = "sword";
+const string ofApp::kHelmetName = "helmet";
+const string ofApp::kFastBattleGemName = "battle++";
+const string ofApp::kSlowBattleGemName = "battle--";
+const string ofApp::kMoreExpGemName = "exp++";
+const string ofApp::kMoreGoldGemName = "gold++";
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
 const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
@@ -33,6 +72,8 @@ const string ofApp::kPlayerSpritePath =
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
 const string ofApp::kStoreFontName = "Roboto-Black-Store";
 const string ofApp::kFontName = "Roboto-Black";
+const string ofApp::kUnequippedMsg = "UNEQUIPPED";
+const string ofApp::kEquippedMsg = "EQUIPPED";
 list<Resource> ofApp::resources = {};
 float ofApp::battle_multiplier_ = kInitBattleMult;
 const float ofApp::kBattleMultFactor = 2;
@@ -72,12 +113,11 @@ Button* ofApp::prev_button = nullptr;
 shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
 shared_ptr<ofxSmartFont> ofApp::info_font = nullptr;
 shared_ptr<ofxSmartFont> ofApp::store_font = nullptr;
-
 list<Button*> ofApp::buttons = {};
 
 void ofApp::setup() {
     srand(time(NULL));
-    ofSetWindowTitle("fantastic-finale-amorris6");
+    ofSetWindowTitle(kWorldTitle);
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
     should_delay_ = false;
@@ -119,26 +159,36 @@ void ofApp::setupItems() {
     items.clear();
     ofVec2f pos[kMaxItemsOnPage];
     int i = 0;
-    for (int y = 100; y < ofGetWindowHeight() - 150; y += 150) {
-        for (int x = 100; x < ofGetWindowWidth() - 150; x += 150) {
+    for (int y = kStorePosYStart; y < ofGetWindowHeight() - kStorePosYEndAdj;
+         y += kStorePosXEndAdj) {
+        for (int x = kStorePosXStart; x < ofGetWindowWidth() - kStorePosXEndAdj;
+             x += kStorePosXInc) {
             ofVec2f pos_;
             pos_.set(x, y);
             pos[i] = pos_;
             i++;
         }
     }
-    Weapon* sword = new Weapon("sword", 300, 0, pos[0], 4000, store_font);
-    Armor* helmet = new Armor("helmet", 300, 0, pos[1], 2000, 3000, store_font);
+    Weapon* sword = new Weapon(kSwordName, kSwordPrice, kSwordPageNum,
+                               pos[kSwordPosIndex], kSwordAtkBoost, store_font);
+    Armor* helmet = new Armor(kHelmetName, kHelmetPrice, kHelmetPageNum,
+                              pos[kHelmetPosIndex], kHelmetDefBoost,
+                              kHelmetHpBoost, store_font);
     Item* fast_battle_gem =
-        new Item("battle++", 300, 0, pos[2], speedBattleChance,
+        new Item(kFastBattleGemName, kFastBattleGemPrice, kFastBattleGemPageNum,
+                 pos[kFastBattleGemPosIndex], speedBattleChance,
                  slowBattleChance, store_font);
     Item* slow_battle_gem =
-        new Item("battle--", 300, 0, pos[3], slowBattleChance,
+        new Item(kSlowBattleGemName, kSlowBattleGemPrice, kSlowBattleGemPageNum,
+                 pos[kSlowBattleGemPosIndex], slowBattleChance,
                  speedBattleChance, store_font);
-    Item* more_exp_gem = new Item("exp++", 300, 0, pos[4], increaseExpGain,
-                                  decreaseExpGain, store_font);
-    Item* more_gold_gem = new Item("gold++", 300, 0, pos[5], increaseGoldGain,
-                                   decreaseGoldGain, store_font);
+    Item* more_exp_gem = new Item(kMoreExpGemName, kMoreGoldGemPrice,
+                                  kMoreExpGemPageNum, pos[kMoreExpGemPosIndex],
+                                  increaseExpGain, decreaseExpGain, store_font);
+    Item* more_gold_gem =
+        new Item(kMoreGoldGemName, kMoreGoldGemPrice, kMoreGoldGemPageNum,
+                 pos[kMoreGoldGemPosIndex], increaseGoldGain, decreaseGoldGain,
+                 store_font);
 
     items.push_back(sword);
     items.push_back(helmet);
@@ -159,50 +209,92 @@ void ofApp::deleteItems() {
 void ofApp::setupButtons() {
     deleteButtons();
     play_button = new Button(
-        kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
-        kPlayWidthAdj * ofGetWindowWidth(), Button::kButtonFontSize, kPlayLabel,
-        button_font, setupWorld);
-    settings_button = new Button(kPlayXAdj * ofGetWindowWidth() - 40,
-                                 kPlayYAdj * ofGetWindowHeight() + 40,
-                                 1.8 * kPlayWidthAdj * ofGetWindowWidth(),
-                                 Button::kButtonFontSize, kSettingsLabel,
-                                 button_font, openSettings);
-    toggle_bkgrd_music_button =
-        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
-                   kPlayYAdj * ofGetWindowHeight() + 40, 40, 40, "",
-                   button_font, toggleBkgrdMusic);
-    toggle_atk_sound_button =
-        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
-                   kPlayYAdj * ofGetWindowHeight() + 90, 40, 40, "",
-                   button_font, toggleAtkSound);
-    toggle_battle_music_button =
-        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
-                   kPlayYAdj * ofGetWindowHeight() + 140, 40, 40, "",
-                   button_font, toggleBattleMusic);
-    restart_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                                kPlayYAdj * ofGetWindowHeight() + 50,
-                                kPlayWidthAdj * ofGetWindowWidth() + 60,
-                                Button::kButtonFontSize, kRestartLabel,
-                                button_font, restartGame);
-    store_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
-                              kPlayYAdj * ofGetWindowHeight() + 100,
-                              kPlayWidthAdj * ofGetWindowWidth() + 60,
-                              Button::kButtonFontSize, kStoreLabel, button_font,
-                              openStore);
-    inventory_button =
-        new Button(0, ofGetWindowHeight() - (Button::kButtonFontSize),
-                   Button::kButtonFontSize + 100, Button::kButtonFontSize,
-                   kInventoryLabel, info_font, openInventory);
-    back_button =
-        new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
-                   kInfoFontSize + 15, kBackLabel, info_font, closePage);
+	     kCenterXFactor * ofGetWindowWidth(),
+         kCenterYFactor * ofGetWindowHeight(),
+         kPlayWidthAdj * ofGetWindowWidth(), 
+		 Button::kButtonFontSize,
+         kPlayLabel, 
+		 button_font, 
+		 setupWorld);
+    settings_button = new Button(
+        kCenterXFactor * ofGetWindowWidth() + kSettingsYAdj,
+        kCenterYFactor * ofGetWindowHeight() + kSettingsXAdj,
+        kSettingsWidthAdj * ofGetWindowWidth(), 
+		Button::kButtonFontSize,
+        kSettingsLabel, 
+		button_font, 
+		openSettings);
+    toggle_bkgrd_music_button = new Button(
+        kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
+        kCenterYFactor * ofGetWindowHeight() + kToggleSpaceAdj, 
+		kToggleWidth,
+        kToggleHeight, 
+		kToggleLabel, 
+		button_font, 
+		toggleBkgrdMusic);
+    toggle_atk_sound_button = new Button(
+		kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
+        toggle_bkgrd_music_button->y + kToggleSpaceAdj, 
+		kToggleWidth,
+        kToggleHeight, 
+		kToggleLabel, 
+		button_font, 
+		toggleAtkSound);
+    toggle_battle_music_button = new Button(
+		kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
+        toggle_atk_sound_button->y + kToggleSpaceAdj,
+		kToggleWidth,
+        kToggleHeight, kToggleLabel, 
+		button_font, 
+		toggleBattleMusic);
+    restart_button = new Button(
+        kCenterXFactor * ofGetWindowWidth() + kRestartXAdj,
+        kCenterYFactor * ofGetWindowHeight() + kRestartYAdj,
+        kPlayWidthAdj * ofGetWindowWidth() + kRestartWidthAdj,
+        Button::kButtonFontSize, 
+		kRestartLabel, 
+		button_font, 
+		restartGame);
+    store_button = new Button(
+        kCenterXFactor * ofGetWindowWidth() + kStoreXAdj,
+        kCenterYFactor * ofGetWindowHeight() + kStoreYAdj,
+        kPlayWidthAdj * ofGetWindowWidth() + kStoreWidthAdj,
+        Button::kButtonFontSize, 
+		kStoreLabel,
+		button_font, 
+		openStore);
+    inventory_button = new Button(
+        0, 
+		ofGetWindowHeight() - (Button::kButtonFontSize),
+        Button::kButtonFontSize + kInventoryWidthAdj, 
+		Button::kButtonFontSize,
+        kInventoryLabel, 
+		info_font, 
+		openInventory);
+    back_button = new Button(
+        0, 
+		0, 
+		kPlayWidthAdj * ofGetWindowWidth() + kBackWidthAdj,
+        kInfoFontSize + kBackHeightAdj,
+		kBackLabel, 
+		info_font, 
+		closePage);
     next_button = new Button(
-        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
-        kInfoFontSize + 14, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
-        kInfoFontSize + 15, kNextLabel, info_font, increasePage);
+        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() + kNextXAdj),
+        kInfoFontSize + kNextYAdj,
+        kPlayWidthAdj * ofGetWindowWidth() + kNextWidthAdj,
+        kInfoFontSize + kNextHeightAdj, 
+		kNextLabel,
+		info_font, 
+		increasePage);
     prev_button = new Button(
-        0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
-        kInfoFontSize + 15, kPrevLabel, info_font, decreasePage);
+		0,
+		kInfoFontSize + kPrevYAdj,
+        kPlayWidthAdj * ofGetWindowWidth() + kPrevWidthAdj,
+        kInfoFontSize + kPrevHeightAdj, 
+		kPrevLabel,
+        info_font, 
+		decreasePage);
     buttons.push_back(play_button);
     buttons.push_back(settings_button);
 }
@@ -227,11 +319,13 @@ void ofApp::setupResources() {
     // creates 1 to kMaxresources resources
     int num_resources = (rand() % kMaxResourceNum) + 1;
     // randomly places the resources, but makes sure they don't intersect player
-    // at start
+    // at start. Puts resources in a smaller, similar rectangle to window
     for (int i = 0; i < num_resources; ++i) {
-        int x = (rand() % (ofGetWindowWidth() - 3 * Character::kCharWidth)) +
+        int x = (rand() % (ofGetWindowWidth() -
+                           kResourcePosAdj * Character::kCharWidth)) +
                 Character::kCharWidth;
-        int y = (rand() % (ofGetWindowHeight() - 3 * Character::kCharHeight)) +
+        int y = (rand() % (ofGetWindowHeight() -
+                           kResourcePosAdj * Character::kCharHeight)) +
                 Character::kCharHeight;
         int gold = rand() % kResourceMaxGold + 1;
         int exp = kResourceMaxExp - gold;
@@ -380,7 +474,7 @@ void ofApp::setupBattle() {
     int def =
         max(rand() % kEnemyMaxDef * stage_num_, kEnemyMinDef * stage_num_);
     int hp = max(rand() % kEnemyMaxHp * stage_num_, kEnemyMinHp * stage_num_);
-    int crit = 2 * kStartCrit;
+    int crit = kEnemyCritFactor * kStartCrit;
     enemy = Enemy(0, 0, gold, exp, atk, def, hp, crit);
     fight_is_init_ = true;
     energy_left_ -= kEnergyBattle;
@@ -475,8 +569,8 @@ void ofApp::drawButtons() {
 //--------------------------------------------------------------
 void ofApp::drawLvlUp() {
     ofSetColor(kGreen);
-    button_font->draw("LEVEL UP!", ofGetWindowWidth() * 3.0 / 7.0,
-                      ofGetWindowHeight() * 2.0 / 7.0);
+    button_font->draw(kLvlUpMessage, ofGetWindowWidth() * kCenterXFactor,
+                      ofGetWindowHeight() * kCenterYFactor + kLvlUpYAdj);
 }
 
 //--------------------------------------------------------------
@@ -486,10 +580,9 @@ void ofApp::drawGameOver() {
     }
     ofBackground(kBlack);
     ofSetColor(kWhite);
-    string game_over_msg = "GAME OVER!";
-    ofSetWindowTitle(game_over_msg);
-    button_font->draw(game_over_msg, kPlayXAdj * ofGetWindowWidth(),
-                      kPlayYAdj * ofGetWindowHeight());
+    ofSetWindowTitle(kGameOverMessage);
+    button_font->draw(kGameOverMessage, kCenterXFactor * ofGetWindowWidth(),
+                      kCenterYFactor * ofGetWindowHeight());
 }
 
 //--------------------------------------------------------------
@@ -513,7 +606,7 @@ void ofApp::drawStartingScreen() { ofBackground(kWhite); }
 
 //--------------------------------------------------------------
 void ofApp::drawWorld() {
-    ofSetWindowTitle("fantanstic-finale-amorris6");
+    ofSetWindowTitle(kWorldTitle);
     ofBackground(kWhite);
     drawInfo();
     drawPlayer();
@@ -543,7 +636,7 @@ void ofApp::drawAtk() {
     string crit_message = "";
     if (is_crit_hit_) {
         ofSetColor(kRed);
-        crit_message = "CRIT!";
+        crit_message = kCritMessage;
     }
     if (is_player_atk_turn_ && turns_fought_ > 0) {
         if (atk_sound_enabled_) {
@@ -552,18 +645,20 @@ void ofApp::drawAtk() {
         ofDrawLine(enemy_fight_x_, kEnemyFightY,
                    enemy_fight_x_ + kEnemyFightWidth,
                    kEnemyFightY + kEnemyFightHeight);
-        info_font->draw(crit_message, enemy_fight_x_ + kEnemyFightWidth + 10,
-                        kEnemyFightY + kEnemyFightHeight / 2);
+        info_font->draw(crit_message,
+                        enemy_fight_x_ + kEnemyFightWidth + kCritMsgXAdj,
+                        kEnemyFightY + kEnemyFightHeight * kCritMsgYAdjFactor);
         is_player_atk_turn_ = !is_player_atk_turn_;
     } else if (!is_player_atk_turn_ && turns_fought_ > 0) {
         if (atk_sound_enabled_) {
             atk_sound_player->play();
         }
-        ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
-                   kPlayerFightX + kPlayerFightWidth + 20,
-                   kPlayerFightY + kPlayerFightHeight + 30);
-        info_font->draw(crit_message, kPlayerFightX + kPlayerFightWidth + 10,
-                        kEnemyFightY + kEnemyFightHeight / 2);
+        ofDrawLine(kPlayerFightX + kEnemyAtkXAdj, kPlayerFightY + kEnemyAtkYAdj,
+                   kPlayerFightX + kPlayerFightWidth + kEnemyAtkXAdj,
+                   kPlayerFightY + kPlayerFightHeight + kEnemyAtkYAdj);
+        info_font->draw(crit_message,
+                        kPlayerFightX + kPlayerFightWidth + kCritMsgXAdj,
+                        kEnemyFightY + kEnemyFightHeight * kCritMsgYAdjFactor);
         is_player_atk_turn_ = !is_player_atk_turn_;
     }
 }
@@ -572,10 +667,14 @@ void ofApp::drawBattleInfo() {
     ofSetColor(kWhite);
     string player_hp = to_string(max(player.getHealth(), 0));
     string enemy_hp = to_string(max(enemy.getHealth(), 0));
-    string player_hp_message = "HP: " + player_hp;
-    string enemy_hp_message = "HP: " + enemy_hp;
-    info_font->draw(player_hp_message, kPlayerFightX + 40, kPlayerFightY + 40);
-    info_font->draw(enemy_hp_message, enemy_fight_x_ + 10, kEnemyFightY - 20);
+    string player_hp_message = kHpLabel + player_hp;
+    string enemy_hp_message = kHpLabel + enemy_hp;
+    info_font->draw(player_hp_message, 
+		            kPlayerFightX + kPlayerHpMsgXAdj,
+                    kPlayerFightY + kPlayerHpMsgYAdj);
+    info_font->draw(enemy_hp_message, 
+		            enemy_fight_x_ + kEnemyHpMsgXAdj,
+                    kEnemyFightY + kEnemyHpMsgYAdj);
     if (enemy.getHealth() <= 0) {
         drawWinBattleInfo();
     }
@@ -585,11 +684,11 @@ void ofApp::drawBattleInfo() {
 void ofApp::drawWinBattleInfo() {
     string enemy_gold = to_string(enemy.getGold());
     string enemy_exp = to_string(enemy.getExp());
-    string gold_message = "YOU GOT " + enemy_gold + " GOLD!";
-    string exp_message = "YOU GOT " + enemy_exp + " EXP!";
-    info_font->draw(gold_message, 3.0 * ofGetWindowWidth() / 7.0,
-                    ofGetWindowHeight() - 2 * kInfoFontSize);
-    info_font->draw(exp_message, 3.0 * ofGetWindowWidth() / 7.0,
+    string gold_message = kGetRewardMsg + enemy_gold + kGetGoldMsg;
+    string exp_message = kGetRewardMsg + enemy_exp + kGetExpMsg;
+    info_font->draw(gold_message, ofGetWindowWidth() * kCenterXFactor,
+                    ofGetWindowHeight() - kGoldMsgYAdjFactor * kInfoFontSize);
+    info_font->draw(exp_message, ofGetWindowWidth() * kCenterYFactor,
                     ofGetWindowHeight() - kInfoFontSize);
 }
 
@@ -597,27 +696,28 @@ void ofApp::drawWinBattleInfo() {
 void ofApp::drawInfo() {
     ofSetColor(0, 0, 0);
     string gold_gathered = to_string(player.getGold());
-    string gold_message = "Gold: " + gold_gathered;
+    string gold_message = kGoldLabel + gold_gathered;
     string exp_gathered = to_string(player.getExp());
-    string exp_message = "EXP: " + exp_gathered;
+    string exp_message = kExpLabel + exp_gathered;
     string energy_left = to_string(energy_left_);
-    string energy_message = "Energy Left: " + energy_left;
+    string energy_message = kEnergyLabel + energy_left;
     string stage_num = to_string(stage_num_);
-    string stage_message = "STAGE: " + stage_num;
+    string stage_message = kStageLabel + stage_num;
     string level = to_string(player.getLvl());
-    string lvl_message = "LEVEL: " + level;
+    string lvl_message = kLvlLabel + level;
     string battle_chance =
         to_string(max((int)(battle_chance_ * battle_multiplier_), 0));
-    string battle_message = "Battle Chance: " + battle_chance + "%";
+    string battle_message = kBattleChanceLabel + battle_chance + kPercentString;
     info_font->draw(gold_message, 0, kInfoFontSize);
-    info_font->draw(exp_message, 0, 2 * kInfoFontSize);
-    info_font->draw(lvl_message, 0, 3 * kInfoFontSize);
-    info_font->draw(stage_message, 3.0 * ofGetWindowWidth() / 7.0,
-                    3.0 * ofGetWindowHeight() / 7.0);
-    info_font->draw(battle_message, 3.0 * ofGetWindowWidth() / 7.0,
+    info_font->draw(exp_message, 0, kExpMsgYFactor * kInfoFontSize);
+    info_font->draw(lvl_message, 0, kLvlMsgYFactor * kInfoFontSize);
+    info_font->draw(stage_message, ofGetWindowWidth() * kCenterXFactor,
+                    ofGetWindowHeight() * kCenterYFactor);
+    info_font->draw(battle_message, ofGetWindowWidth() * kCenterXFactor,
                     kInfoFontSize);
     // puts energy_message in top right corner
-    info_font->draw(energy_message, ofGetWindowWidth() - 10 * kInfoFontSize,
+    info_font->draw(energy_message,
+                    ofGetWindowWidth() - kEnergyMsgYFactor * kInfoFontSize,
                     kInfoFontSize);
 }
 //--------------------------------------------------------------
@@ -625,9 +725,9 @@ void ofApp::drawPlayer() {
     ofSetColor(kSkin);
     // makes the boundaries of the sprite line up with the hitbox
     // discovered through trial and error
-    player.player_sprite->draw(player.getPos().x - 15, player.getPos().y - 15,
-                               Character::kCharWidth + 20,
-                               Character::kCharHeight + 20);
+    player.player_sprite->draw(player.getPos().x + kPlayerSpritePosAdj,
+                               player.getPos().y + kPlayerSpritePosAdj,
+                               kPlayerSpriteWidth, kPlayerSpriteHeight);
 }
 
 //--------------------------------------------------------------
@@ -713,7 +813,7 @@ void ofApp::mousePressed(int x, int y, int button) {
     }
     if (inventory_is_open_ || store_is_open_) {
         for (auto& item : items) {
-            Button item_buttons[2];
+            Button item_buttons[kItemButtonsOnScreen];
             if (inventory_is_open_) {
                 item_buttons[0] = item->inv_buttons_[0];
                 item_buttons[1] = item->inv_buttons_[1];
@@ -773,13 +873,7 @@ void ofApp::buyItem(Item* item) {
         not_enough_gold_ = true;
         return;
     }
-    bool item_found = false;
-    for (auto& item2 : player.inventory) {
-        if (item2 == item) {
-            item_found = true;
-        }
-    }
-    if (item_found) {
+    if (checkIfItemInInventory(item)) {
         item_already_owned_ = true;
         return;
     }
@@ -798,6 +892,9 @@ void ofApp::sellItem(Item* item) {
 
 //--------------------------------------------------------------
 void ofApp::unequipItem(Item* item) {
+    if (!item) {
+        return;
+    }
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
     if (item_weapon) {
@@ -822,46 +919,28 @@ void ofApp::unequipItem(Item* item) {
 
 //--------------------------------------------------------------
 void ofApp::equipItem(Item* item) {
-    bool item_found = false;
-    for (auto& item2 : player.inventory) {
-        if (item2 == item) {
-            item_found = true;
-        }
-    }
-    if (!item_found) {
+    if (!checkIfItemInInventory(item)) {
         tried_equip_not_own_ = true;
         return;
     }
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
-    if ((player.equipped_weapon_ != nullptr && item_weapon != nullptr &&
-         item_weapon == player.equipped_weapon_) ||
-        (player.equipped_armor_ != nullptr && item_armor != nullptr &&
-         item_armor == player.equipped_armor_) ||
-        item == player.equipped_misc_) {
+    if (checkIfItemEquipped(item)) {
         already_equipped_ = true;
         return;
     }
     if (item_weapon) {
-        if (player.equipped_weapon_) {
-            player.atk -= player.equipped_weapon_->getAtkBoost();
-        }
+        unequipItem(player.equipped_weapon_);
         player.equipped_weapon_ = item_weapon;
         player.atk += player.equipped_weapon_->getAtkBoost();
     } else if (item_armor) {
-        if (player.equipped_armor_) {
-            player.def -= player.equipped_armor_->getDefBoost();
-            player.max_health_ -= player.equipped_armor_->getHpBoost();
-            player.health = player.max_health_;
-        }
+        unequipItem(player.equipped_armor_);
         player.equipped_armor_ = item_armor;
         player.def += player.equipped_armor_->getDefBoost();
         player.max_health_ += player.equipped_armor_->getHpBoost();
         player.health = player.max_health_;
     } else {
-        if (player.equipped_misc_) {
-            player.equipped_misc_->getFuncWhenUnequipped()();
-        }
+        unequipItem(player.equipped_misc_);
         player.equipped_misc_ = item;
         item->getFuncWhenEquipped()();
     }
@@ -869,9 +948,21 @@ void ofApp::equipItem(Item* item) {
 }
 
 //--------------------------------------------------------------
+bool ofApp::checkIfItemInInventory(Item* item) {
+    bool item_is_found = false;
+    for (auto& item2 : player.inventory) {
+        if (item2 == item) {
+            item_is_found = true;
+            break;
+        }
+    }
+    return item_is_found;
+}
+
+//--------------------------------------------------------------
 void ofApp::restartGame() {
     game_over_is_set_up_ = false;
-    ofSetWindowTitle("fantastic-finale-amorris6");
+    ofSetWindowTitle(kWorldTitle);
     stage_num_ = 0;
     energy_left_ = kInitialEnergy;
     battle_start_ = kStartBattle;
@@ -888,6 +979,9 @@ void ofApp::resetPlayer() {
     auto tmp_player_armor = player.equipped_armor_;
     auto tmp_player_misc = player.equipped_misc_;
     auto tmp_inventory = player.inventory;
+    if (player.equipped_misc_) {
+        player.equipped_misc_->getFuncWhenUnequipped()();
+    }
     player = Player(kStartX, kStartY, kStartGold, kStartExp, kStartAtk,
                     kStartDef, kStartHealth, kStartCrit);
     player.player_sprite->load(kPlayerSpritePath);
@@ -902,6 +996,9 @@ void ofApp::resetPlayer() {
         player.def += player.equipped_armor_->getDefBoost();
         player.max_health_ += player.equipped_armor_->getHpBoost();
         player.health = player.max_health_;
+    }
+    if (player.equipped_misc_) {
+        player.equipped_misc_->getFuncWhenEquipped()();
     }
 }
 
@@ -918,7 +1015,7 @@ void ofApp::closePage() {
 
 //--------------------------------------------------------------
 void ofApp::openInventory() {
-    ofSetWindowTitle("INVENTORY");
+    ofSetWindowTitle(kInventoryLabel);
     for (int dir = UP; dir <= RIGHT; dir++) {
         move_key_is_pressed[dir] = false;
     }
@@ -950,17 +1047,19 @@ void ofApp::drawInventory() {
             continue;
         }
         ofSetColor(kBlack);
-        info_font->draw(item->getName(), item->pos_.x,
-                        item->pos_.y - 2 * kInfoFontSize);
-        string equipped_status = "UNEQUIPPED";
+        info_font->draw(item->getName(), 
+			            item->pos_.x,
+                        item->pos_.y - kItemNameYFactor * kInfoFontSize);
+        string equipped_status = kUnequippedMsg;
         if (checkIfItemEquipped(item)) {
-            equipped_status = "EQUIPPED";
+            equipped_status = kEquippedMsg;
             item->unequip_button->draw();
         } else {
             item->equip_button->draw();
         }
-        info_font->draw(equipped_status, item->pos_.x - 30,
-                        item->pos_.y - kInfoFontSize / 2);
+        info_font->draw(equipped_status, 
+			            item->pos_.x + kEquippedXAdj,
+                        item->pos_.y - kInfoFontSize * kEquippedYFactor);
         ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->sell_button->draw();
     };
@@ -971,8 +1070,9 @@ void ofApp::drawInventory() {
 void ofApp::drawInventoryNotices() {
     ofSetColor(kWhite);
     if (sale_made_) {
-        info_font->draw("Sale Successful", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kSaleMadeMsg, 
+			            ofGetWindowWidth() * kCenterYFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         sale_made_ = false;
     } else {
@@ -1002,7 +1102,7 @@ void ofApp::decreasePage() {
 
 //--------------------------------------------------------------
 void ofApp::openStore() {
-    ofSetWindowTitle("STORE");
+    ofSetWindowTitle(kStoreLabel);
     for (int dir = UP; dir <= RIGHT; dir++) {
         move_key_is_pressed[dir] = false;
     }
@@ -1036,11 +1136,13 @@ void ofApp::drawStore() {
         if (page_num_ != item->page_) {
             continue;
         }
-        info_font->draw(item->getName(), item->pos_.x,
-                        item->pos_.y - 2 * kInfoFontSize);
+        info_font->draw(item->getName(), 
+			            item->pos_.x,
+                        item->pos_.y - kItemNameYFactor * kInfoFontSize);
         string price = to_string(item->getPrice());
-        info_font->draw("PRICE: " + price, item->pos_.x - 30,
-                        item->pos_.y - kInfoFontSize / 2);
+        info_font->draw(kPriceLabel + price, 
+			            item->pos_.x + kPriceXAdj,
+                        item->pos_.y - kInfoFontSize * kPriceYFactor);
         ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->buy_button->draw();
         if (!checkIfItemEquipped(item)) {
@@ -1050,7 +1152,9 @@ void ofApp::drawStore() {
         }
     };
     string gold = to_string(player.getGold());
-    info_font->draw("GOLD: " + gold, ofGetWindowWidth() / 7.0, kInfoFontSize);
+    info_font->draw(kGoldLabel + gold, 
+		            ofGetWindowWidth() * kStoreGoldXFactor,
+                    kInfoFontSize);
     ofSetColor(kWhite);
     drawStoreNotices();
 }
@@ -1058,18 +1162,21 @@ void ofApp::drawStore() {
 //--------------------------------------------------------------
 void ofApp::drawStoreNotices() {
     if (purchase_made_) {
-        info_font->draw("Purchase Successful", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kPurchaseMadeMsg, 
+			            ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         purchase_made_ = false;
     } else if (not_enough_gold_) {
-        info_font->draw("Not Enough Gold", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kNotEnoughGoldMsg, 
+			            ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         not_enough_gold_ = false;
     } else if (item_already_owned_) {
-        info_font->draw("Already Owned", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kAlreadyOwnedMsg, 
+			            ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         item_already_owned_ = false;
     } else {
@@ -1080,18 +1187,21 @@ void ofApp::drawStoreNotices() {
 //--------------------------------------------------------------
 void ofApp::drawEquipNotices() {
     if (tried_equip_not_own_) {
-        info_font->draw("You don't own this item", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kNoOwnMsg, 
+			            ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         tried_equip_not_own_ = false;
     } else if (already_equipped_) {
-        info_font->draw("Already Equipped", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kAlreadyEquippedMsg,
+                        ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         already_equipped_ = false;
     } else if (equip_success_) {
-        info_font->draw("Equipped", ofGetWindowWidth() / 2,
-                        ofGetWindowHeight() / 2);
+        info_font->draw(kEquipSuccessMsg, 
+			            ofGetWindowWidth() * kCenterXFactor,
+                        ofGetWindowHeight() * kCenterYFactor);
         should_delay_ = true;
         equip_success_ = false;
     }
@@ -1136,22 +1246,9 @@ void ofApp::closeSettings() {
 //-------------------------------------------------------------
 void ofApp::drawSettings() {
     ofSetColor(kBlack);
-    info_font->draw(
-        "Background Music Enabled",
-        (toggle_bkgrd_music_button->x + toggle_bkgrd_music_button->width) + 10,
-        (toggle_bkgrd_music_button->y + toggle_bkgrd_music_button->height / 2) +
-            5);
-    info_font->draw(
-        "Battle Music Enabled",
-        (toggle_battle_music_button->x + toggle_battle_music_button->width) +
-            10,
-        (toggle_battle_music_button->y +
-         toggle_battle_music_button->height / 2) +
-            5);
-    info_font->draw(
-        "Attack Music Enabled",
-        (toggle_atk_sound_button->x + toggle_atk_sound_button->width) + 10,
-        (toggle_atk_sound_button->y + toggle_atk_sound_button->height / 2) + 5);
+    drawToggleMessage(toggle_bkgrd_music_button, kBkgrdMusicEnabledMsg);
+    drawToggleMessage(toggle_atk_sound_button, kAtkSoundEnabledMsg);
+    drawToggleMessage(toggle_battle_music_button, kBattleMusicEnabledMsg);
     if (background_music_enabled_) {
         drawXOnButton(toggle_bkgrd_music_button);
     }
@@ -1164,10 +1261,20 @@ void ofApp::drawSettings() {
 }
 
 //-------------------------------------------------------------
+void ofApp::drawToggleMessage(Button* button, string message) {
+    info_font->draw(
+        message, (button->x + button->width) + kToggleMsgXAdj,
+        ((button->y + button->height * kToggleMsgYFactor) + kToggleMsgYAdj));
+}
+
+//-------------------------------------------------------------
 void ofApp::drawXOnButton(Button* button) {
-    ofDrawLine(button->x, button->y, button->x + button->width,
+    ofDrawLine(button->x, button->y, 
+		       button->x + button->width,
                button->y + button->height);
-    ofDrawLine(button->x + button->width, button->y, button->x,
+    ofDrawLine(button->x + button->width, 
+		       button->y, 
+		       button->x,
                button->y + button->height);
 }
 

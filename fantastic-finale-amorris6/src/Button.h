@@ -16,15 +16,19 @@ class Button : public ofBaseApp {
     shared_ptr<ofxSmartFont> label_font;
 
    public:
-    Button(float x, float y, float width, float height, std::string label,
-           shared_ptr<ofxSmartFont> label_font, function<void()> function)
+    Button(float x, float y, 
+		   float width, 
+		   float height, 
+		   string label,
+           shared_ptr<ofxSmartFont> label_font, 
+		   function<void()> function)
         : x(x),
           y(y),
           width(width),
           height(height),
           label(label),
           label_font(label_font) {
-        func_when_pressed[0] = function;
+          func_when_pressed[0] = function;
     }
 
     Button() {}

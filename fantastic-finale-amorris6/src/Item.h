@@ -3,7 +3,7 @@
 #include "ofxSmartFont.h"
 
 class Item {
-   private:
+   protected:
     const static int kWidth = 50;
     const static int kHeight = 50;
     const static int kBuyButtonWidth = 35;
@@ -19,6 +19,10 @@ class Item {
     const static int kEquipYAdj = 50;
     const static int kUnequipXAdj = -50;
     const static int kUnequipYAdj = 50;
+    const static string kBuyLabel;
+    const static string kSellLabel;
+    const static string kEquipLabel;
+    const static string kUnequipLabel;
     friend class ofApp;
     int page_;
     int price_;
@@ -32,26 +36,41 @@ class Item {
     Button* sell_button;
     Button* equip_button;
     Button* unequip_button;
-    static void buyItem();
-    static void sellItem();
-    static void equipItem();
-    static void unequipItem();
     Button store_buttons_[3];
     Button inv_buttons_[2];
     function<void()> func_when_equipped_[1];
     function<void()> func_when_unequipped_[1];
 
+    Item(string name, 
+		 int price, 
+		 int page_num, 
+		 float pos_x, float pos_y,
+         shared_ptr<ofxSmartFont> button_font);
+    Item(string name, 
+		 int price, 
+		 int page_num, 
+		 ofVec2f pos,
+         shared_ptr<ofxSmartFont> button_font);
+
+    static void buyItem();
+    static void sellItem();
+    static void equipItem();
+    static void unequipItem();
+
    public:
     Item() {}
-    Item(string name, int price, int page_num, float pos_x, float pos_y,
-         shared_ptr<ofxSmartFont> button_font);
-    Item(string name, int price, int page_num, ofVec2f pos,
-         shared_ptr<ofxSmartFont> button_font);
-    Item(string name, int price, int page_num, float pos_x, float pos_y,
+    Item(string name, 
+		 int price, 
+		 int page_num, 
+		 float pos_x, 
+		 float pos_y,
          function<void()> func_when_equipped,
          function<void()> func_when_unequipped,
          shared_ptr<ofxSmartFont> button_font);
-    Item(string name, int price, int page_num, ofVec2f pos,
+    Item(string name, 
+		 int price, 
+		 int page_num, 
+		 ofVec2f pos,
          function<void()> func_when_equipped,
          function<void()> func_when_unequipped,
          shared_ptr<ofxSmartFont> button_font);

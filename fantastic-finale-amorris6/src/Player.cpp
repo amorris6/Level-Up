@@ -1,38 +1,40 @@
 #include "Player.h"
 #include "ofApp.h"
+const float Player::kMoveSideDistFactor = 1.0 / 205.0;
+const float Player::kMoveVertDistFactor = 1.0 / 96.0;
 
 ofRectangle Player::getRect() {
     // width/2 fits the player sprite
-    return ofRectangle(position, Character::kCharWidth / 2,
-                       Character::kCharHeight);
+    return ofRectangle(position, kPlayerWidth, Character::kCharHeight);
 }
 
 int Player::getLvl() { return lvl; }
+
 bool Player::canMoveInDirection(PlayerDirection direction) {
-    kMoveSideSpeed = ofGetWindowWidth() / 205;
-    kMoveUpSpeed = ofGetWindowHeight() / 96;
+    move_side_distance = (int)(ofGetWindowWidth() * kMoveSideDistFactor);
+    move_vert_distance = (int)(ofGetWindowHeight() * kMoveVertDistFactor);
     switch (direction) {
         case UP:
-            if (position.y >= kMoveUpSpeed) {
+            if (position.y >= move_vert_distance) {
                 return true;
             }
             return false;
         case DOWN:
-            if (position.y <=
-                (int)ofGetWindowHeight() -
-                    (Character::kCharHeight + kMoveUpSpeed)) {
+            if (position.y 
+				<= ((int)ofGetWindowHeight() 
+				- (Character::kCharHeight + move_vert_distance))) {
                 return true;
             }
             return false;
         case LEFT:
-            if (position.x >= kMoveSideSpeed) {
+            if (position.x >= move_side_distance) {
                 return true;
             }
             return false;
         case RIGHT:
-            if (position.x <=
-                (int)ofGetWindowWidth() -
-                    (Character::kCharWidth + kMoveSideSpeed)) {
+            if (position.x 
+				<= ((int)ofGetWindowWidth() 
+				- (Character::kCharWidth + move_side_distance))) {
                 return true;
             }
             return false;
@@ -46,7 +48,7 @@ void Player::moveInDirection(int direction_index) {
     switch (direction_index) {
         case UP:
             if (canMoveInDirection(UP)) {
-                position.y -= kMoveUpSpeed;
+                position.y -= move_vert_distance;
             } else {
                 position.y = ofGetWindowHeight();
                 ofApp::setupResources();
@@ -55,21 +57,21 @@ void Player::moveInDirection(int direction_index) {
             break;
         case DOWN:
             if (canMoveInDirection(DOWN)) {
-                position.y += kMoveUpSpeed;
+                position.y += move_vert_distance;
             } else {
                 position.y = (int)ofGetWindowHeight() - Character::kCharHeight;
             }
             break;
         case LEFT:
             if (canMoveInDirection(LEFT)) {
-                position.x -= kMoveSideSpeed;
+                position.x -= move_side_distance;
             } else {
                 position.x = 0;
             }
             break;
         case RIGHT:
             if (canMoveInDirection(RIGHT)) {
-                position.x += kMoveUpSpeed;
+                position.x += move_vert_distance;
             } else {
                 position.x = 0;
                 ofApp::setupResources();

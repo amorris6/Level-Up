@@ -24,7 +24,12 @@ class Character {
     float getCrit();
     ofRectangle getRect();
 
-    Character(float x, float y, int gold, int exp, int atk, int def, int health,
+    Character(float x, float y, 
+		      int gold, 
+		      int exp, 
+		      int atk, 
+		      int def, 
+		      int health,
               int crit_chance)
         : position(x, y),
           gold(gold),
@@ -33,7 +38,8 @@ class Character {
           def(def),
           health(health),
           crit_chance(crit_chance) {}
-    Character() { Character(0, 0, 0, 0, 0, 0, 0, 0); }
+    Character() : Character(0, 0, 0, 0, 0, 0, 0, 0) {}
+
     bool operator==(Character const& other) const;
     bool operator!=(Character const& other) const;
     friend class ofApp;

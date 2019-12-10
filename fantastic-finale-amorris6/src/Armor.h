@@ -7,18 +7,33 @@ class Armor : public Item {
     int health_boost_;
 
    public:
-    Armor(std::string name, int price, int page,
-          float store_pos_x, float store_pos_y, int def_boost,
-          int health_boost, shared_ptr<ofxSmartFont> button_font)
-        : Item(name, price, page, store_pos_x, store_pos_y,
+    Armor(string name, 
+		  int price, 
+		  int page,
+          float store_pos_x, 
+		  float store_pos_y, 
+		  int def_boost,
+          int health_boost, 
+		  shared_ptr<ofxSmartFont> button_font)
+        : Item(name, 
+			   price, 
+			   page, 
+			   store_pos_x, store_pos_y,
                button_font) {
         def_boost_ = def_boost;
         health_boost_ = health_boost;
     }
-    Armor(string name, int price, int page,
-          ofVec2f store_pos, int def_boost,
-          int health_boost, shared_ptr<ofxSmartFont> button_font)
-        : Item(name, price, page, store_pos,
+    Armor(string name, 
+		  int price, 
+		  int page,
+          ofVec2f store_pos, 
+		  int def_boost,
+          int health_boost, 
+		  shared_ptr<ofxSmartFont> button_font)
+        : Item(name, 
+			   price, 
+			   page, 
+			   store_pos,
                button_font) {
         def_boost_ = def_boost;
         health_boost_ = health_boost;
