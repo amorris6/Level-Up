@@ -10,6 +10,7 @@ const string ofApp::kPlayLabel = "PLAY";
 const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
 const string ofApp::kInventoryLabel = "INVENTORY";
+const string ofApp::kSettingsLabel = "SETTINGS";
 const string ofApp::kBackLabel = "BACK";
 const string ofApp::kNextLabel = "NEXT";
 const string ofApp::kPrevLabel = "PREV";
@@ -47,9 +48,13 @@ int ofApp::energy_left_ = kInitialEnergy;
 int ofApp::battle_start_ = kStartBattle;
 bool ofApp::store_is_open_ = false;
 bool ofApp::inventory_is_open_ = false;
+bool ofApp::settings_is_open_ = false;
 bool ofApp::game_over_is_set_up_ = false;
 bool ofApp::not_enough_gold_ = false;
 bool ofApp::item_already_owned_ = false;
+bool ofApp::background_music_enabled_ = true;
+bool ofApp::atk_sound_enabled_ = true;
+bool ofApp::battle_music_enabled_ = true;
 bool ofApp::move_key_is_pressed[4] = {};
 Player ofApp::player = Player(kStartX, kStartY, kStartGold, kStartExp,
                               kStartAtk, kStartDef, kStartHealth, kStartCrit);
@@ -57,8 +62,11 @@ Button* ofApp::play_button = nullptr;
 Button* ofApp::restart_button = nullptr;
 Button* ofApp::store_button = nullptr;
 Button* ofApp::inventory_button = nullptr;
-Button* ofApp::back_store_button = nullptr;
-Button* ofApp::back_inventory_button = nullptr;
+Button* ofApp::settings_button = nullptr;
+Button* ofApp::toggle_bkgrd_music_button = nullptr;
+Button* ofApp::toggle_battle_music_button = nullptr;
+Button* ofApp::toggle_atk_sound_button = nullptr;
+Button* ofApp::back_button = nullptr;
 Button* ofApp::next_button = nullptr;
 Button* ofApp::prev_button = nullptr;
 shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
@@ -84,7 +92,6 @@ void ofApp::setup() {
     player_is_fighting_ = false;
     enemy_fight_x_ = 0;
     atk_damage_ = 0;
-    background_music_enabled_ = true;
     background_music_player = new ofSoundPlayer();
     atk_sound_player = new ofSoundPlayer();
     battle_music_player = new ofSoundPlayer();
@@ -155,6 +162,23 @@ void ofApp::setupButtons() {
         kPlayXAdj * ofGetWindowWidth(), kPlayYAdj * ofGetWindowHeight(),
         kPlayWidthAdj * ofGetWindowWidth(), Button::kButtonFontSize, kPlayLabel,
         button_font, setupWorld);
+    settings_button = new Button(kPlayXAdj * ofGetWindowWidth() - 40,
+                                 kPlayYAdj * ofGetWindowHeight() + 40,
+                                 1.8 * kPlayWidthAdj * ofGetWindowWidth(),
+                                 Button::kButtonFontSize, kSettingsLabel,
+                                 button_font, openSettings);
+    toggle_bkgrd_music_button =
+        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
+                   kPlayYAdj * ofGetWindowHeight() + 40, 40, 40, "",
+                   button_font, toggleBkgrdMusic);
+    toggle_atk_sound_button =
+        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
+                   kPlayYAdj * ofGetWindowHeight() + 90, 40, 40, "",
+                   button_font, toggleAtkSound);
+    toggle_battle_music_button =
+        new Button(kPlayXAdj * ofGetWindowWidth() - 40,
+                   kPlayYAdj * ofGetWindowHeight() + 140, 40, 40, "",
+                   button_font, toggleBattleMusic);
     restart_button = new Button(kPlayXAdj * ofGetWindowWidth() + 25,
                                 kPlayYAdj * ofGetWindowHeight() + 50,
                                 kPlayWidthAdj * ofGetWindowWidth() + 60,
@@ -169,12 +193,9 @@ void ofApp::setupButtons() {
         new Button(0, ofGetWindowHeight() - (Button::kButtonFontSize),
                    Button::kButtonFontSize + 100, Button::kButtonFontSize,
                    kInventoryLabel, info_font, openInventory);
-    back_store_button =
+    back_button =
         new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
-                   kInfoFontSize + 15, kBackLabel, info_font, closeStore);
-    back_inventory_button =
-        new Button(0, 0, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
-                   kInfoFontSize + 15, kBackLabel, info_font, closeInventory);
+                   kInfoFontSize + 15, kBackLabel, info_font, closePage);
     next_button = new Button(
         ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() / 2 + 11),
         kInfoFontSize + 14, kPlayWidthAdj * ofGetWindowWidth() / 2 + 11,
@@ -183,16 +204,20 @@ void ofApp::setupButtons() {
         0, kInfoFontSize + 15, kPlayWidthAdj * ofGetWindowWidth() / 2 + 10,
         kInfoFontSize + 15, kPrevLabel, info_font, decreasePage);
     buttons.push_back(play_button);
+    buttons.push_back(settings_button);
 }
 
 //--------------------------------------------------------------
 void ofApp::deleteButtons() {
     delete (play_button);
+    delete (settings_button);
+    delete (toggle_bkgrd_music_button);
+    delete (toggle_atk_sound_button);
+    delete (toggle_battle_music_button);
     delete (restart_button);
     delete (store_button);
     delete (inventory_button);
-    delete (back_store_button);
-    delete (back_inventory_button);
+    delete (back_button);
     delete (next_button);
     delete (prev_button);
 }
@@ -259,6 +284,9 @@ void ofApp::update() {
     if (energy_left_ > 0 && background_music_enabled_ &&
         !background_music_player->isPlaying()) {
         background_music_player->play();
+    } else if (!background_music_enabled_ &&
+               background_music_player->isPlaying()) {
+        background_music_player->stop();
     }
 }
 
@@ -276,6 +304,7 @@ void ofApp::lvlUp() {
 //--------------------------------------------------------------
 void ofApp::setupWorld() {
     buttons.remove(play_button);
+    buttons.remove(settings_button);
     buttons.push_back(inventory_button);
     stage_num_ = 1;
 }
@@ -321,7 +350,9 @@ void ofApp::battleEnemy() {
         fight_is_init_ = true;
         background_music_player->setPaused(true);
         Sleep(kAtkDelay);
-        battle_music_player->play();
+        if (battle_music_enabled_) {
+            battle_music_player->play();
+        }
     } else {
         Sleep(kAtkDelay);
         turns_fought_++;
@@ -424,6 +455,8 @@ void ofApp::draw() {
         drawGameOver();
     } else if (player_is_fighting_) {
         drawBattle();
+    } else if (settings_is_open_) {
+        drawSettings();
     } else if (stage_num_ == 0) {
         drawStartingScreen();
     } else {
@@ -513,7 +546,9 @@ void ofApp::drawAtk() {
         crit_message = "CRIT!";
     }
     if (is_player_atk_turn_ && turns_fought_ > 0) {
-        atk_sound_player->play();
+        if (atk_sound_enabled_) {
+            atk_sound_player->play();
+        }
         ofDrawLine(enemy_fight_x_, kEnemyFightY,
                    enemy_fight_x_ + kEnemyFightWidth,
                    kEnemyFightY + kEnemyFightHeight);
@@ -521,7 +556,9 @@ void ofApp::drawAtk() {
                         kEnemyFightY + kEnemyFightHeight / 2);
         is_player_atk_turn_ = !is_player_atk_turn_;
     } else if (!is_player_atk_turn_ && turns_fought_ > 0) {
-        atk_sound_player->play();
+        if (atk_sound_enabled_) {
+            atk_sound_player->play();
+        }
         ofDrawLine(kPlayerFightX + 20, kPlayerFightY + 30,
                    kPlayerFightX + kPlayerFightWidth + 20,
                    kPlayerFightY + kPlayerFightHeight + 30);
@@ -719,14 +756,14 @@ bool ofApp::checkIfItemEquipped(Item* item) {
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
     if (item_weapon) {
-        return player.equipped_weapon_ == item_weapon; 
-	}
+        return player.equipped_weapon_ == item_weapon;
+    }
     if (item_armor) {
         return player.equipped_armor_ == item_armor;
-	}
+    }
     if (item) {
-            return player.equipped_misc_ == item;
-	}
+        return player.equipped_misc_ == item;
+    }
     return false;
 }
 
@@ -842,6 +879,7 @@ void ofApp::restartGame() {
     resetPlayer();
     buttons.clear();
     buttons.push_back(play_button);
+    buttons.push_back(settings_button);
 }
 
 //--------------------------------------------------------------
@@ -868,6 +906,17 @@ void ofApp::resetPlayer() {
 }
 
 //--------------------------------------------------------------
+void ofApp::closePage() {
+    if (inventory_is_open_) {
+        closeInventory();
+    } else if (store_is_open_) {
+        closeStore();
+    } else if (settings_is_open_) {
+        closeSettings();
+    }
+}
+
+//--------------------------------------------------------------
 void ofApp::openInventory() {
     ofSetWindowTitle("INVENTORY");
     for (int dir = UP; dir <= RIGHT; dir++) {
@@ -875,7 +924,7 @@ void ofApp::openInventory() {
     }
     inventory_is_open_ = true;
     buttons.remove(inventory_button);
-    buttons.push_back(back_inventory_button);
+    buttons.push_back(back_button);
     buttons.push_back(next_button);
 }
 
@@ -883,7 +932,7 @@ void ofApp::openInventory() {
 void ofApp::closeInventory() {
     page_num_ = 0;
     inventory_is_open_ = false;
-    buttons.remove(back_inventory_button);
+    buttons.remove(back_button);
     buttons.remove(next_button);
     buttons.remove(prev_button);
     buttons.push_back(inventory_button);
@@ -960,7 +1009,7 @@ void ofApp::openStore() {
     store_is_open_ = true;
     buttons.remove(store_button);
     buttons.remove(restart_button);
-    buttons.push_back(back_store_button);
+    buttons.push_back(back_button);
     buttons.push_back(next_button);
 }
 
@@ -968,7 +1017,7 @@ void ofApp::openStore() {
 void ofApp::closeStore() {
     page_num_ = 0;
     store_is_open_ = false;
-    buttons.remove(back_store_button);
+    buttons.remove(back_button);
     buttons.remove(next_button);
     buttons.remove(prev_button);
     buttons.push_back(restart_button);
@@ -1046,6 +1095,80 @@ void ofApp::drawEquipNotices() {
         should_delay_ = true;
         equip_success_ = false;
     }
+}
+
+//-------------------------------------------------------------
+void ofApp::openSettings() {
+    ofSetWindowTitle(kSettingsLabel);
+    settings_is_open_ = true;
+    buttons.remove(play_button);
+    buttons.remove(settings_button);
+    buttons.push_back(back_button);
+    buttons.push_back(toggle_bkgrd_music_button);
+    buttons.push_back(toggle_atk_sound_button);
+    buttons.push_back(toggle_battle_music_button);
+}
+
+//-------------------------------------------------------------
+void ofApp::toggleBkgrdMusic() {
+    background_music_enabled_ = !background_music_enabled_;
+}
+
+//-------------------------------------------------------------
+void ofApp::toggleAtkSound() { atk_sound_enabled_ = !atk_sound_enabled_; }
+
+//-------------------------------------------------------------
+void ofApp::toggleBattleMusic() {
+    battle_music_enabled_ = !battle_music_enabled_;
+}
+
+//-------------------------------------------------------------
+void ofApp::closeSettings() {
+    settings_is_open_ = false;
+    buttons.push_back(play_button);
+    buttons.push_back(settings_button);
+    buttons.remove(back_button);
+    buttons.remove(toggle_bkgrd_music_button);
+    buttons.remove(toggle_atk_sound_button);
+    buttons.remove(toggle_battle_music_button);
+}
+
+//-------------------------------------------------------------
+void ofApp::drawSettings() {
+    ofSetColor(kBlack);
+    info_font->draw(
+        "Background Music Enabled",
+        (toggle_bkgrd_music_button->x + toggle_bkgrd_music_button->width) + 10,
+        (toggle_bkgrd_music_button->y + toggle_bkgrd_music_button->height / 2) +
+            5);
+    info_font->draw(
+        "Battle Music Enabled",
+        (toggle_battle_music_button->x + toggle_battle_music_button->width) +
+            10,
+        (toggle_battle_music_button->y +
+         toggle_battle_music_button->height / 2) +
+            5);
+    info_font->draw(
+        "Attack Music Enabled",
+        (toggle_atk_sound_button->x + toggle_atk_sound_button->width) + 10,
+        (toggle_atk_sound_button->y + toggle_atk_sound_button->height / 2) + 5);
+    if (background_music_enabled_) {
+        drawXOnButton(toggle_bkgrd_music_button);
+    }
+    if (battle_music_enabled_) {
+        drawXOnButton(toggle_battle_music_button);
+    }
+    if (atk_sound_enabled_) {
+        drawXOnButton(toggle_atk_sound_button);
+    }
+}
+
+//-------------------------------------------------------------
+void ofApp::drawXOnButton(Button* button) {
+    ofDrawLine(button->x, button->y, button->x + button->width,
+               button->y + button->height);
+    ofDrawLine(button->x + button->width, button->y, button->x,
+               button->y + button->height);
 }
 
 //-------------------------------------------------------------

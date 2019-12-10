@@ -73,8 +73,9 @@ class ofApp : public ofBaseApp {
     const static string kPlayLabel;
     const static string kRestartLabel;
     const static string kStoreLabel;
-    const static string kBackLabel;
     const static string kInventoryLabel;
+    const static string kSettingsLabel;
+    const static string kBackLabel;
     const static string kNextLabel;
     const static string kPrevLabel;
     const static string kBkgrndMusicFilePath;
@@ -104,6 +105,7 @@ class ofApp : public ofBaseApp {
     static float gold_mult_;
     static float exp_mult_;
     static bool store_is_open_;
+    static bool settings_is_open_;
     bool purchase_made_;
     bool sale_made_;
     bool tried_equip_not_own_;
@@ -116,7 +118,9 @@ class ofApp : public ofBaseApp {
     static int lvls_inc_;
     static bool move_key_is_pressed[4];
     static int stage_num_;
-    bool background_music_enabled_;
+    static bool background_music_enabled_;
+    static bool atk_sound_enabled_;
+    static bool battle_music_enabled_;
     ofSoundPlayer* background_music_player;
     ofSoundPlayer* atk_sound_player;
     ofSoundPlayer* battle_music_player;
@@ -132,8 +136,11 @@ class ofApp : public ofBaseApp {
     static Button* restart_button;
     static Button* store_button;
     static Button* inventory_button;
-    static Button* back_store_button;
-    static Button* back_inventory_button;
+    static Button* settings_button;
+    static Button* toggle_bkgrd_music_button;
+    static Button* toggle_atk_sound_button;
+    static Button* toggle_battle_music_button;
+    static Button* back_button;
     static Button* next_button;
     static Button* prev_button;
 
@@ -153,9 +160,17 @@ class ofApp : public ofBaseApp {
     bool checkIfItemEquipped(Item* item);
     void unequipItem(Item* item);
     static void closeStore();
+    static void closePage();
     void drawStore();
     void drawStoreNotices();
     void drawEquipNotices();
+    static void openSettings();
+    static void toggleBkgrdMusic();
+    static void toggleAtkSound();
+    static void toggleBattleMusic();
+    static void closeSettings();
+    void drawSettings();
+    void drawXOnButton(Button* button);
     static void openInventory();
     static void closeInventory();
     void drawInventory();
