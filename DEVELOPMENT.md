@@ -116,3 +116,15 @@ attack sound. Need to actually implement store and inventory. Right now, just em
 
 **12/4/2019**
 Took the day off, had other hw.
+
+**12/5/2019**
+Made an Item class. Also made Weapon and Armor that extends Item. Just husks of classes right now.
+Main achievement of the day was refactoring my Button usage. The mousePressed() function was
+getting a little crowded so, I put the function I wanted called when the button was pressed
+inside the button. Had a bit of an issue with static, top of source file is quite ugly, but it works.
+I then made a list of buttons that will contain all the buttons able to be pressed at a given scene.
+Then I don't have to keep track of these booleans in mousePressed. If the button is in buttons, it
+is able to be pressed/ drawn on the screen. The booleans will now tell me when to push and pop each button.
+Will have to remember to keep track of this. My Button == and !=can't compare the function ptrs or the
+ofxSmartFont, so the two back buttons have to differ by 1 for something (x, y , width, or height).
+Will hopefully implement item buying, selling, and equipping over the weekend.
