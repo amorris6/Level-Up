@@ -30,6 +30,7 @@ const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
 const string ofApp::kPlayerSpritePath =
     "C:\\CS 126\\Sprites\\player-sprite.png";
 const string ofApp::kSmallFontName = "Roboto-Black-Small";
+const string ofApp::kStoreFontName = "Roboto-Black-Store";
 const string ofApp::kFontName = "Roboto-Black";
 list<Resource> ofApp::resources = {};
 float ofApp::battle_multiplier_ = kInitBattleMult;
@@ -62,6 +63,8 @@ Button* ofApp::next_button = nullptr;
 Button* ofApp::prev_button = nullptr;
 shared_ptr<ofxSmartFont> ofApp::button_font = nullptr;
 shared_ptr<ofxSmartFont> ofApp::info_font = nullptr;
+shared_ptr<ofxSmartFont> ofApp::store_font = nullptr;
+
 list<Button*> ofApp::buttons = {};
 
 void ofApp::setup() {
@@ -92,8 +95,10 @@ void ofApp::setup() {
     battle_music_player->setLoop(true);
     ofxSmartFont::add(kFontFilePath, Button::kButtonFontSize, kFontName);
     ofxSmartFont::add(kFontFilePath, kInfoFontSize, kSmallFontName);
+    ofxSmartFont::add(kFontFilePath, kStoreFontSize, kStoreFontName);
     button_font = ofxSmartFont::get(kFontName);
     info_font = ofxSmartFont::get(kSmallFontName);
+    store_font = ofxSmartFont::get(kStoreFontName);
     setupButtons();
     items = {nullptr};
     setupItems();
@@ -115,19 +120,18 @@ void ofApp::setupItems() {
             i++;
         }
     }
-    Weapon* sword = new Weapon("sword", 300, 0, pos[0], 4000, info_font);
-    Armor* helmet =
-        new Armor("helmet", 300, 0, pos[1], 2000, 3000, info_font);
+    Weapon* sword = new Weapon("sword", 300, 0, pos[0], 4000, store_font);
+    Armor* helmet = new Armor("helmet", 300, 0, pos[1], 2000, 3000, store_font);
     Item* fast_battle_gem =
         new Item("battle++", 300, 0, pos[2], speedBattleChance,
-                 slowBattleChance, info_font);
+                 slowBattleChance, store_font);
     Item* slow_battle_gem =
         new Item("battle--", 300, 0, pos[3], slowBattleChance,
-                 speedBattleChance, info_font);
+                 speedBattleChance, store_font);
     Item* more_exp_gem = new Item("exp++", 300, 0, pos[4], increaseExpGain,
-                                  decreaseExpGain, info_font);
+                                  decreaseExpGain, store_font);
     Item* more_gold_gem = new Item("gold++", 300, 0, pos[5], increaseGoldGain,
-                                   decreaseGoldGain, info_font);
+                                   decreaseGoldGain, store_font);
 
     items.push_back(sword);
     items.push_back(helmet);
@@ -680,6 +684,9 @@ void ofApp::mousePressed(int x, int y, int button) {
                 item_buttons[0] = item->store_buttons_[0];
                 item_buttons[1] = item->store_buttons_[1];
             }
+            if (checkIfItemEquipped(item)) {
+                item_buttons[1] = item->store_buttons_[2];
+            }
             for (auto& item_button : item_buttons) {
                 if (item_button.mouseIsInside(x, y)) {
                     item_button.getFuncWhenPressed()();
@@ -698,9 +705,29 @@ void ofApp::mousePressed(int x, int y, int button) {
                 equipItem(item);
                 item->wants_to_equip_ = false;
                 break;
+            } else if (item->wants_to_unequip_) {
+                unequipItem(item);
+                item->wants_to_unequip_ = false;
+                break;
             }
         }
     }
+}
+
+//--------------------------------------------------------------
+bool ofApp::checkIfItemEquipped(Item* item) {
+    Weapon* item_weapon = dynamic_cast<Weapon*>(item);
+    Armor* item_armor = dynamic_cast<Armor*>(item);
+    if (item_weapon) {
+        return player.equipped_weapon_ == item_weapon; 
+	}
+    if (item_armor) {
+        return player.equipped_armor_ == item_armor;
+	}
+    if (item) {
+            return player.equipped_misc_ == item;
+	}
+    return false;
 }
 
 //--------------------------------------------------------------
@@ -726,27 +753,34 @@ void ofApp::buyItem(Item* item) {
 
 //--------------------------------------------------------------
 void ofApp::sellItem(Item* item) {
+    unequipItem(item);
+    sale_made_ = true;
+    player.gold += (item->price_ * gold_mult_);
+    player.inventory.remove(item);
+}
+
+//--------------------------------------------------------------
+void ofApp::unequipItem(Item* item) {
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
     if (item_weapon) {
         if (player.equipped_weapon_ == item_weapon) {
             player.atk -= player.equipped_weapon_->getAtkBoost();
+            player.equipped_weapon_ = nullptr;
         }
     } else if (item_armor) {
         if (player.equipped_armor_ == item_armor) {
             player.def -= player.equipped_armor_->getDefBoost();
             player.max_health_ -= player.equipped_armor_->getHpBoost();
             player.health = player.max_health_;
+            player.equipped_armor_ = nullptr;
         }
     } else {
         if (player.equipped_misc_ == item) {
             item->getFuncWhenUnequipped()();
+            player.equipped_misc_ = nullptr;
         }
     }
-    sale_made_ = true;
-    player.gold += (item->price_ * gold_mult_);
-    player.inventory.remove(item);
-
 }
 
 //--------------------------------------------------------------
@@ -789,7 +823,7 @@ void ofApp::equipItem(Item* item) {
         player.health = player.max_health_;
     } else {
         if (player.equipped_misc_) {
-            item->getFuncWhenUnequipped()();
+            player.equipped_misc_->getFuncWhenUnequipped()();
         }
         player.equipped_misc_ = item;
         item->getFuncWhenEquipped()();
@@ -870,20 +904,16 @@ void ofApp::drawInventory() {
         info_font->draw(item->getName(), item->pos_.x,
                         item->pos_.y - 2 * kInfoFontSize);
         string equipped_status = "UNEQUIPPED";
-        Weapon* item_weapon = dynamic_cast<Weapon*>(item);
-        Armor* item_armor = dynamic_cast<Armor*>(item);
-        if ((player.equipped_weapon_ != nullptr && item_weapon != nullptr &&
-             item_weapon == player.equipped_weapon_) ||
-            (player.equipped_armor_ != nullptr && item_armor != nullptr &&
-             item_armor == player.equipped_armor_) ||
-            item == player.equipped_misc_) {
+        if (checkIfItemEquipped(item)) {
             equipped_status = "EQUIPPED";
+            item->unequip_button->draw();
+        } else {
+            item->equip_button->draw();
         }
         info_font->draw(equipped_status, item->pos_.x - 30,
                         item->pos_.y - kInfoFontSize / 2);
         ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->sell_button->draw();
-        item->equip_button->draw();
     };
     drawInventoryNotices();
 }
@@ -964,7 +994,11 @@ void ofApp::drawStore() {
                         item->pos_.y - kInfoFontSize / 2);
         ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
         item->buy_button->draw();
-        item->equip_button->draw();
+        if (!checkIfItemEquipped(item)) {
+            item->equip_button->draw();
+        } else {
+            item->unequip_button->draw();
+        }
     };
     string gold = to_string(player.getGold());
     info_font->draw("GOLD: " + gold, ofGetWindowWidth() / 7.0, kInfoFontSize);

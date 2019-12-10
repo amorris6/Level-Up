@@ -62,6 +62,7 @@ class ofApp : public ofBaseApp {
     const static int kStartHealth = 400;
     const static int kStartCrit = 10;
     const static int kInfoFontSize = 16;
+    const static int kStoreFontSize = 14;
     const static int kMaxResourceNum = 67;  // get weird malloc error if larger
     const static int kLvlUpGain = 100;
     const static int kExpLimit = 100;
@@ -82,6 +83,7 @@ class ofApp : public ofBaseApp {
     const static string kFontFilePath;
     const static string kPlayerSpritePath;
     const static string kSmallFontName;
+    const static string kStoreFontName;
     const static string kFontName;
 
     bool should_delay_;
@@ -120,6 +122,7 @@ class ofApp : public ofBaseApp {
     ofSoundPlayer* battle_music_player;
     static shared_ptr<ofxSmartFont> button_font;
     static shared_ptr<ofxSmartFont> info_font;
+    static shared_ptr<ofxSmartFont> store_font;
     static Player player;
     Enemy enemy;
     static list<Resource> resources;
@@ -147,6 +150,8 @@ class ofApp : public ofBaseApp {
     void buyItem(Item* item);
     void sellItem(Item* item);
     void equipItem(Item* item);
+    bool checkIfItemEquipped(Item* item);
+    void unequipItem(Item* item);
     static void closeStore();
     void drawStore();
     void drawStoreNotices();
