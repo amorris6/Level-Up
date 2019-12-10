@@ -12,6 +12,7 @@ const float ofApp::kEquippedYFactor = 0.5;
 const float ofApp::kPriceYFactor = 0.5;
 const float ofApp::kToggleMsgYFactor = 0.5;
 const float ofApp::kStoreGoldXFactor = 1.0 / 7.0;
+const float ofApp::kStatSpaceYFactor = 0.91;
 const string ofApp::kPlayLabel = "PLAY";
 const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
@@ -21,18 +22,22 @@ const string ofApp::kToggleLabel = "";
 const string ofApp::kBackLabel = "BACK";
 const string ofApp::kNextLabel = "NEXT";
 const string ofApp::kPrevLabel = "PREV";
-const string ofApp::kLvlUpMessage = "LEVEL UP";
+const string ofApp::kLvlUpLabel = "LEVEL UP";
 const string ofApp::kGameOverMessage = "GAME OVER";
 const string ofApp::kCritMessage = "CRIT!";
 const string ofApp::kGoldLabel = "GOLD: ";
 const string ofApp::kPriceLabel = "PRICE: ";
 const string ofApp::kHpLabel = "HP: ";
+const string ofApp::kAtkLabel = "ATK: ";
+const string ofApp::kDefLabel = "DEF: ";
 const string ofApp::kExpLabel = "EXP: ";
 const string ofApp::kEnergyLabel = "ENERGY LEFT: ";
 const string ofApp::kStageLabel = "STAGE: ";
 const string ofApp::kLvlLabel = "LEVEL: ";
 const string ofApp::kBattleChanceLabel = "BATTLE CHANCE: ";
+const string ofApp::kLvlPointsLabel = "LEVEL POINTS: ";
 const string ofApp::kPercentString = "%";
+const string ofApp::kExclamationPoint = "!";
 const string ofApp::kGetRewardMsg = "YOU GOT: ";
 const string ofApp::kGetExpMsg = " EXP!";
 const string ofApp::kGetGoldMsg = " GOLD!";
@@ -46,6 +51,7 @@ const string ofApp::kAlreadyOwnedMsg = "Already Owned";
 const string ofApp::kBkgrdMusicEnabledMsg = "Background Music Enabled";
 const string ofApp::kBattleMusicEnabledMsg = "Battle Music Enabled";
 const string ofApp::kAtkSoundEnabledMsg = "Attack Sound Enabled";
+const string ofApp::kAutoLvlEnabledMsg = "Auto Levelling Enabled";
 const string ofApp::kWorldTitle = "fantastic-finale-amorris6";
 const string ofApp::kSwordName = "sword";
 const string ofApp::kHelmetName = "helmet";
@@ -90,12 +96,18 @@ int ofApp::battle_start_ = kStartBattle;
 bool ofApp::store_is_open_ = false;
 bool ofApp::inventory_is_open_ = false;
 bool ofApp::settings_is_open_ = false;
+bool ofApp::lvl_up_is_open_ = false;
 bool ofApp::game_over_is_set_up_ = false;
 bool ofApp::not_enough_gold_ = false;
 bool ofApp::item_already_owned_ = false;
 bool ofApp::background_music_enabled_ = true;
 bool ofApp::atk_sound_enabled_ = true;
 bool ofApp::battle_music_enabled_ = true;
+bool ofApp::auto_lvling_enabled_ = false;
+int ofApp::lvl_up_points_ = 0;
+int ofApp::num_hp_lvl_up_ = 0;
+int ofApp::num_atk_lvl_up_ = 0;
+int ofApp::num_def_lvl_up_ = 0;
 bool ofApp::move_key_is_pressed[4] = {};
 Player ofApp::player_ = Player(kStartX, kStartY, kStartGold, kStartExp,
                                kStartAtk, kStartDef, kStartHealth, kStartCrit);
@@ -103,6 +115,14 @@ Button* ofApp::play_button_ = nullptr;
 Button* ofApp::restart_button_ = nullptr;
 Button* ofApp::store_button_ = nullptr;
 Button* ofApp::inventory_button_ = nullptr;
+Button* ofApp::lvl_up_button_ = nullptr;
+Button* ofApp::hp_up_button_ = nullptr;
+Button* ofApp::hp_down_button_ = nullptr;
+Button* ofApp::atk_up_button_ = nullptr;
+Button* ofApp::atk_down_button_ = nullptr;
+Button* ofApp::def_up_button_ = nullptr;
+Button* ofApp::def_down_button_ = nullptr;
+Button* ofApp::toggle_auto_lvling_button_ = nullptr;
 Button* ofApp::settings_button_ = nullptr;
 Button* ofApp::toggle_bkgrd_music_button_ = nullptr;
 Button* ofApp::toggle_battle_music_button_ = nullptr;
@@ -232,6 +252,9 @@ void ofApp::setupButtons() {
         kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
         toggle_atk_sound_button_->y_ + kToggleSpaceAdj, kToggleWidth,
         kToggleHeight, kToggleLabel, button_font_, toggleBattleMusic);
+    toggle_auto_lvling_button_ =
+        new Button(0, ofGetWindowHeight() - kToggleHeight, kToggleWidth,
+                   kToggleHeight, kToggleLabel, button_font_, toggleAutoLvling);
     restart_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kRestartXAdj,
         kCenterYFactor * ofGetWindowHeight() + kRestartYAdj,
@@ -246,6 +269,43 @@ void ofApp::setupButtons() {
         0, ofGetWindowHeight() - (Button::kButtonFontSize),
         Button::kButtonFontSize + kInventoryWidthAdj, Button::kButtonFontSize,
         kInventoryLabel, info_font_, openInventory);
+    lvl_up_button_ = new Button(
+        0, ofGetWindowHeight() + kLvlUpYFactor * (Button::kButtonFontSize),
+        Button::kButtonFontSize + kLvlUpWidthAdj, Button::kButtonFontSize,
+        kLvlUpLabel, info_font_, openLvlUp);
+    hp_up_button_ = new Button(
+        ofGetWindowWidth() * kCenterXFactor + kStatUpXAdj,
+        ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor,
+        kStatButtonWidth, kStatButtonHeight, kToggleLabel, info_font_, lvlUpHp);
+    hp_down_button_ =
+        new Button(ofGetWindowWidth() * kCenterXFactor + kStatDownXAdj,
+                   ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor,
+                   kStatButtonWidth, kStatButtonHeight, kToggleLabel,
+                   info_font_, lvlDownHp);
+    atk_up_button_ =
+        new Button(ofGetWindowWidth() * kCenterXFactor + kStatUpXAdj,
+                   ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor +
+                       kStatSpaceYAdj,
+                   kStatButtonWidth, kStatButtonHeight, kToggleLabel,
+                   info_font_, lvlUpAtk);
+    atk_down_button_ =
+        new Button(ofGetWindowWidth() * kCenterXFactor + kStatDownXAdj,
+                   ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor +
+                       kStatSpaceYAdj,
+                   kStatButtonWidth, kStatButtonHeight, kToggleLabel,
+                   info_font_, lvlDownAtk);
+    def_up_button_ =
+        new Button(ofGetWindowWidth() * kCenterXFactor + kStatUpXAdj,
+                   ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor +
+                       kStatSpaceYAdj + kStatSpaceYAdj,
+                   kStatButtonWidth, kStatButtonHeight, kToggleLabel,
+                   info_font_, lvlUpDef);
+    def_down_button_ =
+        new Button(ofGetWindowWidth() * kCenterXFactor + kStatDownXAdj,
+                   ofGetWindowHeight() * kCenterYFactor * kStatSpaceYFactor +
+                       kStatSpaceYAdj + kStatSpaceYAdj,
+                   kStatButtonWidth, kStatButtonHeight, kToggleLabel,
+                   info_font_, lvlDownDef);
     back_button_ = new Button(
         0, 0, kPlayWidthAdj * ofGetWindowWidth() + kBackWidthAdj,
         kInfoFontSize + kBackHeightAdj, kBackLabel, info_font_, closePage);
@@ -272,6 +332,7 @@ void ofApp::deleteButtons() {
     delete (restart_button_);
     delete (store_button_);
     delete (inventory_button_);
+    delete (lvl_up_button_);
     delete (back_button_);
     delete (next_button_);
     delete (prev_button_);
@@ -352,11 +413,202 @@ void ofApp::update() {
 void ofApp::lvlUp() {
     player_.lvl_++;
     lvls_inc_++;
-    player_.atk_ += kLvlUpGain;
-    player_.def_ += kLvlUpGain;
-    player_.max_health_ += kLvlUpGain;
-    player_.health_ = player_.max_health_;
+    if (auto_lvling_enabled_) {
+        player_.atk_ += kLvlUpGain;
+        player_.def_ += kLvlUpGain;
+        player_.max_health_ += kLvlUpGain;
+        player_.health_ = player_.max_health_;
+    } else {
+        lvl_up_points_ += kNumOfStats;
+    }
     player_.exp_ -= kExpLimit;
+}
+
+//--------------------------------------------------------------
+void ofApp::openLvlUp() {
+    buttons_.remove(inventory_button_);
+    buttons_.remove(lvl_up_button_);
+    buttons_.push_back(back_button_);
+    buttons_.push_back(toggle_auto_lvling_button_);
+    if (lvl_up_points_ > 0) {
+        buttons_.push_back(hp_up_button_);
+        buttons_.push_back(atk_up_button_);
+        buttons_.push_back(def_up_button_);
+    }
+    lvl_up_is_open_ = true;
+}
+
+//--------------------------------------------------------------
+void ofApp::closeLvlUp() {
+    buttons_.push_back(lvl_up_button_);
+    buttons_.push_back(inventory_button_);
+    buttons_.remove(back_button_);
+    buttons_.remove(toggle_auto_lvling_button_);
+    buttons_.remove(hp_up_button_);
+    buttons_.remove(hp_down_button_);
+    buttons_.remove(atk_up_button_);
+    buttons_.remove(atk_down_button_);
+    buttons_.remove(def_up_button_);
+    buttons_.remove(def_down_button_);
+    num_hp_lvl_up_ = 0;
+    num_atk_lvl_up_ = 0;
+    num_def_lvl_up_ = 0;
+    lvl_up_is_open_ = false;
+}
+
+//--------------------------------------------------------------
+void ofApp::drawLvlUpScreen() {
+    ofSetColor(kBlack);
+    drawToggleMessage(toggle_auto_lvling_button_, kAutoLvlEnabledMsg);
+    if (auto_lvling_enabled_) {
+        drawXOnButton(toggle_auto_lvling_button_);
+    }
+    string lvl_up_points = to_string(lvl_up_points_);
+    info_font_->draw(kLvlPointsLabel + to_string(lvl_up_points_),
+                     kLvlPointsMsgX, kInfoFontSize);
+    info_font_->draw(kHpLabel + to_string(player_.getHealth()),
+                     ofGetWindowWidth() * kCenterXFactor,
+                     ofGetWindowHeight() * kCenterYFactor);
+    info_font_->draw(kAtkLabel + to_string(player_.getAtk()),
+                     ofGetWindowWidth() * kCenterXFactor,
+                     ofGetWindowHeight() * kCenterYFactor + kStatSpaceYAdj);
+    info_font_->draw(
+        kDefLabel + to_string(player_.getDef()),
+        ofGetWindowWidth() * kCenterXFactor,
+        ofGetWindowHeight() * kCenterYFactor + kStatSpaceYAdj + kStatSpaceYAdj);
+    drawStatButtons();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawStatButtons() {
+    if (lvl_up_points_ > 0) {
+        drawPlusOnButton(hp_up_button_);
+        drawPlusOnButton(atk_up_button_);
+        drawPlusOnButton(def_up_button_);
+    }
+    if (num_hp_lvl_up_ > 0) {
+        drawMinusOnButton(hp_down_button_);
+    }
+    if (num_atk_lvl_up_ > 0) {
+        drawMinusOnButton(atk_down_button_);
+    }
+    if (num_def_lvl_up_ > 0) {
+        drawMinusOnButton(def_down_button_);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::drawPlusOnButton(Button* button) {
+    ofSetColor(kBlack);
+    ofDrawLine(button->x_ + button->width_ * kToggleMsgYFactor, button->y_,
+               button->x_ + button->width_ * kToggleMsgYFactor,
+               button->y_ + button->height_);
+    ofDrawLine(button->x_, button->y_ + button->height_ * kToggleMsgYFactor,
+               button->x_ + button->width_,
+               button->y_ + button->height_ * kToggleMsgYFactor);
+}
+
+//--------------------------------------------------------------
+void ofApp::drawMinusOnButton(Button* button) {
+    ofDrawLine(button->x_, button->y_ + button->height_ * kToggleMsgYFactor,
+               button->x_ + button->width_,
+               button->y_ + button->height_ * kToggleMsgYFactor);
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlUpHp() {
+    if (lvl_up_points_ > 0) {
+        player_.health_ += kLvlUpGain;
+        lvl_up_points_--;
+        num_hp_lvl_up_++;
+    } 
+    if (num_hp_lvl_up_ == 1) {
+        buttons_.push_back(hp_down_button_);
+	}
+    if (lvl_up_points_ == 0) {
+        buttons_.remove(hp_up_button_);
+        buttons_.remove(atk_up_button_);
+        buttons_.remove(def_up_button_);
+	}
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlDownHp() {
+    player_.health_ -= kLvlUpGain;
+    lvl_up_points_++;
+    num_hp_lvl_up_--;
+    if (num_hp_lvl_up_ == 0) {
+        buttons_.remove(hp_down_button_);
+    }
+    if (lvl_up_points_ == 1) {
+        buttons_.push_back(hp_up_button_);
+        buttons_.push_back(atk_up_button_);
+        buttons_.push_back(def_up_button_);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlUpAtk() {
+    if (lvl_up_points_ > 0) {
+        player_.atk_ += kLvlUpGain;
+        lvl_up_points_--;
+        num_atk_lvl_up_++;
+    }
+    if (num_atk_lvl_up_ == 1) {
+        buttons_.push_back(atk_down_button_);
+    }
+    if (lvl_up_points_ == 0) {
+        buttons_.remove(hp_up_button_);
+        buttons_.remove(atk_up_button_);
+        buttons_.remove(def_up_button_);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlDownAtk() {
+    player_.atk_ -= kLvlUpGain;
+    lvl_up_points_++;
+    num_atk_lvl_up_--;
+    if (num_atk_lvl_up_ == 0) {
+        buttons_.remove(atk_down_button_);
+    }
+    if (lvl_up_points_ == 1) {
+        buttons_.push_back(hp_up_button_);
+        buttons_.push_back(atk_up_button_);
+        buttons_.push_back(def_up_button_);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlUpDef() {
+    if (lvl_up_points_ > 0) {
+        player_.def_ += kLvlUpGain;
+        lvl_up_points_--;
+        num_def_lvl_up_++;
+    }
+    if (num_def_lvl_up_ == 1) {
+        buttons_.push_back(def_down_button_);
+    }
+    if (lvl_up_points_ == 0) {
+        buttons_.remove(hp_up_button_);
+        buttons_.remove(atk_up_button_);
+        buttons_.remove(def_up_button_);
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::lvlDownDef() {
+    player_.def_ -= kLvlUpGain;
+    lvl_up_points_++;
+    num_def_lvl_up_--;
+    if (num_def_lvl_up_ == 0) {
+        buttons_.remove(def_down_button_);
+    }
+    if (lvl_up_points_ == 1) {
+        buttons_.push_back(hp_up_button_);
+        buttons_.push_back(atk_up_button_);
+        buttons_.push_back(def_up_button_);
+    }
 }
 
 //--------------------------------------------------------------
@@ -364,6 +616,7 @@ void ofApp::setupWorld() {
     buttons_.remove(play_button_);
     buttons_.remove(settings_button_);
     buttons_.push_back(inventory_button_);
+    buttons_.push_back(lvl_up_button_);
     stage_num_ = 1;
 }
 
@@ -427,6 +680,7 @@ void ofApp::setupBattle() {
         move_key_is_pressed[dir] = false;
     }
     buttons_.remove(inventory_button_);
+    buttons_.remove(lvl_up_button_);
     // keeping stage_num_ inside allows for larger range of rand() % numbers,
     // otherwise numbers would just be divisible by stage_num_
     int gold =
@@ -509,6 +763,8 @@ void ofApp::draw() {
         drawStore();
     } else if (inventory_is_open_) {
         drawInventory();
+    } else if (lvl_up_is_open_) {
+        drawLvlUpScreen();
     } else if (energy_left_ <= 0) {
         drawGameOver();
     } else if (player_is_fighting_) {
@@ -533,7 +789,8 @@ void ofApp::drawButtons() {
 //--------------------------------------------------------------
 void ofApp::drawLvlUp() {
     ofSetColor(kGreen);
-    button_font_->draw(kLvlUpMessage, ofGetWindowWidth() * kCenterXFactor,
+    button_font_->draw(kLvlUpLabel + kExclamationPoint,
+                       ofGetWindowWidth() * kCenterXFactor,
                        ofGetWindowHeight() * kCenterYFactor + kLvlUpYAdj);
 }
 
@@ -560,6 +817,7 @@ void ofApp::setupGameOver() {
         battle_music_player_->stop();  // checkBattleEnded doesn't get a chance
     }                                  // to stop battle music
     buttons_.remove(inventory_button_);
+    buttons_.remove(lvl_up_button_);
     buttons_.push_back(restart_button_);
     buttons_.push_back(store_button_);
     game_over_is_set_up_ = true;
@@ -926,6 +1184,7 @@ void ofApp::restartGame() {
     game_over_is_set_up_ = false;
     ofSetWindowTitle(kWorldTitle);
     stage_num_ = 0;
+    lvl_up_points_ = 0;
     energy_left_ = kInitialEnergy;
     battle_start_ = kStartBattle;
     battle_chance_ = kFightInit * 1 / (battle_multiplier_);
@@ -972,6 +1231,8 @@ void ofApp::closePage() {
         closeStore();
     } else if (settings_is_open_) {
         closeSettings();
+    } else if (lvl_up_is_open_) {
+        closeLvlUp();
     }
 }
 
@@ -983,6 +1244,7 @@ void ofApp::openInventory() {
     }
     inventory_is_open_ = true;
     buttons_.remove(inventory_button_);
+    buttons_.remove(lvl_up_button_);
     buttons_.push_back(back_button_);
     buttons_.push_back(next_button_);
 }
@@ -995,6 +1257,7 @@ void ofApp::closeInventory() {
     buttons_.remove(next_button_);
     buttons_.remove(prev_button_);
     buttons_.push_back(inventory_button_);
+    buttons_.push_back(lvl_up_button_);
 }
 
 //-------------------------------------------------------------
@@ -1182,6 +1445,9 @@ void ofApp::toggleAtkSound() { atk_sound_enabled_ = !atk_sound_enabled_; }
 void ofApp::toggleBattleMusic() {
     battle_music_enabled_ = !battle_music_enabled_;
 }
+
+//-------------------------------------------------------------
+void ofApp::toggleAutoLvling() { auto_lvling_enabled_ = !auto_lvling_enabled_; }
 
 //-------------------------------------------------------------
 void ofApp::closeSettings() {

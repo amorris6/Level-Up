@@ -14,6 +14,7 @@ class ofApp : public ofBaseApp {
    private:
     friend class Item;
     friend void Player::moveInDirection(int direction_index);
+    const static int kNumOfStats = 3;
     const static int kMaxPageNum = 3;
     const static int kMaxItemsOnPage = 32;
     const static int kItemButtonsOnScreen = 2;
@@ -115,6 +116,7 @@ class ofApp : public ofBaseApp {
     const static int kToggleMsgXAdj = 10;
     const static int kToggleMsgYAdj = 5;
     const static float kToggleMsgYFactor;
+    const static int kStatSpaceYAdj = 25;
     const static int kRestartXAdj = 25;
     const static int kRestartYAdj = 50;
     const static int kRestartWidthAdj = 60;
@@ -122,6 +124,7 @@ class ofApp : public ofBaseApp {
     const static int kStoreYAdj = 100;
     const static int kStoreWidthAdj = 60;
     const static int kInventoryWidthAdj = 100;
+    const static int kLvlUpWidthAdj = 70;
     const static int kBackWidthAdj = -40;
     const static int kBackHeightAdj = 15;
     const static int kNextXAdj = -40;
@@ -133,6 +136,11 @@ class ofApp : public ofBaseApp {
     const static int kPrevHeightAdj = 15;
     const static int kResourcePosAdj = 3;
     const static int kLvlUpYAdj = -65;
+    const static int kStatUpXAdj = 180;
+    const static float kStatSpaceYFactor;
+    const static int kStatDownXAdj = -30;
+    const static int kStatButtonWidth = 20;
+    const static int kStatButtonHeight = 20;
     const static int kCritMsgXAdj = 10;
     const static int kEnemyAtkXAdj = 20;
     const static int kEnemyAtkYAdj = 30;
@@ -145,6 +153,7 @@ class ofApp : public ofBaseApp {
     const static int kEnemyCritFactor = 2;
     const static int kExpMsgYFactor = 2;
     const static int kLvlMsgYFactor = 3;
+    const static int kLvlUpYFactor = -2;
     const static int kEnergyMsgXFactor = 11;
     const static int kPlayerSpritePosAdj = -15;
     const static int kPlayerSpriteWidth = Character::kCharWidth + 20;
@@ -155,6 +164,8 @@ class ofApp : public ofBaseApp {
     const static int kPriceXAdj = -30;
     const static float kPriceYFactor;
     const static float kStoreGoldXFactor;
+    const static int kLvlPointsMsgX = 200;
+    const static int kToggleAutoLvlX = 150;
     const static string kPlayLabel;
     const static string kRestartLabel;
     const static string kStoreLabel;
@@ -163,7 +174,7 @@ class ofApp : public ofBaseApp {
     const static string kBackLabel;
     const static string kNextLabel;
     const static string kPrevLabel;
-    const static string kLvlUpMessage;
+    const static string kLvlUpLabel;
     const static string kGameOverMessage;
     const static string kCritMessage;
     const static string kWorldTitle;
@@ -185,6 +196,8 @@ class ofApp : public ofBaseApp {
     const static string kNotEnoughGoldMsg;
     const static string kAlreadyOwnedMsg;
     const static string kHpLabel;
+    const static string kAtkLabel;
+    const static string kDefLabel;
     const static string kGoldLabel;
     const static string kPriceLabel;
     const static string kExpLabel;
@@ -195,10 +208,13 @@ class ofApp : public ofBaseApp {
     const static string kGetExpMsg;
     const static string kGetGoldMsg;
     const static string kBattleChanceLabel;
+    const static string kLvlPointsLabel;
     const static string kPercentString;
+    const static string kExclamationPoint;
     const static string kBkgrdMusicEnabledMsg;
     const static string kBattleMusicEnabledMsg;
     const static string kAtkSoundEnabledMsg;
+    const static string kAutoLvlEnabledMsg;
 
     bool should_delay_;
     static int page_num_;
@@ -234,6 +250,12 @@ class ofApp : public ofBaseApp {
     static bool background_music_enabled_;
     static bool atk_sound_enabled_;
     static bool battle_music_enabled_;
+    static bool auto_lvling_enabled_;
+    static bool lvl_up_is_open_;
+    static int lvl_up_points_;
+    static int num_hp_lvl_up_;
+    static int num_atk_lvl_up_;
+    static int num_def_lvl_up_;
     ofSoundPlayer* background_music_player_;
     ofSoundPlayer* atk_sound_player_;
     ofSoundPlayer* battle_music_player_;
@@ -253,9 +275,17 @@ class ofApp : public ofBaseApp {
     static Button* toggle_bkgrd_music_button_;
     static Button* toggle_atk_sound_button_;
     static Button* toggle_battle_music_button_;
+    static Button* toggle_auto_lvling_button_;
     static Button* back_button_;
     static Button* next_button_;
     static Button* prev_button_;
+    static Button* lvl_up_button_;
+    static Button* hp_up_button_;
+    static Button* hp_down_button_;
+    static Button* atk_up_button_;
+    static Button* atk_down_button_;
+    static Button* def_up_button_;
+    static Button* def_down_button_;
 
     void setupItems();
     void deleteItems();
@@ -285,6 +315,9 @@ class ofApp : public ofBaseApp {
     static void closeSettings();
     void drawSettings();
     void drawXOnButton(Button* button);
+    void drawPlusOnButton(Button* button);
+    void drawMinusOnButton(Button* button);
+    void drawStatButtons();
     void drawToggleMessage(Button* button, string message);
     static void openInventory();
     static void closeInventory();
@@ -292,6 +325,16 @@ class ofApp : public ofBaseApp {
     void drawInventoryNotices();
     static void increasePage();
     static void decreasePage();
+    static void openLvlUp();
+    static void lvlUpHp();
+    static void lvlDownHp();
+    static void lvlUpAtk();
+    static void lvlDownAtk();
+    static void lvlUpDef();
+    static void lvlDownDef();
+    static void toggleAutoLvling();
+    static void closeLvlUp();
+    void drawLvlUpScreen();
     static void setupWorld();
     void drawWorld();
     void drawLvlUp();
