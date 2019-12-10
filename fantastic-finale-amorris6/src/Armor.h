@@ -38,8 +38,8 @@ class Armor : public Item {
         def_boost_ = def_boost;
         health_boost_ = health_boost;
     }
-
     Armor() : Item() {}
+
     int getDefBoost();
     int getHpBoost();
 };

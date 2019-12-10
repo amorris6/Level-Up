@@ -23,6 +23,7 @@ class Item {
     const static string kSellLabel;
     const static string kEquipLabel;
     const static string kUnequipLabel;
+
     friend class ofApp;
     int page_;
     int price_;
@@ -32,10 +33,10 @@ class Item {
     static bool wants_to_unequip_;
     string name_;
     ofVec2f pos_;
-    Button* buy_button;
-    Button* sell_button;
-    Button* equip_button;
-    Button* unequip_button;
+    Button* buy_button_;
+    Button* sell_button_;
+    Button* equip_button_;
+    Button* unequip_button_;
     Button store_buttons_[3];
     Button inv_buttons_[2];
     function<void()> func_when_equipped_[1];
@@ -74,6 +75,7 @@ class Item {
          function<void()> func_when_equipped,
          function<void()> func_when_unequipped,
          shared_ptr<ofxSmartFont> button_font);
+
     virtual ~Item() {}
     bool operator==(Item const& other) const;
     bool operator!=(Item const& other) const;

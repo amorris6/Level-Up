@@ -3,13 +3,13 @@
 
 class Character {
    protected:
-    ofVec2f position;
-    int gold;
-    int exp;
-    int atk;
-    int def;
-    int health;
-    float crit_chance;
+    ofVec2f position_;
+    int gold_;
+    int exp_;
+    int atk_;
+    int def_;
+    int health_;
+    float crit_chance_;
 
    public:
     const static int kCharWidth = 20;
@@ -31,13 +31,13 @@ class Character {
 		      int def, 
 		      int health,
               int crit_chance)
-        : position(x, y),
-          gold(gold),
-          exp(exp),
-          atk(atk),
-          def(def),
-          health(health),
-          crit_chance(crit_chance) {}
+        : position_(x, y),
+          gold_(gold),
+          exp_(exp),
+          atk_(atk),
+          def_(def),
+          health_(health),
+          crit_chance_(crit_chance) {}
     Character() : Character(0, 0, 0, 0, 0, 0, 0, 0) {}
 
     bool operator==(Character const& other) const;

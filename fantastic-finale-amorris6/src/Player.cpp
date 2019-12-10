@@ -5,36 +5,36 @@ const float Player::kMoveVertDistFactor = 1.0 / 96.0;
 
 ofRectangle Player::getRect() {
     // width/2 fits the player sprite
-    return ofRectangle(position, kPlayerWidth, Character::kCharHeight);
+    return ofRectangle(position_, kPlayerWidth, Character::kCharHeight);
 }
 
-int Player::getLvl() { return lvl; }
+int Player::getLvl() { return lvl_; }
 
 bool Player::canMoveInDirection(PlayerDirection direction) {
-    move_side_distance = (int)(ofGetWindowWidth() * kMoveSideDistFactor);
-    move_vert_distance = (int)(ofGetWindowHeight() * kMoveVertDistFactor);
+    move_side_distance_ = (int)(ofGetWindowWidth() * kMoveSideDistFactor);
+    move_vert_distance_ = (int)(ofGetWindowHeight() * kMoveVertDistFactor);
     switch (direction) {
         case UP:
-            if (position.y >= move_vert_distance) {
+            if (position_.y >= move_vert_distance_) {
                 return true;
             }
             return false;
         case DOWN:
-            if (position.y 
+            if (position_.y 
 				<= ((int)ofGetWindowHeight() 
-				- (Character::kCharHeight + move_vert_distance))) {
+				- (Character::kCharHeight + move_vert_distance_))) {
                 return true;
             }
             return false;
         case LEFT:
-            if (position.x >= move_side_distance) {
+            if (position_.x >= move_side_distance_) {
                 return true;
             }
             return false;
         case RIGHT:
-            if (position.x 
+            if (position_.x 
 				<= ((int)ofGetWindowWidth() 
-				- (Character::kCharWidth + move_side_distance))) {
+				- (Character::kCharWidth + move_side_distance_))) {
                 return true;
             }
             return false;
@@ -48,32 +48,32 @@ void Player::moveInDirection(int direction_index) {
     switch (direction_index) {
         case UP:
             if (canMoveInDirection(UP)) {
-                position.y -= move_vert_distance;
+                position_.y -= move_vert_distance_;
             } else {
-                position.y = ofGetWindowHeight();
+                position_.y = ofGetWindowHeight();
                 ofApp::setupResources();
                 ofApp::stage_num_ += ofApp::kStageNumChangeUp;
             }
             break;
         case DOWN:
             if (canMoveInDirection(DOWN)) {
-                position.y += move_vert_distance;
+                position_.y += move_vert_distance_;
             } else {
-                position.y = (int)ofGetWindowHeight() - Character::kCharHeight;
+                position_.y = (int)ofGetWindowHeight() - Character::kCharHeight;
             }
             break;
         case LEFT:
             if (canMoveInDirection(LEFT)) {
-                position.x -= move_side_distance;
+                position_.x -= move_side_distance_;
             } else {
-                position.x = 0;
+                position_.x = 0;
             }
             break;
         case RIGHT:
             if (canMoveInDirection(RIGHT)) {
-                position.x += move_vert_distance;
+                position_.x += move_vert_distance_;
             } else {
-                position.x = 0;
+                position_.x = 0;
                 ofApp::setupResources();
                 ofApp::stage_num_ += ofApp::kStageNumChangeRight;
             }

@@ -32,7 +32,6 @@ class Weapon : public Item {
                button_font) {
         atk_boost_ = atk_boost;
     }
-
     Weapon() : Item() {}
 
     int getAtkBoost();

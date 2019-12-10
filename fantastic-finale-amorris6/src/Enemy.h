@@ -2,7 +2,6 @@
 #include "Character.h"
 
 class Enemy : public Character {
-   private:
    public:
     Enemy(float x, float y, 
 		  int gold, 

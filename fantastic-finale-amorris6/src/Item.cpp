@@ -18,39 +18,39 @@ Item::Item(string name,
            shared_ptr<ofxSmartFont> button_font)
     : name_(name), price_(price), page_(page) {
     pos_.set(pos_x, pos_y);
-    buy_button = new Button(pos_x + kBuyXAdj, 
-		                    pos_y + kHeight, 
-		                    kBuyButtonWidth,
-                            kButtonHeight, 
-		                    kBuyLabel, 
-		                    button_font, 
-		                    buyItem);
-    sell_button = new Button(pos_x + kSellXAdj, 
+    buy_button_ = new Button(pos_x + kBuyXAdj, 
 		                     pos_y + kHeight, 
-		                     kSellButtonWidth,
+		                     kBuyButtonWidth,
                              kButtonHeight, 
-		                     kSellLabel, 
+		                     kBuyLabel, 
 		                     button_font, 
-		                     sellItem);
-    equip_button = new Button(pos_x + kEquipXAdj, 
+		                     buyItem);
+    sell_button_ = new Button(pos_x + kSellXAdj, 
 		                      pos_y + kHeight, 
-		                      kEquipButtonWidth,
+		                      kSellButtonWidth,
                               kButtonHeight, 
-		                      kEquipLabel, 
+		                      kSellLabel, 
 		                      button_font, 
-		                      equipItem);
-    unequip_button = new Button(pos_x + kUnequipXAdj, 
-		                        pos_y + kHeight, 
-		                        kUnequipButtonWidth,
-                                kButtonHeight, 
-		                        kUnequipLabel, 
-		                        button_font, 
-		                        unequipItem);
-    store_buttons_[0] = *buy_button;
-    store_buttons_[1] = *equip_button;
-    store_buttons_[2] = *unequip_button;
-    inv_buttons_[0] = *sell_button;
-    inv_buttons_[1] = *equip_button;
+		                      sellItem);
+    equip_button_ = new Button(pos_x + kEquipXAdj, 
+		                       pos_y + kHeight, 
+		                       kEquipButtonWidth,
+                               kButtonHeight, 
+		                       kEquipLabel, 
+		                       button_font, 
+		                       equipItem);
+    unequip_button_ = new Button(pos_x + kUnequipXAdj, 
+		                         pos_y + kHeight, 
+		                         kUnequipButtonWidth,
+                                 kButtonHeight, 
+		                         kUnequipLabel, 
+		                         button_font, 
+		                         unequipItem);
+    store_buttons_[0] = *buy_button_;
+    store_buttons_[1] = *equip_button_;
+    store_buttons_[2] = *unequip_button_;
+    inv_buttons_[0] = *sell_button_;
+    inv_buttons_[1] = *equip_button_;
 };
 
 Item::Item(string name, 
@@ -96,9 +96,10 @@ bool Item::operator==(Item const& other) const {
     return this->name_ == other.name_ 
 		&& this->price_ == other.price_ 
 		&& this->pos_ == other.pos_ 
-		&& this->buy_button == other.buy_button 
-		&& this->sell_button == other.sell_button 
-		&& this->equip_button == other.equip_button;
+		&& this->buy_button_ == other.buy_button_ 
+		&& this->sell_button_ == other.sell_button_ 
+		&& this->equip_button_ == other.equip_button_
+		&&this->unequip_button_ == other.unequip_button_;
 }
 
 bool Item::operator!=(Item const& other) const { return !(*this == other); }
