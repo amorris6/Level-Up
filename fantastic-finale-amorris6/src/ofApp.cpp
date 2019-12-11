@@ -15,7 +15,8 @@ const float ofApp::kToggleMsgYFactor = 0.5;
 const float ofApp::kStoreGoldXFactor = 1.0 / 7.0;
 const float ofApp::kStatSpaceYFactor = 0.91;
 const float ofApp::kBossPosFactor = 0.5;
-const float ofApp::kResaleFactor = 0.5 const string ofApp::kPlayLabel = "PLAY";
+const float ofApp::kResaleFactor = 0.5;
+const string ofApp::kPlayLabel = "PLAY";
 const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
 const string ofApp::kInventoryLabel = "INVENTORY";
@@ -61,6 +62,8 @@ const string ofApp::kFastBattleGemName = "battle++";
 const string ofApp::kSlowBattleGemName = "battle--";
 const string ofApp::kMoreExpGemName = "exp++";
 const string ofApp::kMoreGoldGemName = "gold++";
+const string ofApp::kMoreCritChanceGemName = "Crit Chance++";
+const string ofApp::kMoreCritDmgGemName = "Crit Dmg++";
 const ofColor ofApp::kWhite = ofColor(255, 255, 255);
 const ofColor ofApp::kBlack = ofColor(0, 0, 0);
 const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
@@ -89,6 +92,10 @@ float ofApp::exp_mult_ = 1;
 const float ofApp::kExpMultFactor = 1.3;
 float ofApp::gold_mult_ = 1;
 const float ofApp::kGoldMultFactor = 1.3;
+const float ofApp::kCritDmgMultFactor = 1.8;
+const float ofApp::kCritChanceMultFactor = 2;
+float ofApp::crit_chance_ = kStartCrit;
+float ofApp::crit_dmg_mult_ = kInitCritMult;
 int ofApp::battle_chance_ = 0;
 int ofApp::boss_chance_ = kInitBossChance;
 int ofApp::page_num_ = 0;
@@ -154,7 +161,6 @@ void ofApp::setup() {
     already_equipped_ = false;
     equip_success_ = false;
     turns_fought_ = 0;
-    crit_mult_ = 1.0;
     battle_chance_ = kFightInit * 1 / (battle_multiplier_);
     player_is_fighting_ = false;
     enemy_fight_x_ = 0;
@@ -178,6 +184,7 @@ void ofApp::setup() {
     setupItems();
     player_.player_sprite->load(kPlayerSpritePath);
     setupResources();
+    setup_is_completed_ = true;
 }
 
 //--------------------------------------------------------------
@@ -218,6 +225,14 @@ void ofApp::setupItems() {
         new Item(kMoreGoldGemName, kMoreGoldGemPrice, kMoreGoldGemPageNum,
                  pos[kMoreGoldGemPosIndex], increaseGoldGain, decreaseGoldGain,
                  store_font_);
+    Item* more_crit_chance_gem =
+        new Item(kMoreCritChanceGemName, kMoreCritChanceGemPrice,
+                 kMoreCritChanceGemPageNum, pos[kMoreCritChanceGemPosIndex],
+                 increaseCritChance, decreaseCritChance, store_font_);
+    Item* more_crit_dmg_gem =
+        new Item(kMoreCritDmgGemName, kMoreCritDmgGemPrice,
+                 kMoreCritDmgGemPageNum, pos[kMoreCritDmgGemPosIndex],
+                 increaseCritDmg, decreaseCritDmg, store_font_);
 
     items_.push_back(sword);
     items_.push_back(helmet);
@@ -225,6 +240,8 @@ void ofApp::setupItems() {
     items_.push_back(slow_battle_gem);
     items_.push_back(more_exp_gem);
     items_.push_back(more_gold_gem);
+    items_.push_back(more_crit_chance_gem);
+    items_.push_back(more_crit_dmg_gem);
 }
 
 //--------------------------------------------------------------
@@ -236,7 +253,6 @@ void ofApp::deleteItems() {
 
 //--------------------------------------------------------------
 void ofApp::setupButtons() {
-    deleteButtons();
     setupStartScreenButtons();
     setupSettingsButtons();
     setupGameOverButtons();
@@ -307,7 +323,7 @@ void ofApp::setupWorldButtons() {
 }
 
 //--------------------------------------------------------------
-void ofApp::setupStatButtons() {
+void ofApp::setupLvlUpButtons() {
     setupStatUpButtons();
     setupStatDownButtons();
 }
@@ -726,6 +742,18 @@ void ofApp::slowBattleChance() { battle_multiplier_ /= kBattleMultFactor; }
 void ofApp::speedBattleChance() { battle_multiplier_ *= kBattleMultFactor; }
 
 //--------------------------------------------------------------
+void ofApp::increaseCritChance() { crit_chance_ *= kCritChanceMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::decreaseCritChance() { crit_chance_ /= kCritChanceMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::increaseCritDmg() { crit_dmg_mult_ *= kCritDmgMultFactor; }
+
+//--------------------------------------------------------------
+void ofApp::decreaseCritDmg() { crit_dmg_mult_ /= kCritDmgMultFactor; }
+
+//--------------------------------------------------------------
 void ofApp::increaseGoldGain() { gold_mult_ *= kGoldMultFactor; }
 
 //--------------------------------------------------------------
@@ -818,6 +846,7 @@ void ofApp::checkBattleEnded() {
         battle_music_player_->stop();
         background_music_player_->setPaused(false);
         buttons_.push_back(inventory_button_);
+        buttons_.push_back(lvl_up_button_);
         player_won_ = true;
         battle_ended_ = true;
     }
@@ -830,6 +859,7 @@ void ofApp::checkBattleEnded() {
         battle_music_player_->stop();
         background_music_player_->setPaused(false);
         buttons_.push_back(inventory_button_);
+        buttons_.push_back(lvl_up_button_);
         battle_ended_ = true;
         player_won_ = false;
     }
@@ -838,8 +868,8 @@ void ofApp::checkBattleEnded() {
 void ofApp::takeBattleTurn() {
     if (is_player_atk_turn_) {
         int player_atk = player_.getAtk();
-        if (rand() % 100 <= player_.getCrit()) {
-            player_atk *= (kInitCritMult * crit_mult_);
+        if (rand() % 100 <= (player_.getCrit() * crit_chance_)) {
+            player_atk *= crit_dmg_mult_;
             is_crit_hit_ = true;
         }
         atk_damage_ = max(player_atk - enemy_.getDef(), stage_num_);
@@ -1623,6 +1653,67 @@ void ofApp::drawXOnButton(Button* button) {
                button->y_ + button->height_);
     ofDrawLine(button->x_ + button->width_, button->y_, button->x_,
                button->y_ + button->height_);
+}
+
+//-------------------------------------------------------------
+void ofApp::windowResized(int w, int h) {
+    if (setup_is_completed_) {
+        deleteButtons();
+        buttons_.clear();
+    }
+    setupButtons();
+    buttons_.remove(play_button_);
+    buttons_.remove(settings_button_);
+    if (settings_is_open_ || lvl_up_is_open_ || store_is_open_ ||
+        inventory_is_open_) {
+        buttons_.push_back(back_button_);
+    }
+    if (store_is_open_ || inventory_is_open_) {
+        if (page_num_ != 0) {
+            buttons_.push_back(prev_button_);
+        }
+        if (page_num_ != kMaxPageNum) {
+            buttons_.push_back(next_button_);
+        }
+    } else if (lvl_up_is_open_) {
+        addLvlUpButtons();
+    } else if (energy_left_ <= 0) {
+        buttons_.push_back(store_button_);
+        buttons_.push_back(restart_button_);
+    } else if (settings_is_open_) {
+        buttons_.push_back(toggle_bkgrd_music_button_);
+        buttons_.push_back(toggle_atk_sound_button_);
+        buttons_.push_back(toggle_battle_music_button_);
+    } else if (stage_num_ == 0) {
+        buttons_.push_back(play_button_);
+        buttons_.push_back(settings_button_);
+    } else if (player_is_fighting_) {
+        return;
+    } else {
+        buttons_.push_back(inventory_button_);
+        buttons_.push_back(lvl_up_button_);
+    }
+    deleteItems();
+    setupItems();
+}
+
+//-------------------------------------------------------------
+void ofApp::addLvlUpButtons() {
+    buttons_.push_back(toggle_auto_lvling_button_);
+    if (lvl_up_points_ > 0) {
+        buttons_.push_back(hp_up_button_);
+        buttons_.push_back(atk_up_button_);
+        buttons_.push_back(def_up_button_);
+    }
+    if (num_hp_lvl_up_ > 0) {
+        buttons_.push_back(hp_down_button_);
+    }
+    if (num_atk_lvl_up_ > 0) {
+        buttons_.push_back(atk_down_button_);
+    }
+    if (num_def_lvl_up_ > 0) {
+        buttons_.push_back(def_down_button_);
+    }
 }
 
 //-------------------------------------------------------------

@@ -25,6 +25,8 @@ class ofApp : public ofBaseApp {
     const static float kBossMult;
     const static float kGoldMultFactor;
     const static float kExpMultFactor;
+    const static float kCritChanceMultFactor;
+    const static float kCritDmgMultFactor;
     const static float kSettingsWidthAdj;
     const static float kToggleMsgYFactor;
     const static float kStatSpaceYFactor;
@@ -105,6 +107,12 @@ class ofApp : public ofBaseApp {
     const static int kMoreGoldGemPageNum = 0;
     const static int kMoreGoldGemPosIndex = 5;
     const static int kMoreGoldGemPrice = 300;
+    const static int kMoreCritChanceGemPageNum = 0;
+    const static int kMoreCritChanceGemPosIndex = 6;
+    const static int kMoreCritChanceGemPrice = 300;
+    const static int kMoreCritDmgGemPageNum = 0;
+    const static int kMoreCritDmgGemPosIndex = 7;
+    const static int kMoreCritDmgGemPrice = 300;
     const static int kInfoFontSize = 16;
     const static int kStoreFontSize = 14;
     const static int kMaxResourceNum = 67;  // get weird malloc error if larger
@@ -179,6 +187,8 @@ class ofApp : public ofBaseApp {
     const static string kSlowBattleGemName;
     const static string kMoreExpGemName;
     const static string kMoreGoldGemName;
+    const static string kMoreCritChanceGemName;
+    const static string kMoreCritDmgGemName;
     const static string kToggleLabel;
     const static string kGameOverMessage;
     const static string kCritMessage;
@@ -221,6 +231,7 @@ class ofApp : public ofBaseApp {
     const static string kAtkSoundEnabledMsg;
     const static string kAutoLvlEnabledMsg;
 
+	bool setup_is_completed_;
     bool should_delay_;
     static int page_num_;
     static int battle_chance_;
@@ -234,7 +245,8 @@ class ofApp : public ofBaseApp {
     int turns_fought_;
     int atk_damage_;
     bool is_crit_hit_;
-    float crit_mult_;
+    static float crit_dmg_mult_;
+    static float crit_chance_;
     static float battle_multiplier_;
     int enemy_fight_x_;
     static int energy_left_;
@@ -304,7 +316,7 @@ class ofApp : public ofBaseApp {
     void setupGameOverButtons();
     void setupWorldButtons();
     void setupLvlUpButtons();
-    void setupStatButtons();
+    void addLvlUpButtons();
     void setupStatUpButtons();
     void setupStatDownButtons();
     void setupStoreButtons();
@@ -371,6 +383,10 @@ class ofApp : public ofBaseApp {
     static void decreaseExpGain();
     static void increaseGoldGain();
     static void decreaseGoldGain();
+    static void increaseCritChance();
+    static void decreaseCritChance();
+    static void increaseCritDmg();
+    static void decreaseCritDmg();
     void battleEnemy();
     void takeBattleTurn();
     void checkBattleEnded();
@@ -400,6 +416,7 @@ class ofApp : public ofBaseApp {
     void draw();
     void exit();
 
+    void windowResized(int w, int h);
     void keyPressed(int key);
     void keyReleased(int key);
     void mousePressed(int x, int y, int button);
