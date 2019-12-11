@@ -14,6 +14,12 @@ Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32
 
 [First movement of Vivaldi Spring (background music)](https://freemusicarchive.org/music/John_Harrison_with_the_Wichita_State_University_Chamber_Players/The_Four_Seasons_Vivaldi)
 
+[First movement of Vivaldi Summer (background music)](https://freemusicarchive.org/music/John_Harrison_with_the_Wichita_State_University_Chamber_Players/The_Four_Seasons_Vivaldi)
+
+[First movement of Vivaldi Autumn (background music)](https://freemusicarchive.org/music/John_Harrison_with_the_Wichita_State_University_Chamber_Players/The_Four_Seasons_Vivaldi)
+
+[First movement of Vivaldi Winter (background music)](https://freemusicarchive.org/music/John_Harrison_with_the_Wichita_State_University_Chamber_Players/The_Four_Seasons_Vivaldi)
+
 [Contra Jungle Theme (battle music)](http://www.gamethemesongs.com/Contra_-_Jungle_Theme.html)
 
 [Wilhelm Scream (attack sound)](http://www.orangefreesounds.com/wilhelm-scream/)
