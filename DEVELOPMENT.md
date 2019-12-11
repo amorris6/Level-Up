@@ -166,3 +166,9 @@ to manually choose where the level points go. You know, finally actually fulfili
 Still need to add a README and better documentation comments. Have met most of my goals. I decided to use a
 randomly generated level instead of working on levels. I do not think I will have time to create a soundtrack,
 instead the song will just loop when finished.
+
+**12/11/2019**
+Added boss battle, who gives you energy back if you beat them. Also enabled window resizing and buttons look
+semi-decent. You can tell it was made for the smaller size, but not the worst. Hell of a lot better than before.
+Will hopefully add more comments in, but README is first. Still not entirely sure what goes in one. Hope I
+figure it out.
