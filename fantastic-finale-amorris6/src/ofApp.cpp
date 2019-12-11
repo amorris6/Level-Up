@@ -94,7 +94,6 @@ float ofApp::gold_mult_ = 1;
 const float ofApp::kGoldMultFactor = 1.3;
 const float ofApp::kCritDmgMultFactor = 1.8;
 const float ofApp::kCritChanceMultFactor = 2;
-float ofApp::crit_chance_ = kStartCrit;
 float ofApp::crit_dmg_mult_ = kInitCritMult;
 int ofApp::battle_chance_ = 0;
 int ofApp::boss_chance_ = kInitBossChance;
@@ -197,6 +196,11 @@ void ofApp::setupItems() {
          y += kStorePosXEndAdj) {
         for (int x = kStorePosXStart; x < ofGetWindowWidth() - kStorePosXEndAdj;
              x += kStorePosXInc) {
+            if (x < 0 || y < 0
+				|| x > kMaxScreenWidth - kStorePosXEndAdj
+				|| y > kMaxScreenHeight - kStorePosYEndAdj) {
+                break;
+			}
             ofVec2f pos_;
             pos_.set(x, y);
             pos[i] = pos_;
@@ -742,10 +746,10 @@ void ofApp::slowBattleChance() { battle_multiplier_ /= kBattleMultFactor; }
 void ofApp::speedBattleChance() { battle_multiplier_ *= kBattleMultFactor; }
 
 //--------------------------------------------------------------
-void ofApp::increaseCritChance() { crit_chance_ *= kCritChanceMultFactor; }
+void ofApp::increaseCritChance() { player_.crit_chance_ *= kCritChanceMultFactor; }
 
 //--------------------------------------------------------------
-void ofApp::decreaseCritChance() { crit_chance_ /= kCritChanceMultFactor; }
+void ofApp::decreaseCritChance() { player_.crit_chance_ /= kCritChanceMultFactor; }
 
 //--------------------------------------------------------------
 void ofApp::increaseCritDmg() { crit_dmg_mult_ *= kCritDmgMultFactor; }
@@ -868,7 +872,7 @@ void ofApp::checkBattleEnded() {
 void ofApp::takeBattleTurn() {
     if (is_player_atk_turn_) {
         int player_atk = player_.getAtk();
-        if (rand() % 100 <= (player_.getCrit() * crit_chance_)) {
+        if (rand() % 100 <= (player_.getCrit())) {
             player_atk *= crit_dmg_mult_;
             is_crit_hit_ = true;
         }
@@ -1434,7 +1438,7 @@ void ofApp::drawInventory() {
             continue;
         }
         ofSetColor(kBlack);
-        info_font_->draw(item->getName(), item->pos_.x,
+        info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
                          item->pos_.y - kItemNameYFactor * kInfoFontSize);
         string equipped_status = kUnequippedMsg;
         if (checkIfItemEquipped(item)) {
@@ -1520,7 +1524,7 @@ void ofApp::drawStore() {
         if (page_num_ != item->page_) {
             continue;
         }
-        info_font_->draw(item->getName(), item->pos_.x,
+        info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
                          item->pos_.y - kItemNameYFactor * kInfoFontSize);
         string price = to_string(item->getPrice());
         info_font_->draw(kPriceLabel + price, item->pos_.x + kPriceXAdj,

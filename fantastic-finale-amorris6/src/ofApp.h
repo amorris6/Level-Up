@@ -35,6 +35,10 @@ class ofApp : public ofBaseApp {
     const static float kStoreGoldXFactor;
     const static float kEquippedYFactor;
     const static float kResaleFactor;
+	//Checked by measuring ofGetWindowWidth and
+	//ofGetWindowHeight at max window size
+    const static int kMaxScreenWidth = 1366;
+    const static int kMaxScreenHeight = 726;
     const static int kNumOfStats = 3;
     const static int kMaxPageNum = 3;
     const static int kMaxItemsOnPage = 32;
@@ -171,6 +175,7 @@ class ofApp : public ofBaseApp {
     const static int kPriceXAdj = -30;
     const static int kLvlPointsMsgX = 200;
     const static int kToggleAutoLvlX = 150;
+    const static int kNameXAdj = -15;
     const static int kInitBossChance = 15;
     const static string kPlayLabel;
     const static string kRestartLabel;
@@ -231,7 +236,7 @@ class ofApp : public ofBaseApp {
     const static string kAtkSoundEnabledMsg;
     const static string kAutoLvlEnabledMsg;
 
-	bool setup_is_completed_;
+    bool setup_is_completed_;
     bool should_delay_;
     static int page_num_;
     static int battle_chance_;
@@ -246,7 +251,6 @@ class ofApp : public ofBaseApp {
     int atk_damage_;
     bool is_crit_hit_;
     static float crit_dmg_mult_;
-    static float crit_chance_;
     static float battle_multiplier_;
     int enemy_fight_x_;
     static int energy_left_;
