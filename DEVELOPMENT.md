@@ -171,4 +171,5 @@ instead the song will just loop when finished.
 Added boss battle, who gives you energy back if you beat them. Also enabled window resizing and buttons look
 semi-decent. You can tell it was made for the smaller size, but not the worst. Hell of a lot better than before.
 Will hopefully add more comments in, but README is first. Still not entirely sure what goes in one. Hope I
-figure it out.
+figure it out. Update: Added README.md and comments. Was also able to implement background music soundtrack.
+Wasn't too bad. Should have done it earlier.
