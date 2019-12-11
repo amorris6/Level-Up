@@ -3,7 +3,7 @@ Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32
 
 *DOWNLOADS REQUIRED: *
 
-[Visual Studio 2019] (https://visualstudio.microsoft.com/vs/)
+[Visual Studio 2019] (https://visualstudio.microsoft.com/vs)
 
 [ofxSmartFont (font formatting)](https://github.com/braitsch/ofxSmartFont)
 
