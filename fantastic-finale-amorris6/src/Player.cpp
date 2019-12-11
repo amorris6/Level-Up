@@ -51,8 +51,9 @@ void Player::moveInDirection(int direction_index) {
                 position_.y -= move_vert_distance_;
             } else {
                 position_.y = ofGetWindowHeight();
-                ofApp::setupResources();
                 ofApp::stage_num_ += ofApp::kStageNumChangeUp;
+                ofApp::setupBoss();
+                ofApp::setupResources();
             }
             break;
         case DOWN:
@@ -74,8 +75,9 @@ void Player::moveInDirection(int direction_index) {
                 position_.x += move_vert_distance_;
             } else {
                 position_.x = 0;
-                ofApp::setupResources();
                 ofApp::stage_num_ += ofApp::kStageNumChangeRight;
+                ofApp::setupBoss();
+                ofApp::setupResources();
             }
             break;
     }
