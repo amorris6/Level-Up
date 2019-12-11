@@ -146,6 +146,7 @@ shared_ptr<ofxSmartFont> ofApp::info_font_ = nullptr;
 shared_ptr<ofxSmartFont> ofApp::store_font_ = nullptr;
 list<Button*> ofApp::buttons_ = {};
 
+// Initializes all non-static variables
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle(kWorldTitle);
@@ -196,11 +197,11 @@ void ofApp::setupItems() {
          y += kStorePosXEndAdj) {
         for (int x = kStorePosXStart; x < ofGetWindowWidth() - kStorePosXEndAdj;
              x += kStorePosXInc) {
-            if (x < 0 || y < 0
-				|| x > kMaxScreenWidth - kStorePosXEndAdj
-				|| y > kMaxScreenHeight - kStorePosYEndAdj) {
+            // to prevent error when screen minimized in store
+            if (x < 0 || y < 0 || x > kMaxScreenWidth - kStorePosXEndAdj ||
+                y > kMaxScreenHeight - kStorePosYEndAdj) {
                 break;
-			}
+            }
             ofVec2f pos_;
             pos_.set(x, y);
             pos[i] = pos_;
@@ -412,6 +413,7 @@ void ofApp::setupBoss() {
     if ((stage_num_ - 1) % (kStageNumChangeRight + kStageNumChangeUp) == 0) {
         boss_chance = 100;
     }
+    // only x and y matter. Stats determined at start of fight
     if (rand() % 100 < boss_chance) {
         boss_ = Enemy(ofGetWindowWidth() * kBossPosFactor,
                       ofGetWindowHeight() * kBossPosFactor, 0, 0, 0, 0, 0, 0);
@@ -457,6 +459,7 @@ void ofApp::setupResources() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
+    // checks to see if fight should start
     if (battle_start_ < battle_chance_ * battle_multiplier_ ||
         player_.getRect().intersects(boss_.getRect())) {
         battle_chance_ = kFightInit * 1 / (battle_multiplier_);
@@ -472,10 +475,12 @@ void ofApp::update() {
     } else {
         lvlUp();
     }
+    // makes sure drawBattle doesn't
+    // override drawGameOver
     if (energy_left_ <= 0) {
         player_is_fighting_ = false;
     }
-    checkIfBattling();
+    battleOpponent();
     updatePlayerPos();
     mineResources();
     if (energy_left_ > 0 && background_music_enabled_ &&
@@ -488,7 +493,7 @@ void ofApp::update() {
 }
 
 //--------------------------------------------------------------
-void ofApp::checkIfBattling() {
+void ofApp::battleOpponent() {
     if (player_is_fighting_ && !player_.getRect().intersects(boss_.getRect())) {
         battleEnemy();
         if (!player_won_ && battle_ended_) {
@@ -500,11 +505,13 @@ void ofApp::checkIfBattling() {
         if (player_won_ && battle_ended_) {
             energy_left_ += (kEnergyBossBattleWon + kEnergyBattle);
             battle_ended_ = false;
+            // makes it so player can never intersect enemy
             boss_ = Enemy(-(Character::kCharWidth + 1),
                           -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
         } else if (battle_ended_) {
             energy_left_ -= kEnergyBattleLost;
             battle_ended_ = false;
+            // makes it so player can never intersect enemy
             boss_ = Enemy(-(Character::kCharWidth + 1),
                           -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
         }
@@ -552,6 +559,7 @@ void ofApp::closeLvlUp() {
     buttons_.remove(atk_down_button_);
     buttons_.remove(def_up_button_);
     buttons_.remove(def_down_button_);
+    // makes stat changes permanent after closing lvl up
     num_hp_lvl_up_ = 0;
     num_atk_lvl_up_ = 0;
     num_def_lvl_up_ = 0;
@@ -732,7 +740,7 @@ void ofApp::updatePlayerPos() {
             player_is_moving = true;
             player_.moveInDirection(dir);
         }
-        if (player_is_moving && !battle_chance_inc) {
+        if (player_is_moving) {
             battle_chance_inc = true;
             battle_chance_++;
         }
@@ -746,10 +754,14 @@ void ofApp::slowBattleChance() { battle_multiplier_ /= kBattleMultFactor; }
 void ofApp::speedBattleChance() { battle_multiplier_ *= kBattleMultFactor; }
 
 //--------------------------------------------------------------
-void ofApp::increaseCritChance() { player_.crit_chance_ *= kCritChanceMultFactor; }
+void ofApp::increaseCritChance() {
+    player_.crit_chance_ *= kCritChanceMultFactor;
+}
 
 //--------------------------------------------------------------
-void ofApp::decreaseCritChance() { player_.crit_chance_ /= kCritChanceMultFactor; }
+void ofApp::decreaseCritChance() {
+    player_.crit_chance_ /= kCritChanceMultFactor;
+}
 
 //--------------------------------------------------------------
 void ofApp::increaseCritDmg() { crit_dmg_mult_ *= kCritDmgMultFactor; }
@@ -771,6 +783,7 @@ void ofApp::decreaseExpGain() { exp_mult_ /= kExpMultFactor; }
 
 //--------------------------------------------------------------
 void ofApp::battleEnemy() {
+    // Sleep is used so player can see atks and starter hp
     if (!fight_is_init_) {
         setupBattle();
         fight_is_init_ = true;
@@ -783,8 +796,8 @@ void ofApp::battleEnemy() {
         Sleep(kAtkDelay);
         turns_fought_++;
         is_crit_hit_ = false;
-        checkBattleEnded();  // called before takeBattleTurn,
-                             // so battle can be drawn when hp <= 0
+        // called before takeBattleTurn, so battle can be drawn when hp <= 0
+        checkBattleEnded();
         takeBattleTurn();
     }
 }
@@ -872,7 +885,7 @@ void ofApp::checkBattleEnded() {
 void ofApp::takeBattleTurn() {
     if (is_player_atk_turn_) {
         int player_atk = player_.getAtk();
-        if (rand() % 100 <= (player_.getCrit())) {
+        if ((rand() % 100 + 1) <= (player_.getCrit())) {
             player_atk *= crit_dmg_mult_;
             is_crit_hit_ = true;
         }
@@ -880,7 +893,7 @@ void ofApp::takeBattleTurn() {
         enemy_.health_ -= atk_damage_;
     } else {
         int enemy_atk = enemy_.getAtk();
-        if (rand() % 100 <= enemy_.getCrit()) {
+        if ((rand() % 100 + 1) <= enemy_.getCrit()) {
             enemy_atk *= kInitCritMult;
             is_crit_hit_ = true;
         }
@@ -903,8 +916,8 @@ void ofApp::battleBoss() {
         Sleep(kAtkDelay);
         turns_fought_++;
         is_crit_hit_ = false;
-        checkBattleEnded();  // called before takeBattleTurn,
-                             // so battle can be drawn when hp <= 0
+        // called before takeBattleTurn, so battle can be drawn when hp <= 0
+        checkBattleEnded();
         takeBattleTurn();
     }
 }
@@ -976,10 +989,11 @@ void ofApp::setupGameOver() {
     if (background_music_player_->isPlaying()) {
         background_music_player_->stop();
     }
-    if (battle_music_player_
-            ->isPlaying()) {           // if starting battle makes energy <= 0,
-        battle_music_player_->stop();  // checkBattleEnded doesn't get a chance
-    }                                  // to stop battle music
+    // if starting battle makes energy <= 0,
+    // checkBattleEnded doesn't get a chance to stop battle music
+    if (battle_music_player_->isPlaying()) {
+        battle_music_player_->stop();
+    }
     buttons_.remove(inventory_button_);
     buttons_.remove(lvl_up_button_);
     buttons_.push_back(restart_button_);
@@ -1000,6 +1014,11 @@ void ofApp::drawWorld() {
     if (lvls_inc_ > 0) {
         drawLvlUp();
     }
+    drawBoss();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawBoss() {
     ofSetColor(kPurple);
     ofDrawRectangle(boss_.getRect());
 }
@@ -1026,6 +1045,8 @@ void ofApp::drawAtk() {
         ofSetColor(kRed);
         crit_message = kCritMessage;
     }
+	//makes it so atk isn't drawn when player is
+	//taking a look at initial stats
     if (is_player_atk_turn_ && turns_fought_ > 0) {
         if (atk_sound_enabled_) {
             atk_sound_player_->play();
@@ -1109,8 +1130,6 @@ void ofApp::drawInfo() {
 //--------------------------------------------------------------
 void ofApp::drawPlayer() {
     ofSetColor(kSkin);
-    // makes the boundaries of the sprite line up with the hitbox
-    // discovered through trial and error
     player_.player_sprite->draw(player_.getPos().x + kPlayerSpritePosAdj,
                                 player_.getPos().y + kPlayerSpritePosAdj,
                                 kPlayerSpriteWidth, kPlayerSpriteHeight);
@@ -1137,6 +1156,7 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
+	//makes it so player can only move when world is being drawn
     if (stage_num_ == 0 || player_is_fighting_ || store_is_open_ ||
         inventory_is_open_ || lvl_up_is_open_) {
         return;
@@ -1168,6 +1188,7 @@ void ofApp::keyPressed(int key) {
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
+    // makes it so player can only move when world is being drawn
     if (stage_num_ == 0 || player_is_fighting_ || store_is_open_ ||
         inventory_is_open_ || lvl_up_is_open_) {
         return;
@@ -1239,6 +1260,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 bool ofApp::checkIfItemEquipped(Item* item) {
+	//dynamic cast !nullptr if item is of type
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
     if (item_weapon) {
@@ -1334,6 +1356,7 @@ void ofApp::equipItem(Item* item) {
 }
 
 //--------------------------------------------------------------
+//needed since lists don't have a contain function in C++, for some reason
 bool ofApp::checkIfItemInInventory(Item* item) {
     bool item_is_found = false;
     for (auto& item2 : player_.inventory_) {

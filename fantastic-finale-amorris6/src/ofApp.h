@@ -14,6 +14,11 @@ class ofApp : public ofBaseApp {
    private:
     friend class Item;
     friend void Player::moveInDirection(int direction_index);
+	//Anything with "Mult" is for game balancing
+	//Anything with "Factor" is multiplied against something
+	//Anything with "Adj" is added with something
+	//"Factor" and "Adj" numbers determined experimentally
+	//May have to change them based on monitor size
 
     const static float kCenterXFactor;
     const static float kCenterYFactor;
@@ -119,7 +124,8 @@ class ofApp : public ofBaseApp {
     const static int kMoreCritDmgGemPrice = 300;
     const static int kInfoFontSize = 16;
     const static int kStoreFontSize = 14;
-    const static int kMaxResourceNum = 67;  // get weird malloc error if larger
+    // get weird malloc error if larger
+    const static int kMaxResourceNum = 67;
     const static int kLvlUpGain = 100;
     const static int kExpLimit = 100;
     const static int kSettingsXAdj = 40;
@@ -315,38 +321,69 @@ class ofApp : public ofBaseApp {
     void setupItems();
     void deleteItems();
     void setupButtons();
+	//helper function of setupButtons
     void setupStartScreenButtons();
+    // helper function of setupButtons
     void setupSettingsButtons();
+    // helper function of setupButtons
     void setupGameOverButtons();
+    // helper function of setupButtons
     void setupWorldButtons();
+    // helper function of setupButtons
     void setupLvlUpButtons();
+    // helper function of windowResized
     void addLvlUpButtons();
+    // helper function of setupButtons
     void setupStatUpButtons();
+    // helper function of setupButtons
     void setupStatDownButtons();
+    // helper function of setupButtons
     void setupStoreButtons();
     void drawButtons();
     void deleteButtons();
-    static void drawPlayer();
+    void drawPlayer();
+    void drawBoss();
     void drawStartingScreen();
     void setupGameOver();
     void drawGameOver();
+	//called when store button pressed
+	//adds back and next buttons and items
     static void openStore();
+	//checks if player has enough gold
+	//if so, item is added to player.inventory
     void buyItem(Item* item);
+	//removes item from inventory
+	//and refunds player slightly
     void sellItem(Item* item);
+	//checks if player owns item
+	//then equips item in correct spot
     void equipItem(Item* item);
     bool checkIfItemEquipped(Item* item);
     bool checkIfItemInInventory(Item* item);
-    void checkIfBattling();
+	//battleEnemy or battleBoss
+	//is called depending on scenario
+    void battleOpponent();
+	//performs correct unequip function
     void unequipItem(Item* item);
+	//removes store buttons and 
+	//adds game over buttons
     static void closeStore();
+	//calls different close functions
+	//based on context
     static void closePage();
     void drawStore();
+	//draws the store notices like
+	//Purchase Successful, or not enough gold
     void drawStoreNotices();
+	//draws specific equip notices like
+	//item not owned or Equipped
     void drawEquipNotices();
     static void openSettings();
     static void toggleBkgrdMusic();
     static void toggleAtkSound();
     static void toggleBattleMusic();
+    // removes settings buttons and
+    // adds start screen buttons
     static void closeSettings();
     void drawSettings();
     void drawXOnButton(Button* button);
@@ -354,33 +391,60 @@ class ofApp : public ofBaseApp {
     void drawMinusOnButton(Button* button);
     void drawStatButtons();
     void drawToggleMessage(Button* button, string message);
+	//adds inventory buttons
+	//gets rid of world buttons
     static void openInventory();
+	//reverse of openInventory
     static void closeInventory();
     void drawInventory();
+	//draws specific inventory notices
+	//like Sale Successful
     void drawInventoryNotices();
+	//increases page num if less than max
     static void increasePage();
+	//decreases page num, if greater than 0
     static void decreasePage();
+	//adds lvlUpButtons
+	//removes world buttons
     static void openLvlUp();
+	//next six functions are called by
+	//lvlUpButtons to manually change stats
     static void lvlUpHp();
     static void lvlDownHp();
     static void lvlUpAtk();
     static void lvlDownAtk();
     static void lvlUpDef();
     static void lvlDownDef();
+	//toggles ability to automatically
+	//spend lvl points after lvling up
     static void toggleAutoLvling();
+	//opposite of openLvlUp
     static void closeLvlUp();
     void drawLvlUpScreen();
+	//adds world buttons and
+	//removes start screen buttons
     static void setupWorld();
     void drawWorld();
     void drawLvlUp();
     void drawInfo();
+	//puts resources in a smaller square than window
+	//not intersecting player
     static void setupResources();
-    static void drawResources();
+    void drawResources();
+	//gives player resources if intersecting
+	//at cost of an energy
     void mineResources();
+	//sets up boss inside window if on main diagonal
+	//or at a kBossChance rate
     static void setupBoss();
+	//same as setUpBattle, but boss has lvl multiplier
     void setupBossBattle();
+	///same as battleEnemy, but with setupBoss
     void battleBoss();
+	//moves player based on if a WASD key is pressed
     void updatePlayerPos();
+	//next static void functions
+	//used by gems
     static void slowBattleChance();
     static void speedBattleChance();
     static void increaseExpGain();
@@ -391,16 +455,27 @@ class ofApp : public ofBaseApp {
     static void decreaseCritChance();
     static void increaseCritDmg();
     static void decreaseCritDmg();
+	//uses setUpBattle, takeBattleTurn, and checkBattleEnded
     void battleEnemy();
+	//takes either player or enemy turn
     void takeBattleTurn();
+	//checks if player hp <= 0 ot
+	//enemy hp <= 0, then performs end battle cleanup, accordingly
     void checkBattleEnded();
+	//sets up enemy to have stats based on stage num
     void setupBattle();
+	//waits a turn so it draws initial stats
+	//and waits at end to draw when hp <= 0
     void drawBattle();
     void drawAtk();
     void drawBattleInfo();
     void drawWinBattleInfo();
+	//either increases lvl up points
+	//or stats, depending on auto_lvling_enabled
     void lvlUp();
+	//sets up the game for next run
     static void restartGame();
+	//sets up player for next run
     static void resetPlayer();
 
    public:
@@ -419,7 +494,9 @@ class ofApp : public ofBaseApp {
     void update();
     void draw();
     void exit();
-
+    
+	
+    // clears buttons and the pushes appropriate buttons inside based on current scene
     void windowResized(int w, int h);
     void keyPressed(int key);
     void keyReleased(int key);
