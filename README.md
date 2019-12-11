@@ -3,6 +3,8 @@ Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32
 
 *DOWNLOADS REQUIRED: *
 
+[Visual Studio 2019] (https://visualstudio.microsoft.com/vs/)
+
 [ofxSmartFont (font formatting)](https://github.com/braitsch/ofxSmartFont)
 
 [First movement of Vivaldi Spring (background music)](https://freemusicarchive.org/music/John_Harrison_with_the_Wichita_State_University_Chamber_Players/The_Four_Seasons_Vivaldi)
@@ -13,4 +15,4 @@ Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32
 
 [Roboto Font (button/info font)](https://www.fontsquirrel.com/fonts/roboto)
 
-For every one but ofxSmartFont, download and change the kFilePath vairables to suit your local machine
+For every one but ofxSmartFont and Visual Studio 2019, download and change the kFilePath vairables to suit your local machine
