@@ -13,4 +13,4 @@ Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32
 
 [Roboto Font (button/info font)](https://www.fontsquirrel.com/fonts/roboto)
 
-For these, download these and change the kFilePath vairables to suit your local machine
+For every one but ofxSmartFont, download and change the kFilePath vairables to suit your local machine
