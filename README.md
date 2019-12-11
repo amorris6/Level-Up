@@ -1,3 +1,8 @@
+This is a rouguelike RPG. You can mine elements to increase your gold and exp. 
+However, doing so will spend your energy, of which you have a limited amount.
+You can choose what stats to level up and which stats to ignore.
+When you die, you can purchase items that will help you in your next lives.
+
 You must have Visual Studio 2019 to run this project. 
 Use v142 (Visual Studio 2019) tools to compile. Tested on x64, may work on Win32, but no guarantees.
 
