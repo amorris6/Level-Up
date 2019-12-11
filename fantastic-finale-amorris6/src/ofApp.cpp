@@ -74,7 +74,10 @@ const ofColor ofApp::kPurple = ofColor(255, 0, 255);
 const ofColor ofApp::kYellow = ofColor(255, 255, 0);
 const ofColor ofApp::kSkin = ofColor(255, 220, 8);
 const ofColor ofApp::kTan = ofColor(210, 180, 140);
-const string ofApp::kBkgrndMusicFilePath = "C:\\CS 126\\Vivaldi-Spring.mp3";
+const string ofApp::kBkgrdMusicFilePathOne = "C:\\CS 126\\Vivaldi-Spring.mp3";
+const string ofApp::kBkgrdMusicFilePathTwo = "C:\\CS 126\\Vivaldi-Summer.mp3";
+const string ofApp::kBkgrdMusicFilePathThree = "C:\\CS 126\\Vivaldi-Fall.mp3";
+const string ofApp::kBkgrdMusicFilePathFour = "C:\\CS 126\\Vivaldi-Winter.mp3";
 const string ofApp::kAtkSoundFilePath = "C:\\CS 126\\Wilhelm-Scream.mp3";
 const string ofApp::kBattleMusicFilePath = "C:\\CS 126\\BattleMusic.mp3";
 const string ofApp::kFontFilePath = "C:\\CS 126\\Fonts\\Roboto-Black.ttf";
@@ -165,10 +168,19 @@ void ofApp::setup() {
     player_is_fighting_ = false;
     enemy_fight_x_ = 0;
     atk_damage_ = 0;
-    background_music_player_ = new ofSoundPlayer();
+    track_num_ = kNumOfTracks - 1;
+    track_one_player_.load(kBkgrdMusicFilePathOne);
+    track_two_player_.load(kBkgrdMusicFilePathTwo);
+    track_three_player_.load(kBkgrdMusicFilePathThree);
+    track_four_player_.load(kBkgrdMusicFilePathFour);
+    track_players_[0] = track_one_player_;
+    track_players_[1] = track_two_player_;
+    track_players_[2] = track_three_player_;
+    track_players_[3] = track_four_player_;
+    background_music_player_ = &track_players_[0];
     atk_sound_player_ = new ofSoundPlayer();
     battle_music_player_ = new ofSoundPlayer();
-    background_music_player_->load(kBkgrndMusicFilePath);
+    // background_music_player_->load(kBkgrndMusicFilePath);
     atk_sound_player_->load(kAtkSoundFilePath);
     atk_sound_player_->setVolume(0.2);
     battle_music_player_->load(kBattleMusicFilePath);
@@ -485,6 +497,11 @@ void ofApp::update() {
     mineResources();
     if (energy_left_ > 0 && background_music_enabled_ &&
         !background_music_player_->isPlaying()) {
+        track_num_++;
+        if (track_num_ > (kNumOfTracks - 1)) {
+            track_num_ = 0;
+		}
+        background_music_player_ = &track_players_[track_num_];
         background_music_player_->play();
     } else if (!background_music_enabled_ &&
                background_music_player_->isPlaying()) {
@@ -1045,8 +1062,8 @@ void ofApp::drawAtk() {
         ofSetColor(kRed);
         crit_message = kCritMessage;
     }
-	//makes it so atk isn't drawn when player is
-	//taking a look at initial stats
+    // makes it so atk isn't drawn when player is
+    // taking a look at initial stats
     if (is_player_atk_turn_ && turns_fought_ > 0) {
         if (atk_sound_enabled_) {
             atk_sound_player_->play();
@@ -1156,7 +1173,7 @@ void ofApp::drawResources() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	//makes it so player can only move when world is being drawn
+    // makes it so player can only move when world is being drawn
     if (stage_num_ == 0 || player_is_fighting_ || store_is_open_ ||
         inventory_is_open_ || lvl_up_is_open_) {
         return;
@@ -1260,7 +1277,7 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 bool ofApp::checkIfItemEquipped(Item* item) {
-	//dynamic cast !nullptr if item is of type
+    // dynamic cast !nullptr if item is of type
     Weapon* item_weapon = dynamic_cast<Weapon*>(item);
     Armor* item_armor = dynamic_cast<Armor*>(item);
     if (item_weapon) {
@@ -1356,7 +1373,7 @@ void ofApp::equipItem(Item* item) {
 }
 
 //--------------------------------------------------------------
-//needed since lists don't have a contain function in C++, for some reason
+// needed since lists don't have a contain function in C++, for some reason
 bool ofApp::checkIfItemInInventory(Item* item) {
     bool item_is_found = false;
     for (auto& item2 : player_.inventory_) {
