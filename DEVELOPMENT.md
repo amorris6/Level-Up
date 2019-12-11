@@ -157,3 +157,12 @@ all the choices I made previously, but it's done now. I tried to refactor my cod
 things like the parameters inside my longer constructors, but I think openframeworks disapproves.
 It reverts those changes as soon as I leave the page and come back, even when saving. Will have to look
 into that tomorrow. Also need to add trailing underscores to basically goddamn everything, so that's a fun project.
+
+**12/10/2019**
+Changing variable names wasn't the worst, once I remember about Crtl-F that is. Still, there is nothing like
+the fear of seeing the entire document covered in read underlines and knowing that you are actually going
+to have to fix each one, instead of just fixing one typo at the start and resolving them all. I added the ability
+to manually choose where the level points go. You know, finally actually fulfiling the RPG in rouguelike RPG.
+Still need to add a README and better documentation comments. Have met most of my goals. I decided to use a
+randomly generated level instead of working on levels. I do not think I will have time to create a soundtrack,
+instead the song will just loop when finished.
