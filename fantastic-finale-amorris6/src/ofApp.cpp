@@ -153,6 +153,8 @@ list<Button*> ofApp::buttons_ = {};
 void ofApp::setup() {
     srand(time(NULL));
     ofSetWindowTitle(kWorldTitle);
+    mouse_is_pressed_ = false;
+    time_mouse_pressed_ = kMouseHoldStart;
     fight_is_init_ = false;
     is_player_atk_turn_ = true;
     player_won_ = false;
@@ -409,10 +411,17 @@ void ofApp::deleteButtons() {
     delete (toggle_bkgrd_music_button_);
     delete (toggle_atk_sound_button_);
     delete (toggle_battle_music_button_);
+    delete (toggle_auto_lvling_button_);
     delete (restart_button_);
     delete (store_button_);
     delete (inventory_button_);
     delete (lvl_up_button_);
+    delete (hp_up_button_);
+    delete (hp_down_button_);
+    delete (atk_up_button_);
+    delete (atk_down_button_);
+    delete (def_up_button_);
+    delete (def_down_button_);
     delete (back_button_);
     delete (next_button_);
     delete (prev_button_);
@@ -492,6 +501,13 @@ void ofApp::update() {
     if (energy_left_ <= 0) {
         player_is_fighting_ = false;
     }
+    if (mouse_is_pressed_) {
+        if (time_mouse_pressed_ <= 0) {
+            mousePressed(mouseX, mouseY, 0);
+        } else {
+            time_mouse_pressed_--;
+		}
+    }
     battleOpponent();
     updatePlayerPos();
     mineResources();
@@ -500,7 +516,7 @@ void ofApp::update() {
         track_num_++;
         if (track_num_ > (kNumOfTracks - 1)) {
             track_num_ = 0;
-		}
+        }
         background_music_player_ = &track_players_[track_num_];
         background_music_player_->play();
     } else if (!background_music_enabled_ &&
@@ -1229,6 +1245,7 @@ void ofApp::keyReleased(int key) {
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button) {
+    mouse_is_pressed_ = true;
     for (auto& button : buttons_) {
         if (button->mouseIsInside(x, y)) {
             button->getFuncWhenPressed()();
@@ -1273,6 +1290,12 @@ void ofApp::mousePressed(int x, int y, int button) {
             }
         }
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button) {
+    mouse_is_pressed_ = false;
+    time_mouse_pressed_ = kMouseHoldStart;
 }
 
 //--------------------------------------------------------------
@@ -1764,7 +1787,6 @@ void ofApp::addLvlUpButtons() {
 void ofApp::exit() {
     deleteButtons();
     deleteItems();
-    delete (background_music_player_);
     delete (atk_sound_player_);
     delete (battle_music_player_);
     delete (player_.player_sprite);

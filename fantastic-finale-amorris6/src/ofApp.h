@@ -44,6 +44,7 @@ class ofApp : public ofBaseApp {
     // ofGetWindowHeight at max window size
     const static int kMaxScreenWidth = 1366;
     const static int kMaxScreenHeight = 726;
+    const static int kMouseHoldStart = 15;
     const static int kNumOfTracks = 4;
     const static int kNumOfStats = 3;
     const static int kMaxPageNum = 3;
@@ -248,6 +249,8 @@ class ofApp : public ofBaseApp {
 
     bool setup_is_completed_;
     bool should_delay_;
+    bool mouse_is_pressed_;
+    int time_mouse_pressed_;
     static int page_num_;
     static int battle_chance_;
     static int boss_chance_;
@@ -511,4 +514,5 @@ class ofApp : public ofBaseApp {
     void keyPressed(int key);
     void keyReleased(int key);
     void mousePressed(int x, int y, int button);
+    void mouseReleased(int x, int y, int buttons);
 };
