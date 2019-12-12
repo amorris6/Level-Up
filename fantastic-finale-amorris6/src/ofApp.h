@@ -108,7 +108,7 @@ class ofApp : public ofBaseApp {
     const static int kSwordPosIndex = 0;
     const static int kSwordPrice = 400;
     const static int kSwordAtkBoost = 4000;
-    const static int kHelmetPosIndex = 1;
+    const static int kHelmetPosIndex = 0;
     const static int kHelmetPrice = 750;
     const static int kHelmetDefBoost = 2000;
     const static int kHelmetHpBoost = 3000;
