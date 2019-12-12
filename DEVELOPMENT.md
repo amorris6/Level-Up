@@ -172,4 +172,7 @@ Added boss battle, who gives you energy back if you beat them. Also enabled wind
 semi-decent. You can tell it was made for the smaller size, but not the worst. Hell of a lot better than before.
 Will hopefully add more comments in, but README is first. Still not entirely sure what goes in one. Hope I
 figure it out. Update: Added README.md and comments. Was also able to implement background music soundtrack.
-Wasn't too bad. Should have done it earlier.
+Wasn't too bad. Should have done it earlier. Sorted the items you can buy to be on different pages. Also gave
+the separate pages headers based on what they contained. Fixed bug where player would "win" boss fight after 
+winning previous underling battle. Also fixed heap corruption again. Was deleting something I didn't instantiate
+with new. Made the buttons' widths constant, so the game can be resized and look good.
