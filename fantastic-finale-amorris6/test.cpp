@@ -11,7 +11,9 @@ void Test::dummyFunc() {}
 
 int main() {
     // setup
-    ofSetupOpenGL(1025, 480, OF_WINDOW);
+    const static int kWindowWidth = 1025;
+    const static int kWindowHeight = 480;
+    ofSetupOpenGL(kWindowWidth, kWindowHeight, OF_WINDOW);
     const static int kStartGold = 50;
     const static int kStartExp = 20;
     const static int kStartAtk = 10;
@@ -20,12 +22,15 @@ int main() {
     const static int kStartCritChance = 5;
     Player player = Player(0, 0, kStartGold, kStartExp, kStartAtk, kStartDef,
                            kStartHealth, kStartCritChance);
+	//distance player moves horizontally and vertically
+	//in a window of size (kWindowWidth, kWindowHeight)
+    const static int kMoveDist = 5;
 
     // player movement tests
 
     // Player Can Move Down (TEST 1)
     player.moveInDirection(DOWN);
-    if (player.getPos().x == 0 && player.getPos().y == player.kMoveSpeed) {
+    if (player.getPos().x == 0 && player.getPos().y == kMoveDist) {
         cout << "TEST 1 PASSED" << endl;
     } else {
         cout << "TEST 1 FAILED" << endl;
@@ -33,8 +38,8 @@ int main() {
 
     // Player Can Move Right (TEST 2)
     player.moveInDirection(RIGHT);
-    if (player.getPos().x == player.kMoveSpeed &&
-        player.getPos().y == player.kMoveSpeed) {
+    if (player.getPos().x == kMoveDist &&
+        player.getPos().y == kMoveDist) {
         cout << "TEST 2 PASSED" << endl;
     } else {
         cout << "TEST 2 FAILED" << endl;
@@ -42,7 +47,7 @@ int main() {
 
     // Player Can Move Up (TEST 3)
     player.moveInDirection(UP);
-    if (player.getPos().x == player.kMoveSpeed && player.getPos().y == 0) {
+    if (player.getPos().x == kMoveDist && player.getPos().y == 0) {
         cout << "TEST 3 PASSED" << endl;
     } else {
         cout << "TEST 3 FAILED" << endl;
@@ -75,8 +80,7 @@ int main() {
     // Player Can leave Scene Right (TEST 7)
     for (int i = 0; i < 250; ++i) {
         player.moveInDirection(RIGHT);
-        if (player.getPos().x > ofGetWindowWidth() - (Character::kCharWidth +
-                                                      Character::kMoveSpeed)) {
+        if (player.getPos().x > ofGetWindowWidth() - (Character::kCharWidth + kMoveDist)) {
             player.moveInDirection(RIGHT);
             break;
         }
@@ -173,41 +177,29 @@ int main() {
     } else {
         cout << "TEST 16 FAILED" << endl;
     }
-	
-	//item and subclass test setup
+
+    // item and subclass test setup
     string kGemName = "gem";
     int kGemPrice = 300;
-    float kGemInvPosX = 400;
-    float kGemInvPosY = 100;
-    float kGemStorePosX = 400;
-    float kGemStorePosY = 100;
+    float kGemPosX = 400;
+    float kGemPosY = 100;
     string kSwordName = "sword";
     int kSwordPrice = 300;
-    float kSwordInvPosX = 100;
-    float kSwordInvPosY = 100;
-    float kSwordStorePosX = 100;
-    float kSwordStorePosY = 100;
+    float kSwordPosX = 100;
+    float kSwordPosY = 100;
     int kSwordAtkBoost = 4000;
     string kHelmetName = "helmet";
     int kHelmetPrice = 300;
-    float kHelmetInvPosX = 250;
-    float kHelmetInvPosY = 100;
-    float kHelmetStorePosX = 250;
-    float kHelmetStorePosY = 100;
+    float kHelmetPosX = 250;
+    float kHelmetPosY = 100;
     int kHelmetDefBoost = 2000;
     int kHelmetHpBoost = 3000;
-    Item gem = Item(kGemName, 
-		            kGemPrice, 
-		            0, 0, 
-		            kGemInvPosX, kGemInvPosY, 
-		            kGemStorePosX, kGemStorePosY, 
-		            kFont);
-    Weapon sword = Weapon(kSwordName, kSwordPrice, 0, 0, kSwordInvPosX, kSwordInvPosY,
-               kSwordStorePosX, kSwordStorePosY, kSwordAtkBoost, kFont);
-    Armor helmet = Armor(kHelmetName, kHelmetPrice, 0, 0, kHelmetInvPosX,
-                         kHelmetInvPosY, kHelmetStorePosX, kHelmetStorePosY,
-		                 kHelmetDefBoost, kHelmetHpBoost,
-                         kFont);
+    Item gem = Item(kGemName, kGemPrice, 0, kGemPosX, kGemPosY, Test::dummyFunc,
+                    Test::dummyFunc, kFont);
+    Weapon sword = Weapon(kSwordName, kSwordPrice, 0, kSwordPosX, kSwordPosY,
+                          kSwordAtkBoost, kFont);
+    Armor helmet = Armor(kHelmetName, kHelmetPrice, 0, kHelmetPosX, kHelmetPosY,
+                         kHelmetDefBoost, kHelmetHpBoost, kFont);
 
 	//getters work correctly (TESTS 17-21)
     if (gem.getName() == kGemName) {
