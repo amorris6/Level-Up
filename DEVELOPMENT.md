@@ -175,4 +175,5 @@ figure it out. Update: Added README.md and comments. Was also able to implement 
 Wasn't too bad. Should have done it earlier. Sorted the items you can buy to be on different pages. Also gave
 the separate pages headers based on what they contained. Fixed bug where player would "win" boss fight after 
 winning previous underling battle. Also fixed heap corruption again. Was deleting something I didn't instantiate
-with new. Made the buttons' widths constant, so the game can be resized and look good.
+with new. Made the buttons' widths constant, so the game can be resized and look good. Also tried to balance the
+game by increasing store prices, but I know that will only delay the inevitable.
