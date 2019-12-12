@@ -22,8 +22,6 @@ class ofApp : public ofBaseApp {
 
     const static float kCenterXFactor;
     const static float kCenterYFactor;
-    const static float kPlayWidthAdj;
-    const static float kPlayHeightAdj;
     const static float kInitBattleMult;
     const static float kBattleMultFactor;
     const static float kInitCritMult;
@@ -32,7 +30,6 @@ class ofApp : public ofBaseApp {
     const static float kExpMultFactor;
     const static float kCritChanceMultFactor;
     const static float kCritDmgMultFactor;
-    const static float kSettingsWidthAdj;
     const static float kToggleMsgYFactor;
     const static float kStatSpaceYFactor;
     const static float kCritMsgYAdjFactor;
@@ -78,6 +75,13 @@ class ofApp : public ofBaseApp {
     const static int kEnemyFightHeight = 100;
     const static int kEnemyAdjX = 300;
     const static int kStageNumChangeRight = 7;
+    const static int kSettingsWidth = 185;
+    const static int kPlayWidth = 103;
+    const static int kRestartWidth = 170;
+	const static int kStoreWidth = 120;
+    const static int kNextWidth = 62;
+    const static int kPrevWidth = 62;
+    const static int kBackWidth = 62;
     const static int kStageNumChangeUp = 11;
     const static int kStartX = 0;
     const static int kStartY = 0;
@@ -137,20 +141,13 @@ class ofApp : public ofBaseApp {
     const static int kStatSpaceYAdj = 25;
     const static int kRestartXAdj = 25;
     const static int kRestartYAdj = 50;
-    const static int kRestartWidthAdj = 60;
     const static int kStoreXAdj = 25;
     const static int kStoreYAdj = 100;
-    const static int kStoreWidthAdj = 60;
-    const static int kInventoryWidthAdj = 100;
-    const static int kLvlUpWidthAdj = 70;
-    const static int kBackWidthAdj = -40;
     const static int kBackHeightAdj = 15;
     const static int kNextXAdj = -40;
     const static int kNextYAdj = 15;
-    const static int kNextWidthAdj = -40;
     const static int kNextHeightAdj = 15;
     const static int kPrevYAdj = 15;
-    const static int kPrevWidthAdj = -40;
     const static int kPrevHeightAdj = 15;
     const static int kResourcePosAdj = 3;
     const static int kLvlUpYAdj = -65;
@@ -247,7 +244,6 @@ class ofApp : public ofBaseApp {
     const static string kAtkSoundEnabledMsg;
     const static string kAutoLvlEnabledMsg;
 
-	
     static float crit_dmg_mult_;
     static float battle_multiplier_;
     static float gold_mult_;
@@ -386,7 +382,7 @@ class ofApp : public ofBaseApp {
     // based on context
     static void closePage();
     void drawStore();
-    void drawStoreItem();
+    void drawStoreItems();
     // draws the store notices like
     // Purchase Successful, or not enough gold
     void drawStoreNotices();

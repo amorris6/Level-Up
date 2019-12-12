@@ -5,9 +5,6 @@ const float ofApp::kBossMult = 1.5;
 const float ofApp::kInitBattleMult = 1.0 / 4.0;
 const float ofApp::kCenterXFactor = 3.0 / 7.0;
 const float ofApp::kCenterYFactor = 3.0 / 7.0;
-const float ofApp::kPlayWidthAdj = 0.1;
-const float ofApp::kPlayHeightAdj = 0.125;
-const float ofApp::kSettingsWidthAdj = 0.18;
 const float ofApp::kCritMsgYAdjFactor = 0.5;
 const float ofApp::kEquippedYFactor = 0.5;
 const float ofApp::kPriceYFactor = 0.5;
@@ -292,25 +289,26 @@ void ofApp::setupStartScreenButtons() {
     play_button_ =
         new Button(kCenterXFactor * ofGetWindowWidth(),
                    kCenterYFactor * ofGetWindowHeight(),
-                   kPlayWidthAdj * ofGetWindowWidth(), Button::kButtonFontSize,
+                   kPlayWidth, Button::kButtonFontSize,
                    kPlayLabel, button_font_, setupWorld);
     settings_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kSettingsYAdj,
         kCenterYFactor * ofGetWindowHeight() + kSettingsXAdj,
-        kSettingsWidthAdj * ofGetWindowWidth(), Button::kButtonFontSize,
+        kSettingsWidth, Button::kButtonFontSize,
         kSettingsLabel, button_font_, openSettings);
 }
 
 //--------------------------------------------------------------
 void ofApp::setupSettingsButtons() {
+	//center button
+    toggle_atk_sound_button_ = new Button(
+		kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
+        kCenterYFactor * ofGetWindowHeight(), kToggleWidth,
+        kToggleHeight, kToggleLabel, button_font_, toggleAtkSound);
     toggle_bkgrd_music_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
-        kCenterYFactor * ofGetWindowHeight() + kToggleSpaceAdj, kToggleWidth,
+        toggle_atk_sound_button_->y_ - kToggleSpaceAdj, kToggleWidth,
         kToggleHeight, kToggleLabel, button_font_, toggleBkgrdMusic);
-    toggle_atk_sound_button_ = new Button(
-        kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
-        toggle_bkgrd_music_button_->y_ + kToggleSpaceAdj, kToggleWidth,
-        kToggleHeight, kToggleLabel, button_font_, toggleAtkSound);
     toggle_battle_music_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kToggleXAdj,
         toggle_atk_sound_button_->y_ + kToggleSpaceAdj, kToggleWidth,
@@ -325,12 +323,12 @@ void ofApp::setupGameOverButtons() {
     restart_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kRestartXAdj,
         kCenterYFactor * ofGetWindowHeight() + kRestartYAdj,
-        kPlayWidthAdj * ofGetWindowWidth() + kRestartWidthAdj,
+		kRestartWidth,
         Button::kButtonFontSize, kRestartLabel, button_font_, restartGame);
     store_button_ = new Button(
         kCenterXFactor * ofGetWindowWidth() + kStoreXAdj,
         kCenterYFactor * ofGetWindowHeight() + kStoreYAdj,
-        kPlayWidthAdj * ofGetWindowWidth() + kStoreWidthAdj,
+		kStoreWidth,
         Button::kButtonFontSize, kStoreLabel, button_font_, openStore);
 }
 
@@ -338,11 +336,11 @@ void ofApp::setupGameOverButtons() {
 void ofApp::setupWorldButtons() {
     inventory_button_ = new Button(
         0, ofGetWindowHeight() - (Button::kButtonFontSize),
-        Button::kButtonFontSize + kInventoryWidthAdj, Button::kButtonFontSize,
+        120, Button::kButtonFontSize,
         kInventoryLabel, info_font_, openInventory);
     lvl_up_button_ = new Button(
         0, ofGetWindowHeight() + kLvlUpYFactor * (Button::kButtonFontSize),
-        Button::kButtonFontSize + kLvlUpWidthAdj, Button::kButtonFontSize,
+        100, Button::kButtonFontSize,
         kLvlUpLabel, info_font_, openLvlUp);
 }
 
@@ -396,16 +394,16 @@ void ofApp::setupStatDownButtons() {
 //--------------------------------------------------------------
 void ofApp::setupStoreButtons() {
     back_button_ = new Button(
-        0, 0, kPlayWidthAdj * ofGetWindowWidth() + kBackWidthAdj,
+        0, 0, kBackWidth,
         kInfoFontSize + kBackHeightAdj, kBackLabel, info_font_, closePage);
     next_button_ = new Button(
-        ofGetWindowWidth() - (kPlayWidthAdj * ofGetWindowWidth() + kNextXAdj),
+        ofGetWindowWidth() - kNextWidth,
         kInfoFontSize + kNextYAdj,
-        kPlayWidthAdj * ofGetWindowWidth() + kNextWidthAdj,
+        kNextWidth,
         kInfoFontSize + kNextHeightAdj, kNextLabel, info_font_, increasePage);
     prev_button_ = new Button(
         0, kInfoFontSize + kPrevYAdj,
-        kPlayWidthAdj * ofGetWindowWidth() + kPrevWidthAdj,
+        kPrevWidth,
         kInfoFontSize + kPrevHeightAdj, kPrevLabel, info_font_, decreasePage);
 }
 
@@ -1518,23 +1516,25 @@ void ofApp::drawInventory() {
 }
 
 //--------------------------------------------------------------
-void ofApp::drawInventoryItems() {for (auto& item : player_.inventory_) {
-    if (page_num_ != item->page_) {
-        continue;
+void ofApp::drawInventoryItems() {
+    for (auto& item : player_.inventory_) {
+        if (page_num_ != item->page_) {
+            continue;
+        }
+        info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
+                         item->pos_.y - kItemNameYFactor * kInfoFontSize);
+        string equipped_status = kUnequippedMsg;
+        if (checkIfItemEquipped(item)) {
+            equipped_status = kEquippedMsg;
+            item->unequip_button_->draw();
+        } else {
+            item->equip_button_->draw();
+        }
+        info_font_->draw(equipped_status, item->pos_.x + kEquippedXAdj,
+                         item->pos_.y - kInfoFontSize * kEquippedYFactor);
+        ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
+        item->sell_button_->draw();
     }
-    info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
-                     item->pos_.y - kItemNameYFactor * kInfoFontSize);
-    string equipped_status = kUnequippedMsg;
-    if (checkIfItemEquipped(item)) {
-        equipped_status = kEquippedMsg;
-        item->unequip_button_->draw();
-    } else {
-        item->equip_button_->draw();
-    }
-    info_font_->draw(equipped_status, item->pos_.x + kEquippedXAdj,
-                     item->pos_.y - kInfoFontSize * kEquippedYFactor);
-    ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
-    item->sell_button_->draw();
 }
 
 //--------------------------------------------------------------
@@ -1770,7 +1770,7 @@ void ofApp::windowResized(int w, int h) {
         buttons_.push_back(back_button_);
     }
     if (store_is_open_ || inventory_is_open_) {
-        if (page_num_ != 0) {
+        if (page_num_ != 1) {
             buttons_.push_back(prev_button_);
         }
         if (page_num_ != kMaxPageNum) {
