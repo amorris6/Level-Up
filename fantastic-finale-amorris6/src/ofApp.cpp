@@ -2,7 +2,7 @@
 
 const float ofApp::kInitCritMult = 1.75;
 const float ofApp::kBossMult = 1.5;
-const float ofApp::kInitBattleMult = 0.25;
+const float ofApp::kInitBattleMult = 1.0 / 4.0;
 const float ofApp::kCenterXFactor = 3.0 / 7.0;
 const float ofApp::kCenterYFactor = 3.0 / 7.0;
 const float ofApp::kPlayWidthAdj = 0.1;
@@ -16,6 +16,12 @@ const float ofApp::kStoreGoldXFactor = 1.0 / 7.0;
 const float ofApp::kStatSpaceYFactor = 0.91;
 const float ofApp::kBossPosFactor = 0.5;
 const float ofApp::kResaleFactor = 0.5;
+const float ofApp::kItemTypeMsgXFactor = 0.4;
+const float ofApp::kGoldMultFactor = 1.3;
+const float ofApp::kCritDmgMultFactor = 1.8;
+const float ofApp::kCritChanceMultFactor = 2;
+const float ofApp::kBattleMultFactor = 2;
+const float ofApp::kExpMultFactor = 1.3;
 const string ofApp::kPlayLabel = "PLAY";
 const string ofApp::kRestartLabel = "RESTART";
 const string ofApp::kStoreLabel = "STORE";
@@ -51,6 +57,10 @@ const string ofApp::kEquipSuccessMsg = "Equipped";
 const string ofApp::kNoOwnMsg = "You don't own this item";
 const string ofApp::kAlreadyEquippedMsg = "Already Equipped";
 const string ofApp::kAlreadyOwnedMsg = "Already Owned";
+const string ofApp::kWeaponsLabel = "WEAPONS";
+const string ofApp::kArmorLabel = "ARMOR";
+const string ofApp::kGemsLabel = "GEMS";
+const string ofApp::kMiscLabel = "MISC.";
 const string ofApp::kBkgrdMusicEnabledMsg = "Background Music Enabled";
 const string ofApp::kBattleMusicEnabledMsg = "Battle Music Enabled";
 const string ofApp::kAtkSoundEnabledMsg = "Attack Sound Enabled";
@@ -64,16 +74,6 @@ const string ofApp::kMoreExpGemName = "exp++";
 const string ofApp::kMoreGoldGemName = "gold++";
 const string ofApp::kMoreCritChanceGemName = "Crit Chance++";
 const string ofApp::kMoreCritDmgGemName = "Crit Dmg++";
-const ofColor ofApp::kWhite = ofColor(255, 255, 255);
-const ofColor ofApp::kBlack = ofColor(0, 0, 0);
-const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
-const ofColor ofApp::kRed = ofColor(255, 0, 0);
-const ofColor ofApp::kGreen = ofColor(0, 255, 0);
-const ofColor ofApp::kBlue = ofColor(0, 0, 255);
-const ofColor ofApp::kPurple = ofColor(255, 0, 255);
-const ofColor ofApp::kYellow = ofColor(255, 255, 0);
-const ofColor ofApp::kSkin = ofColor(255, 220, 8);
-const ofColor ofApp::kTan = ofColor(210, 180, 140);
 const string ofApp::kBkgrdMusicFilePathOne = "C:\\CS 126\\Vivaldi-Spring.mp3";
 const string ofApp::kBkgrdMusicFilePathTwo = "C:\\CS 126\\Vivaldi-Summer.mp3";
 const string ofApp::kBkgrdMusicFilePathThree = "C:\\CS 126\\Vivaldi-Fall.mp3";
@@ -88,23 +88,21 @@ const string ofApp::kStoreFontName = "Roboto-Black-Store";
 const string ofApp::kFontName = "Roboto-Black";
 const string ofApp::kUnequippedMsg = "UNEQUIPPED";
 const string ofApp::kEquippedMsg = "EQUIPPED";
-list<Resource> ofApp::resources_ = {};
 float ofApp::battle_multiplier_ = kInitBattleMult;
-const float ofApp::kBattleMultFactor = 2;
 float ofApp::exp_mult_ = 1;
-const float ofApp::kExpMultFactor = 1.3;
 float ofApp::gold_mult_ = 1;
-const float ofApp::kGoldMultFactor = 1.3;
-const float ofApp::kCritDmgMultFactor = 1.8;
-const float ofApp::kCritChanceMultFactor = 2;
 float ofApp::crit_dmg_mult_ = kInitCritMult;
 int ofApp::battle_chance_ = 0;
 int ofApp::boss_chance_ = kInitBossChance;
-int ofApp::page_num_ = 0;
+int ofApp::page_num_ = 1;
 int ofApp::stage_num_ = 0;
 int ofApp::lvls_inc_ = 0;
 int ofApp::energy_left_ = kInitialEnergy;
 int ofApp::battle_start_ = kStartBattle;
+int ofApp::lvl_up_points_ = 0;
+int ofApp::num_hp_lvl_up_ = 0;
+int ofApp::num_atk_lvl_up_ = 0;
+int ofApp::num_def_lvl_up_ = 0;
 bool ofApp::store_is_open_ = false;
 bool ofApp::inventory_is_open_ = false;
 bool ofApp::settings_is_open_ = false;
@@ -116,13 +114,16 @@ bool ofApp::background_music_enabled_ = true;
 bool ofApp::atk_sound_enabled_ = true;
 bool ofApp::battle_music_enabled_ = true;
 bool ofApp::auto_lvling_enabled_ = false;
-int ofApp::lvl_up_points_ = 0;
-int ofApp::num_hp_lvl_up_ = 0;
-int ofApp::num_atk_lvl_up_ = 0;
-int ofApp::num_def_lvl_up_ = 0;
 bool ofApp::move_key_is_pressed[4] = {};
 Player ofApp::player_ = Player(kStartX, kStartY, kStartGold, kStartExp,
                                kStartAtk, kStartDef, kStartHealth, kStartCrit);
+Enemy ofApp::boss_ = Enemy(-(Character::kCharWidth + 1),
+                           -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
+list<Resource> ofApp::resources_ = {};
+shared_ptr<ofxSmartFont> ofApp::button_font_ = nullptr;
+shared_ptr<ofxSmartFont> ofApp::info_font_ = nullptr;
+shared_ptr<ofxSmartFont> ofApp::store_font_ = nullptr;
+list<Button*> ofApp::buttons_ = {};
 Button* ofApp::play_button_ = nullptr;
 Button* ofApp::restart_button_ = nullptr;
 Button* ofApp::store_button_ = nullptr;
@@ -142,12 +143,16 @@ Button* ofApp::toggle_atk_sound_button_ = nullptr;
 Button* ofApp::back_button_ = nullptr;
 Button* ofApp::next_button_ = nullptr;
 Button* ofApp::prev_button_ = nullptr;
-Enemy ofApp::boss_ = Enemy(-(Character::kCharWidth + 1),
-                           -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
-shared_ptr<ofxSmartFont> ofApp::button_font_ = nullptr;
-shared_ptr<ofxSmartFont> ofApp::info_font_ = nullptr;
-shared_ptr<ofxSmartFont> ofApp::store_font_ = nullptr;
-list<Button*> ofApp::buttons_ = {};
+const ofColor ofApp::kWhite = ofColor(255, 255, 255);
+const ofColor ofApp::kBlack = ofColor(0, 0, 0);
+const ofColor ofApp::kGrayClear = ofColor(150, 150, 150, 125);
+const ofColor ofApp::kRed = ofColor(255, 0, 0);
+const ofColor ofApp::kGreen = ofColor(0, 255, 0);
+const ofColor ofApp::kBlue = ofColor(0, 0, 255);
+const ofColor ofApp::kPurple = ofColor(255, 0, 255);
+const ofColor ofApp::kYellow = ofColor(255, 255, 0);
+const ofColor ofApp::kSkin = ofColor(255, 220, 8);
+const ofColor ofApp::kTan = ofColor(210, 180, 140);
 
 // Initializes all non-static variables
 void ofApp::setup() {
@@ -223,35 +228,35 @@ void ofApp::setupItems() {
         }
     }
     Weapon* sword =
-        new Weapon(kSwordName, kSwordPrice, kSwordPageNum, pos[kSwordPosIndex],
+        new Weapon(kSwordName, kSwordPrice, kWeaponPageNum, pos[kSwordPosIndex],
                    kSwordAtkBoost, store_font_);
-    Armor* helmet = new Armor(kHelmetName, kHelmetPrice, kHelmetPageNum,
+    Armor* helmet = new Armor(kHelmetName, kHelmetPrice, kArmorPageNum,
                               pos[kHelmetPosIndex], kHelmetDefBoost,
                               kHelmetHpBoost, store_font_);
     Item* fast_battle_gem =
-        new Item(kFastBattleGemName, kFastBattleGemPrice, kFastBattleGemPageNum,
+        new Item(kFastBattleGemName, kFastBattleGemPrice, kGemPageNum,
                  pos[kFastBattleGemPosIndex], speedBattleChance,
                  slowBattleChance, store_font_);
     Item* slow_battle_gem =
-        new Item(kSlowBattleGemName, kSlowBattleGemPrice, kSlowBattleGemPageNum,
+        new Item(kSlowBattleGemName, kSlowBattleGemPrice, kGemPageNum,
                  pos[kSlowBattleGemPosIndex], slowBattleChance,
                  speedBattleChance, store_font_);
     Item* more_exp_gem =
-        new Item(kMoreExpGemName, kMoreGoldGemPrice, kMoreExpGemPageNum,
+        new Item(kMoreExpGemName, kMoreGoldGemPrice, kGemPageNum,
                  pos[kMoreExpGemPosIndex], increaseExpGain, decreaseExpGain,
                  store_font_);
     Item* more_gold_gem =
-        new Item(kMoreGoldGemName, kMoreGoldGemPrice, kMoreGoldGemPageNum,
+        new Item(kMoreGoldGemName, kMoreGoldGemPrice, kGemPageNum,
                  pos[kMoreGoldGemPosIndex], increaseGoldGain, decreaseGoldGain,
                  store_font_);
     Item* more_crit_chance_gem =
-        new Item(kMoreCritChanceGemName, kMoreCritChanceGemPrice,
-                 kMoreCritChanceGemPageNum, pos[kMoreCritChanceGemPosIndex],
-                 increaseCritChance, decreaseCritChance, store_font_);
+        new Item(kMoreCritChanceGemName, kMoreCritChanceGemPrice, kGemPageNum,
+                 pos[kMoreCritChanceGemPosIndex], increaseCritChance,
+                 decreaseCritChance, store_font_);
     Item* more_crit_dmg_gem =
-        new Item(kMoreCritDmgGemName, kMoreCritDmgGemPrice,
-                 kMoreCritDmgGemPageNum, pos[kMoreCritDmgGemPosIndex],
-                 increaseCritDmg, decreaseCritDmg, store_font_);
+        new Item(kMoreCritDmgGemName, kMoreCritDmgGemPrice, kGemPageNum,
+                 pos[kMoreCritDmgGemPosIndex], increaseCritDmg, decreaseCritDmg,
+                 store_font_);
 
     items_.push_back(sword);
     items_.push_back(helmet);
@@ -506,7 +511,7 @@ void ofApp::update() {
             mousePressed(mouseX, mouseY, 0);
         } else {
             time_mouse_pressed_--;
-		}
+        }
     }
     battleOpponent();
     updatePlayerPos();
@@ -529,24 +534,24 @@ void ofApp::update() {
 void ofApp::battleOpponent() {
     if (player_is_fighting_ && !player_.getRect().intersects(boss_.getRect())) {
         battleEnemy();
-        if (!player_won_ && battle_ended_) {
-            energy_left_ -= kEnergyBattleLost;
+        if (battle_ended_) {
             battle_ended_ = false;
+            if (!player_won_) {
+                energy_left_ -= kEnergyBattleLost;
+            }
         }
     } else if (player_is_fighting_) {
         battleBoss();
-        if (player_won_ && battle_ended_) {
-            energy_left_ += (kEnergyBossBattleWon + kEnergyBattle);
+        if (battle_ended_) {
             battle_ended_ = false;
             // makes it so player can never intersect enemy
             boss_ = Enemy(-(Character::kCharWidth + 1),
                           -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
-        } else if (battle_ended_) {
-            energy_left_ -= kEnergyBattleLost;
-            battle_ended_ = false;
-            // makes it so player can never intersect enemy
-            boss_ = Enemy(-(Character::kCharWidth + 1),
-                          -(Character::kCharHeight + 1), 0, 0, 0, 0, 0, 0);
+            if (player_won_) {
+                energy_left_ += (kEnergyBossBattleWon + kEnergyBattle);
+            } else {
+                energy_left_ -= kEnergyBattleLost;
+            }
         }
     }
 }
@@ -773,10 +778,10 @@ void ofApp::updatePlayerPos() {
             player_is_moving = true;
             player_.moveInDirection(dir);
         }
-        if (player_is_moving) {
-            battle_chance_inc = true;
-            battle_chance_++;
-        }
+    }
+    if (player_is_moving) {
+        battle_chance_inc = true;
+        battle_chance_++;
     }
 }
 
@@ -1480,7 +1485,7 @@ void ofApp::openInventory() {
 
 //-------------------------------------------------------------
 void ofApp::closeInventory() {
-    page_num_ = 0;
+    page_num_ = 1;
     inventory_is_open_ = false;
     buttons_.remove(back_button_);
     buttons_.remove(next_button_);
@@ -1495,27 +1500,41 @@ void ofApp::drawInventory() {
         Sleep(kMessageDelay);
         should_delay_ = false;
     }
+
     ofBackground(kTan);
-    for (auto& item : player_.inventory_) {
-        if (page_num_ != item->page_) {
-            continue;
-        }
-        ofSetColor(kBlack);
-        info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
-                         item->pos_.y - kItemNameYFactor * kInfoFontSize);
-        string equipped_status = kUnequippedMsg;
-        if (checkIfItemEquipped(item)) {
-            equipped_status = kEquippedMsg;
-            item->unequip_button_->draw();
-        } else {
-            item->equip_button_->draw();
-        }
-        info_font_->draw(equipped_status, item->pos_.x + kEquippedXAdj,
-                         item->pos_.y - kInfoFontSize * kEquippedYFactor);
-        ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
-        item->sell_button_->draw();
-    };
+    ofSetColor(kBlack);
+    string item_type = kMiscLabel;
+    if (page_num_ == kWeaponPageNum) {
+        item_type = kWeaponsLabel;
+    } else if (page_num_ == kArmorPageNum) {
+        item_type = kArmorLabel;
+    } else if (page_num_ == kGemPageNum) {
+        item_type = kGemsLabel;
+    }
+    info_font_->draw(item_type, ofGetWindowWidth() * kItemTypeMsgXFactor,
+                     Button::kButtonFontSize);
+    drawInventoryItems();
     drawInventoryNotices();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawInventoryItems() {for (auto& item : player_.inventory_) {
+    if (page_num_ != item->page_) {
+        continue;
+    }
+    info_font_->draw(item->getName(), item->pos_.x + kNameXAdj,
+                     item->pos_.y - kItemNameYFactor * kInfoFontSize);
+    string equipped_status = kUnequippedMsg;
+    if (checkIfItemEquipped(item)) {
+        equipped_status = kEquippedMsg;
+        item->unequip_button_->draw();
+    } else {
+        item->equip_button_->draw();
+    }
+    info_font_->draw(equipped_status, item->pos_.x + kEquippedXAdj,
+                     item->pos_.y - kInfoFontSize * kEquippedYFactor);
+    ofDrawRectangle(item->pos_, item->kWidth, item->kHeight);
+    item->sell_button_->draw();
 }
 
 //--------------------------------------------------------------
@@ -1534,7 +1553,7 @@ void ofApp::drawInventoryNotices() {
 //--------------------------------------------------------------
 void ofApp::increasePage() {
     page_num_ = min(++page_num_, kMaxPageNum);
-    if (page_num_ == 1) {
+    if (page_num_ == 2) {
         buttons_.push_back(prev_button_);
     } else if (page_num_ == kMaxPageNum) {
         buttons_.remove(next_button_);
@@ -1543,8 +1562,8 @@ void ofApp::increasePage() {
 
 //--------------------------------------------------------------
 void ofApp::decreasePage() {
-    page_num_ = max(--page_num_, 0);
-    if (page_num_ == 0) {
+    page_num_ = max(--page_num_, 1);
+    if (page_num_ == 1) {
         buttons_.remove(prev_button_);
     } else if (page_num_ == kMaxPageNum - 1) {
         buttons_.push_back(next_button_);
@@ -1566,7 +1585,7 @@ void ofApp::openStore() {
 
 //-------------------------------------------------------------
 void ofApp::closeStore() {
-    page_num_ = 0;
+    page_num_ = 1;
     store_is_open_ = false;
     buttons_.remove(back_button_);
     buttons_.remove(next_button_);
@@ -1583,6 +1602,26 @@ void ofApp::drawStore() {
     }
     ofBackground(kTan);
     ofSetColor(kBlack);
+    string item_type = kMiscLabel;
+    if (page_num_ == kWeaponPageNum) {
+        item_type = kWeaponsLabel;
+    } else if (page_num_ == kArmorPageNum) {
+        item_type = kArmorLabel;
+    } else if (page_num_ == kGemPageNum) {
+        item_type = kGemsLabel;
+    }
+    button_font_->draw(item_type, ofGetWindowWidth() * kItemTypeMsgXFactor,
+                       Button::kButtonFontSize);
+    drawStoreItems();
+    string gold = to_string(player_.getGold());
+    info_font_->draw(kGoldLabel + gold, ofGetWindowWidth() * kStoreGoldXFactor,
+                     kInfoFontSize);
+    ofSetColor(kWhite);
+    drawStoreNotices();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawStoreItems() {
     for (auto& item : items_) {
         if (page_num_ != item->page_) {
             continue;
@@ -1600,11 +1639,6 @@ void ofApp::drawStore() {
             item->unequip_button_->draw();
         }
     };
-    string gold = to_string(player_.getGold());
-    info_font_->draw(kGoldLabel + gold, ofGetWindowWidth() * kStoreGoldXFactor,
-                     kInfoFontSize);
-    ofSetColor(kWhite);
-    drawStoreNotices();
 }
 
 //--------------------------------------------------------------
